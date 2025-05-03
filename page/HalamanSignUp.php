@@ -1,5 +1,5 @@
 <?php
-include "../koneksi.php";
+include "db.php";
 
 $messege = "";
 

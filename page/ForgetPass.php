@@ -1,9 +1,11 @@
 <?php
-include "../koneksi.php";
+include "db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     // Lanjutkan logic cek akun, kirim kode, dll
+
+    $stmt = 
 }
 ?>
 
