@@ -3,9 +3,20 @@ include "db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
-    // Lanjutkan logic cek akun, kirim kode, dll
 
-    $stmt = 
+    // Pastikan user ada
+    $stmt = $conn->prepare("SELECT * FROM tbuser WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        // Redirect ke form password baru
+        header("Location: PassBaru.php?username=" . urlencode($username));
+        exit;
+    } else {
+        echo "Username tidak ditemukan.";
+    }
 }
 ?>
 
