@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h2>Reset Password Anda</h2>
-        <form id="resetForm" method="post" action="Verification.php">
+        <form id="resetForm" method="post" action="FogetPass.php">
             <p>Jangan khawatir, masukan username anda dibawah dan kami akan<br>mengirim anda reset kode.</p>
             <div class="form-group">
                 <input type="text" id="username" name="username" required placeholder="Masukan username anda">
