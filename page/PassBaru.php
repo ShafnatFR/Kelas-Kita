@@ -1,35 +1,40 @@
 <?php
-include "../koneksi.php";
+include "db.php";
 
 $pesan = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
-    $passwordBaru = $_POST["password"];
-
-    // Validasi password di server
-    if (
-        strlen($passwordBaru) < 8 ||
-        !preg_match('/[A-Z]/', $passwordBaru) ||
-        !preg_match('/[a-z]/', $passwordBaru) ||
-        !preg_match('/\d/', $passwordBaru) ||
-        !preg_match('/[@$!%*?&.]/', $passwordBaru)
-    ) {
-        $pesan = "Password tidak memenuhi kriteria keamanan.";
+    $username = $_POST["username"] ?? "";
+    
+    if (!isset($_POST["password"]) || $_POST["password"] === "") {
+        $pesan = "Silakan isi password terlebih dahulu.";
     } else {
-        // Enkripsi password
-        $passwordHash = password_hash($passwordBaru, PASSWORD_DEFAULT);
+        $password = $_POST["password"];
 
-        // Update ke database (pastikan username dikirim dari sesi atau form sebelumnya)
-        $sql = "UPDATE users SET password='$passwordHash' WHERE username='$username'";
-        if (mysqli_query($koneksi, $sql)) {
-            header("Location: HalamanSignIn.php?reset=success");
-            exit;
+        if (
+            strlen($password) < 8 ||
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/\d/', $password) ||
+            !preg_match('/[@$!%*?&.]/', $password)
+        ) {
+            $pesan = "Password tidak memenuhi kriteria keamanan.";
         } else {
-            $pesan = "Gagal mengubah password.";
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("UPDATE tbuser SET password=? WHERE username=?");
+            $stmt->bind_param("ss", $passwordHash, $username);
+
+            if ($stmt->execute()) {
+                echo "Password berhasil diubah!";
+                header("Location: HalamanSignIn.php?reset=success");
+                exit;
+            } else {
+                $pesan = "Gagal mengubah password.";
+            }
         }
     }
-}
+} 
+
 ?>
 
 <!DOCTYPE html>

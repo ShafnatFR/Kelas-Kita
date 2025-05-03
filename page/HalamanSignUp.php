@@ -1,5 +1,5 @@
 <?php
-include "../koneksi.php";
+include "db.php";
 
 $messege = "";
 
@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
         // Cek apakah username sudah ada
-        $sql = "SELECT * FROM tb_user WHERE username = ?";
+        $sql = "SELECT * FROM tbuser WHERE username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
-            $sql = "INSERT INTO tb_user (username, password) VALUES (?, ?)";
+            $sql = "INSERT INTO tbuser (username, password) VALUES (?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ss", $username, $password);
 
