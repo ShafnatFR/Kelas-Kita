@@ -54,7 +54,7 @@ $result = $conn->query($query);
 </table>
 
 <br>
-<a href="index.php">⬅ Kembali ke Menu Setting</a>
+<a href="../index.php">Kembali ke Menu Setting</a>
 
 </body>
 </html>
