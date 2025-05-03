@@ -5,7 +5,7 @@ include('db.php'); // koneksi database
 $query = "SELECT * FROM tbUser";
 $result = $conn->query($query);
 ?>
-
+// Tes pull
 <!DOCTYPE html>
 <html lang="id">
 <head>
