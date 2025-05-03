@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 <br>
-<a href="notifikasi.php">⬅ Kembali ke Daftar Notifikasi</a>
+<a href="notifikasi.php">Kembali ke Daftar Notifikasi</a>
 
 </body>
 </html>
