@@ -18,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Username tidak ditemukan.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -31,13 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h2>Reset Password Anda</h2>
-        <form id="resetForm" method="post" action="FogetPass.php">
-            <p>Jangan khawatir, masukan username anda dibawah dan kami akan<br>mengirim anda reset kode.</p>
+        <form id="resetForm" method="post" action="ForgetPass.php">
+        <p>Masukkan username Anda:</p>
             <div class="form-group">
-                <input type="text" id="username" name="username" required placeholder="Masukan username anda">
+                 <input type="text" id="username" name="username" required placeholder="Masukkan username anda">
             </div>
-            <button type="submit" class="btn btn-danger btn-block rounded-pill">Kirim</button>
-        </form>
+        <button type="submit" class="btn btn-danger btn-block rounded-pill">Kirim</button>
+</form>
         <a href="HalamanSignIn.html" id="backToLogin">Kembali ke Halaman Utama</a>
     </div>
 
