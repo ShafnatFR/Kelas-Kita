@@ -3,10 +3,22 @@ include "db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
-    // Lanjutkan logic cek akun, kirim kode, dll
 
-    $stmt = 
+    // Pastikan user ada
+    $stmt = $conn->prepare("SELECT * FROM tbuser WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        // Redirect ke form password baru
+        header("Location: PassBaru.php?username=" . urlencode($username));
+        exit;
+    } else {
+        echo "Username tidak ditemukan.";
+    }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -20,13 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h2>Reset Password Anda</h2>
-        <form id="resetForm" method="post" action="Verification.php">
-            <p>Jangan khawatir, masukan username anda dibawah dan kami akan<br>mengirim anda reset kode.</p>
+        <form id="resetForm" method="post" action="ForgetPass.php">
+        <p>Masukkan username Anda:</p>
             <div class="form-group">
-                <input type="text" id="username" name="username" required placeholder="Masukan username anda">
+                 <input type="text" id="username" name="username" required placeholder="Masukkan username anda">
             </div>
-            <button type="submit" class="btn btn-danger btn-block rounded-pill">Kirim</button>
-        </form>
+        <button type="submit" class="btn btn-danger btn-block rounded-pill">Kirim</button>
+</form>
         <a href="HalamanSignIn.html" id="backToLogin">Kembali ke Halaman Utama</a>
     </div>
 
