@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Serif+Text&display=swap" rel="stylesheet">
+    <title>FAQ Accordion - KelasKita</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        /*Header*/
+        .navbar {
+  background-color: #B6252A;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 100px;
+  object-fit: contain;
+}
+
+.nav-link {
+  color: white !important;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .navbar {
+      height: auto;
+      padding: 10px 0;
+  }
+
+  .navbar-brand img {
+      height: 100px; /* Logo lebih kecil di ponsel */
+  }
+
+  .nav-link {
+      font-size: 0.9rem; /* Font lebih kecil di perangkat kecil */
+  }
+
+  .navbar-toggler {
+      margin-right: 10px;
+  }
+
+  .navbar-nav .nav-item {
+      margin-bottom: 10px;
+  }
+}
+   /*Batas Header*/
+ /*Batas Header*/
+        .accordion-button {
+            background-color: #ffffff;
+            color: #333;
+            font-weight: bold;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: #dc3545;
+            color: white;
+        }
+        .accordion-body {
+            background-color: #fff8f8;
+        }
+
+        .container h1{
+          font-family: 'DM Serif Text', sans-serif;
+        }
+
+        footer {
+    background-color: #202326;
+    color: #ffffff;
+    margin-top: 100px;
+    padding: 40px 170px;
+    text-align: left;
+  }
+  
+  .logo-footer1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .img-logo1 {
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+  }
+  
+  .logo-footer2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .isi-footer1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: px;
+  }
+  
+  .kolom1, .kolom2, .kolom3 {
+    flex: 1;
+    min-width: 200px;
+    padding: 5px;
+  }
+  
+  .kolom2 {
+    margin-left: 40px;
+  }
+  
+  .kolom3 {
+    margin-left: -70px;
+  }
+  .kolom1 p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  
+  .social-icons a {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .social-icons a:hover {
+    color: #1da1f2;
+  }
+  
+  .kolom2 a, .kolom3 p {
+    color: #b8b8b8;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+  }
+  
+  .kolom2 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  
+  .hr-footer hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+  }
+  
+  .copyright {
+    text-align: center;
+    font-size: 14px;
+    color: #b8b8b8;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    footer {
+      padding: 40px 60px;
+    }
+  
+    .isi-footer1 {
+      gap: 10px;
+    }
+  
+    .kolom2 {
+      margin-left: 10px;
+    }
+  
+    .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 768px (Tablet Portrait) */
+  @media (max-width: 768px) {
+    .isi-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .kolom1, .kolom2, .kolom3 {
+      min-width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .kolom2, .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 480px (Smartphone) */
+  @media (max-width: 480px) {
+    .logo-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .img-logo1 {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
+  
+    .logo-footer2 {
+      font-size: 20px;
+    }
+  
+    footer {
+      padding: 20px 30px;
+    }
+  
+    .isi-footer1 {
+      gap: 15px;
+    }
+  }
+  /*batas Footer */
+
+    </style>
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="Halamanutamalogin.html">
+                <img src="logo.png" alt="KelasKita Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                            </svg>
+                            <span style="color: white;" class="ms-2">Michael</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- FAQ Accordion Section -->
+<section class="py-5">
+    <div class="container">
+        <h1 class="text-center mb-4">Frequently Asked Questions</h1>
+        <div class="accordion" id="faqAccordion">
+
+            <!-- FAQ 1 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq1">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                        Apa itu KelasKita?
+                    </button>
+                </h2>
+                <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <strong>KelasKita</strong> adalah platform yang menyediakan layanan pembelajaran dan diskusi online untuk mahasiswa dari berbagai jurusan.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq2">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                        Bagaimana cara mendaftar di KelasKita?
+                    </button>
+                </h2>
+                <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Anda dapat mendaftar dengan mengisi form pendaftaran yang tersedia di halaman <a href="#" class="text-danger">Daftar</a>. Masukkan data yang diperlukan, dan Anda siap bergabung!
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq3">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                        Apakah KelasKita gratis?
+                    </button>
+                </h2>
+                <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Ya, Anda dapat bergabung ke KelasKita secara gratis! Namun, ada beberapa kelas premium yang memerlukan pembayaran.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq4">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                        Bagaimana cara menghubungi tim KelasKita?
+                    </button>
+                </h2>
+                <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Anda dapat menghubungi kami melalui halaman <a href="contackUs.html" class="text-danger">Hubungi Kami</a> atau melalui email di <strong>support@kelaskita.com</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq5">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                    Apakah saya bisa membuat topic baru?
+                  </button>
+                </h2>
+                <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Ya, setelah Anda login, Anda dapat membuat topik diskusi baru. Pastikan topik Anda relevan dengan kategori yang tersedia di forum.
+                  </div>
+                </div>
+              </div>
+            
+              <!-- FAQ 6 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="faq6">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                    Apa saja aturan yang harus saya ikuti saat berdiskusi di forum?
+                  </button>
+                </h2>
+                <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                   Berikut adalah beberapa aturan penting di forum KelasKita:
+                   <li>Jangan mengirimkan spam, phishing, atau berbagai jenis spamming.</li>
+                  <li>Jangan mengirimkan komentar yang melanggar etiket dan/atau berbahaya.</li>
+                 <li>Jangan mengirimkan komentar yang berbahaya yang melanggar hak cipta.</li>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- FAQ 7 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="faq7">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                    Apakah saya bisa bertanya jika belum menemukan jawaban?
+                  </button>
+                </h2>
+                <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="faq7" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Tentu! Jika Anda tidak menemukan jawaban yang Anda cari, Anda dapat membuat pertanyaan baru di forum. Pastikan pertanyaan Anda jelas dan spesifik agar lebih mudah dijawab oleh anggota lain.
+                  </div>
+                </div>
+              </div>
+            
+              <!-- FAQ 8 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="faq8">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                    Apakah KelasKita tersedia dalam aplikasi mobile?
+                  </button>
+                </h2>
+                <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="faq8" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Ya, KelasKita tersedia dalam bentuk aplikasi mobile yang dapat diunduh melalui Google Play Store dan Apple App Store.
+                  </div>
+                </div>
+              </div>
+
+             <div class="accordion-item">
+              <h2 class="accordion-header" id="faq9">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                      Apakah data saya aman di KelasKita?
+                  </button>
+              </h2>
+              <div id="collapse9" class="accordion-collapse collapse" aria-labelledby="faq9" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                      Ya, KelasKita berkomitmen untuk menjaga keamanan data pribadi Anda. Kami menggunakan teknologi enkripsi untuk melindungi informasi Anda dari akses yang tidak sah.
+                  </div>
+              </div>
+          </div>
+
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="faq10">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
+                        Bagaimana jika saya mengalami masalah teknis?
+                    </button>
+                </h2>
+                <div id="collapse10" class="accordion-collapse collapse" aria-labelledby="faq10" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Jika Anda mengalami masalah teknis, Anda dapat menghubungi tim dukungan kami melalui email di <strong>support@kelaskita.com</strong> atau melalui fitur live chat yang tersedia di halaman dashboard Anda.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="logo-footer1">
+        <a href ="mainlogin.html">
+        <img src="kelass_kita-removebg-preview.png" alt="logo" class="img-logo1">
+        </a>
+        <span class="logo-footer2">KelasKita</span>
+    </div>
+
+    <div class="isi-footer1">
+        <div class="kolom1">
+            <p>"Belajar kapan saja, di mana saja. KelasKita hadir untuk mendukung perjalanan belajar Anda menuju masa depan yang lebih cerah."</p>
+            <div class="social-icons">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="kolom2">
+            <a href="aboutus1.html">Tentang Kami</a>
+            <a href="contackUs.html">Kontak Kami</a>
+            <a href="SyaratnKetentuan.html">Syarat & Ketentuan</a>
+            <a href="faq.html">FAQ</a>
+        </div>
+        <div class="kolom3">
+            <p><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+            <p><i class="fas fa-phone-alt"></i> 0812-3456-7890</p>
+            <p><i class="fas fa-envelope"></i> kelaskita@gmail.com</p>
+        </div>
+    </div>
+
+    <div class="hr-footer">
+        <hr />
+    </div>
+    <div class="copyright">© 2025 KelasKita. All Rights Reserved.</div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

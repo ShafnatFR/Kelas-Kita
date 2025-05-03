@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Blog Kelas Kita</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+    background-color: #B6252A;
+    height: 70px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-brand img {
+    height: 100px;
+    object-fit: contain;
+  }
+  
+  .nav-link {
+    color: white !important;
+  }
+  
+  .nav-link:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 576px) {
+    .navbar {
+        height: auto;
+        padding: 10px 0;
+    }
+  
+    .navbar-brand img {
+        height: 100px; /* Logo lebih kecil di ponsel */
+    }
+  
+    .nav-link {
+        font-size: 0.9rem; /* Font lebih kecil di perangkat kecil */
+    }
+  
+    .navbar-toggler {
+        margin-right: 10px;
+    }
+  
+    .navbar-nav .nav-item {
+        margin-bottom: 10px;
+    }
+  }
+
+
+        .footer {
+            background-color: #01796F;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+    background-color: #202326;
+    color: #ffffff;
+    padding: 40px 170px;
+    text-align: left;
+  }
+  
+  .logo-footer1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .img-logo1 {
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+  }
+  
+  .logo-footer2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .isi-footer1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: px;
+  }
+  
+  .kolom1, .kolom2, .kolom3 {
+    flex: 1;
+    min-width: 200px;
+    padding: 5px;
+  }
+  
+  .kolom2 {
+    margin-left: 40px;
+  }
+  
+  .kolom3 {
+    margin-left: -70px;
+  }
+  .kolom1 p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  
+  .social-icons a {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .social-icons a:hover {
+    color: #1da1f2;
+  }
+  
+  .kolom2 a, .kolom3 p {
+    color: #b8b8b8;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+  }
+  
+  .kolom2 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  
+  .hr-footer hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+  }
+  
+  .copyright {
+    text-align: center;
+    font-size: 14px;
+    color: #b8b8b8;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    footer {
+      padding: 40px 60px;
+    }
+  
+    .isi-footer1 {
+      gap: 10px;
+    }
+  
+    .kolom2 {
+      margin-left: 10px;
+    }
+  
+    .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 768px (Tablet Portrait) */
+  @media (max-width: 768px) {
+    .isi-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .kolom1, .kolom2, .kolom3 {
+      min-width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .kolom2, .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 480px (Smartphone) */
+  @media (max-width: 480px) {
+    .logo-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .img-logo1 {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
+  
+    .logo-footer2 {
+      font-size: 20px;
+    }
+  
+    footer {
+      padding: 20px 30px;
+    }
+  
+    .isi-footer1 {
+      gap: 15px;
+    }
+  }
+
+
+
+/* Hero Section */
+.hero-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.hero-author {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.hero-section img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.hero-section p {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.hero-section .btn {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.hero-section .btn:hover {
+    background-color: #0056b3;
+}
+
+/* Sidebar */
+.sidebar {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h4 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.list-group-item {
+    font-size: 0.9rem;
+    color: #212529;
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: #007bff;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* General Styles */
+.container {
+    max-width: 1200px;
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .hero-section img {
+        height: auto;
+    }
+
+    .sidebar h4 {
+        font-size: 1.1rem;
+    }
+
+    .list-group-item {
+        font-size: 0.85rem;
+    }
+}
+
+
+  
+
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="Halamanutamalogin.html">
+                    <img src="logo.png" alt="KelasKita Logo">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="kategori.html">Kategori</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
+                        <li class="nav-item"><a class="nav-link" href="Blog.html">Blog</a></li>
+                        <li class="nav-item"><a class="nav-link" href="pengumuman.html">Pengumuman</a></li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+                                <span style="color: white;" class="ms-2">Michael</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+     <!-- Main Content -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Articles -->
+        <div class="col-lg-8">
+            <h2 class="mb-4">Artikel</h2>
+
+            <!-- Artikel 1 -->
+            <div class="hero-section mb-4">
+                <h3 class="hero-title">Belajar dari 0 di Bootcamp Kelas Kita sampai Keterima Kerja di Perusahaan Impian</h3>
+                <p class="hero-author">Dave Emmanuel | Business Development Analyst di Shopee</p>
+                <img src="hero-image.jpg" alt="Dave Emmanuel" class="img-fluid rounded mb-3">
+                <p>Dave Emmanuel memulai perjalanan di dunia digital marketing dari titik awal yang sangat dasar. Saat ia memutuskan untuk bergabung dengan Bootcamp Digital Marketing Kelas Kita...</p>
+                <a href="#" class="btn btn-primary">Baca Selengkapnya</a>
+            </div>
+
+            <!-- Artikel 2 -->
+            <div class="hero-section mb-4">
+                <h3 class="hero-title">Panduan Memulai Karir di Data Science</h3>
+                <p class="hero-author">Jane Doe | Data Scientist di Google</p>
+                <img src="data-science.jpg" alt="Data Science" class="img-fluid rounded mb-3">
+                <p>Panduan untuk pemula yang ingin terjun ke dunia data science, lengkap dengan tips dan trik yang bisa Anda gunakan...</p>
+                <a href="#" class="btn btn-primary">Baca Selengkapnya</a>
+            </div>
+
+            <!-- Artikel 3 -->
+            <div class="hero-section mb-4">
+                <h3 class="hero-title">Meningkatkan Keamanan Data dengan Cybersecurity</h3>
+                <p class="hero-author">John Smith | Cybersecurity Expert</p>
+                <img src="" alt="Cybersecurity" class="img-fluid rounded mb-3">
+                <p>Pelajari pentingnya keamanan data di era digital serta langkah-langkah untuk melindungi privasi Anda...</p>
+                <a href="#" class="btn btn-primary">Baca Selengkapnya</a>
+            </div>
+
+            <!-- Artikel 4 -->
+            <div class="hero-section mb-4">
+                <h3 class="hero-title">Tips & Trik Meningkatkan Karir di UI/UX Design</h3>
+                <p class="hero-author">Emily Clark | UI/UX Designer di Adobe</p>
+                <img src="uiux-design.jpg" alt="UI/UX Design" class="img-fluid rounded mb-3">
+                <p>Pelajari bagaimana merancang pengalaman pengguna yang optimal dan meningkatkan daya tarik desain Anda...</p>
+                <a href="#" class="btn btn-primary">Baca Selengkapnya</a>
+            </div>
+
+            <!-- Artikel 5 -->
+            <div class="hero-section mb-4">
+                <h3 class="hero-title">Belajar Pemrograman Web dengan Mudah</h3>
+                <p class="hero-author">Michael Anderson | Web Developer di Microsoft</p>
+                <img src="web-development.jpg" alt="Web Development" class="img-fluid rounded mb-3">
+                <p>Panduan lengkap belajar HTML, CSS, dan JavaScript untuk membangun situs web profesional...</p>
+                <a href="#" class="btn btn-primary">Baca Selengkapnya</a>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <h4 class="mb-3">Panduan Lengkap</h4>
+            <div class="list-group">
+                <a href="#" class="list-group-item">Panduan Lengkap Akuntansi</a>
+                <a href="#" class="list-group-item">Sales & Business Development</a>
+                <a href="#" class="list-group-item">Panduan Lengkap Graphic Design</a>
+                <a href="#" class="list-group-item">Product Management: Definisi dan Tips</a>
+                <a href="#" class="list-group-item">Software Engineering: Pengertian & Skill</a>
+                <a href="#" class="list-group-item">Digital Marketing Basics</a>
+                <a href="#" class="list-group-item">Cybersecurity: Pentingnya Keamanan Data</a>
+                <a href="#" class="list-group-item">Machine Learning untuk Pemula</a>
+                <a href="#" class="list-group-item">Tips & Trik Karir di Industri Teknologi</a>
+                <a href="#" class="list-group-item">Belajar Pemrograman Web dengan Mudah</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <footer>
+        <div class="logo-footer1">
+            <img src="logo.png" alt="logo" class="img-logo1">
+            <span class="logo-footer2">KelasKita</span>
+        </div>
+
+        <div class="isi-footer1">
+            <div class="kolom1">
+                <p>"Belajar kapan saja, di mana saja. KelasKita hadir untuk mendukung perjalanan belajar Anda menuju masa depan yang lebih cerah."</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="kolom2">
+                <a href="aboutus1.html">Tentang Kami</a>
+                <a href="contackUs.html">Kontak Kami</a>
+                <a href="SyaratnKetentuan.html">Syarat & Ketentuan</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+            <div class="kolom3">
+                <p><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+                <p><i class="fas fa-phone-alt"></i> 0812-3456-7890</p>
+                <p><i class="fas fa-envelope"></i> kelaskita@gmail.com</p>
+            </div>
+        </div>
+
+        <div class="hr-footer">
+            <hr />
+        </div>
+        <div class="copyright">© 2025 KelasKita. All Rights Reserved.</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

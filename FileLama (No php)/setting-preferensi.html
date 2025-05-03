@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="custom.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+        <title>Profil Siswa</title>
+    </head>
+    <body class="d-flex flex-column min-vh-100">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <header>
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="Halamanutamalogin.html">
+                        <img src="logo.png" alt="KelasKita Logo">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                    </svg>
+                                    <span style="color: white;" class="ms-2">Michael</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+       
+        <main class="flex-grow-1 container my-4">
+            <!-- Profil Siswa -->
+            <div class="container my-5">
+                <div class="card">
+                <div class="row g-0">
+                    <!-- Bagian Foto Profil -->
+                    <div class="col-12 col-md-3 d-flex flex-column align-items-center pt-3">
+                        <!-- Gambar di tengah -->
+                        <div class="text-center">
+                            <img src="fotoaliq.jpg" class="img-fluid rounded-circle w-75 mb-2" alt="Profile Picture">
+                            <p class="fw-bold mb-3">Michael</p>
+                        </div>
+                        <!-- Tombol Rata Kanan Kiri -->
+                        <div class="d-grid gap-2 w-75 mb-4">
+                            <a href="setting-profil.html" class="btn btn-outline-danger">Profil</a>
+                            <a href="setting-preferensi.html" class="btn btn-danger active">Preferensi</a>
+                            <a href="setting-notifikasi.html" class="btn btn-outline-danger">Notifikasi</a>
+                            <a href="setting-hubungkanAkun.html" class="btn btn-outline-danger">Hubungkan Akun</a>
+                            <a href="setting-keluar.html" class="btn btn-outline-danger">Keluar</a>
+                            <a href="setting-tutupAkun.html" class="btn btn-outline-danger">Tutup Akun</a>
+                        </div>
+                    </div>
+                    <!-- Bagian Informasi Profil -->
+                    <div class="col-12 col-md-9 p-3">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h3 class="mb-4"><strong>Preferensi Akun</strong></h3>
+                            </div>
+                            <div class="mb-3">
+                                <label for="languageSelect" class="form-label">Bahasa</label>
+                                <select id="languageSelect" class="form-select">
+                                    <option value="id">Bahasa Indonesia</option>
+                                    <option value="en">English</option>
+                                    <option value="jp">日本語 (Japanese)</option>
+                                    <option value="zh">中文 (Mandarin)</option>
+                                    <option value="es">Español (Spanish)</option>
+                                    <option value="fr">Français (French)</option>
+                                    <option value="de">Deutsch (German)</option>
+                                    <option value="ar">العربية (Arabic)</option>
+                                    <option value="ru">Русский (Russian)</option>
+                                    <option value="hi">हिंदी (Hindi)</option>
+                                    <option value="ko">한국어 (Korean)</option>
+                                    <option value="pt">Português (Portuguese)</option>
+                                    <option value="it">Italiano (Italian)</option>
+                                    <option value="th">ไทย (Thai)</option>
+                                    <option value="vi">Tiếng Việt (Vietnamese)</option>
+                                    <option value="ms">Bahasa Melayu (Malay)</option>
+                                    <option value="ta">தமிழ் (Tamil)</option>
+                                    <option value="bn">বাংলা (Bengali)</option>
+                                    <option value="nl">Nederlands (Dutch)</option>
+                                    <option value="tr">Türkçe (Turkish)</option>
+                                    <option value="pl">Polski (Polish)</option>
+                                    <option value="sv">Svenska (Swedish)</option>
+                                    <option value="no">Norsk (Norwegian)</option>
+                                    <option value="fi">Suomi (Finnish)</option>
+                                    <option value="da">Dansk (Danish)</option>
+                                    <option value="el">Ελληνικά (Greek)</option>
+                                    <option value="he">עברית (Hebrew)</option>
+                                    <option value="uk">Українська (Ukrainian)</option>
+                                    <option value="cs">Čeština (Czech)</option>
+                                    <option value="ro">Română (Romanian)</option>
+                                    <option value="hu">Magyar (Hungarian)</option>
+                                    <option value="sk">Slovenčina (Slovak)</option>
+                                    <option value="bg">Български (Bulgarian)</option>
+                                    <option value="sr">Српски (Serbian)</option>
+                                    <option value="hr">Hrvatski (Croatian)</option>
+                                    <option value="sl">Slovenščina (Slovenian)</option>
+                                    <option value="af">Afrikaans (Afrikaans)</option>
+                                    <option value="sw">Kiswahili (Swahili)</option>
+                                    <option value="ur">اردو (Urdu)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="timezoneSelect" class="form-label">Zona Waktu</label>
+                                <select id="timezoneSelect" class="form-select">
+                                    <!-- Asia -->
+                                    <optgroup label="Asia">
+                                        <option value="Asia/Jakarta">(GMT+07:00) Jakarta</option>
+                                        <option value="Asia/Singapore">(GMT+08:00) Singapore</option>
+                                        <option value="Asia/Tokyo">(GMT+09:00) Tokyo</option>
+                                        <option value="Asia/Seoul">(GMT+09:00) Seoul</option>
+                                        <option value="Asia/Shanghai">(GMT+08:00) Shanghai</option>
+                                        <option value="Asia/Kolkata">(GMT+05:30) Kolkata</option>
+                                        <option value="Asia/Dubai">(GMT+04:00) Dubai</option>
+                                        <option value="Asia/Bangkok">(GMT+07:00) Bangkok</option>
+                                        <option value="Asia/Kuala_Lumpur">(GMT+08:00) Kuala Lumpur</option>
+                                        <option value="Asia/Manila">(GMT+08:00) Manila</option>
+                                    </optgroup>
+                              
+                                    <!-- Europe -->
+                                    <optgroup label="Europe">
+                                        <option value="Europe/London">(GMT+00:00) London</option>
+                                        <option value="Europe/Paris">(GMT+01:00) Paris</option>
+                                        <option value="Europe/Berlin">(GMT+01:00) Berlin</option>
+                                        <option value="Europe/Moscow">(GMT+03:00) Moscow</option>
+                                        <option value="Europe/Rome">(GMT+01:00) Rome</option>
+                                        <option value="Europe/Madrid">(GMT+01:00) Madrid</option>
+                                        <option value="Europe/Athens">(GMT+02:00) Athens</option>
+                                        <option value="Europe/Warsaw">(GMT+01:00) Warsaw</option>
+                                    </optgroup>
+                              
+                                  <!-- America -->
+                                  <optgroup label="America">
+                                      <option value="America/New_York">(GMT-05:00) New York</option>
+                                      <option value="America/Chicago">(GMT-06:00) Chicago</option>
+                                      <option value="America/Denver">(GMT-07:00) Denver</option>
+                                      <option value="America/Los_Angeles">(GMT-08:00) Los Angeles</option>
+                                      <option value="America/Sao_Paulo">(GMT-03:00) São Paulo</option>
+                                      <option value="America/Mexico_City">(GMT-06:00) Mexico City</option>
+                                      <option value="America/Toronto">(GMT-05:00) Toronto</option>
+                                      <option value="America/Lima">(GMT-05:00) Lima</option>
+                                  </optgroup>
+                              
+                                  <!-- Africa -->
+                                  <optgroup label="Africa">
+                                      <option value="Africa/Lagos">(GMT+01:00) Lagos</option>
+                                      <option value="Africa/Cairo">(GMT+02:00) Cairo</option>
+                                      <option value="Africa/Johannesburg">(GMT+02:00) Johannesburg</option>
+                                      <option value="Africa/Nairobi">(GMT+03:00) Nairobi</option>
+                                      <option value="Africa/Casablanca">(GMT+00:00) Casablanca</option>
+                                  </optgroup>
+                              
+                                  <!-- Australia -->
+                                  <optgroup label="Australia">
+                                      <option value="Australia/Sydney">(GMT+11:00) Sydney</option>
+                                      <option value="Australia/Melbourne">(GMT+11:00) Melbourne</option>
+                                      <option value="Australia/Perth">(GMT+08:00) Perth</option>
+                                      <option value="Australia/Adelaide">(GMT+10:30) Adelaide</option>
+                                      <option value="Australia/Brisbane">(GMT+10:00) Brisbane</option>
+                                  </optgroup>
+                              
+                                  <!-- Others -->
+                                  <optgroup label="Others">
+                                      <option value="Pacific/Auckland">(GMT+13:00) Auckland</option>
+                                      <option value="Pacific/Fiji">(GMT+12:00) Fiji</option>
+                                      <option value="Pacific/Honolulu">(GMT-10:00) Honolulu</option>
+                                      <option value="Pacific/Guam">(GMT+10:00) Guam</option>
+                                  </optgroup>
+                                </select>
+                                <div class="form-check form-switch form-check-reverse d-flex">
+                                    <div class="col-12 col-md-9 text-start mt-0">
+                                        <label class="form-check-label" for="flexSwitchCheckReverse"><strong>Balasan ke Komentar</strong></label>
+                                        <p>Memberikan notifikasi ketika seseorang membalas
+                                            komentar pengguna.</p>
+                                    </div>
+                                        <div class="col-md-3">
+                                            <input class="form-check-input mt-5" type="checkbox" id="flexSwitchCheckReverse">
+                                        </div>
+                                </div>
+                            </div>                       
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </main>
+
+        <footer>
+            <div class="logo-footer1">
+                <a href ="mainlogin.html">
+                <img src="kelass_kita-removebg-preview.png" alt="logo" class="img-logo1">
+                </a>
+                <span class="logo-footer2">KelasKita</span>
+            </div>
+    
+            <div class="isi-footer1">
+                <div class="kolom1">
+                    <p>"Belajar kapan saja, di mana saja. KelasKita hadir untuk mendukung perjalanan belajar Anda menuju masa depan yang lebih cerah."</p>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="kolom2">
+                    <a href="aboutus1.html">Tentang Kami</a>
+                    <a href="contackUs.html">Kontak Kami</a>
+                    <a href="SyaratnKetentuan.html">Syarat & Ketentuan</a>
+                    <a href="faq.html">FAQ</a>
+                </div>
+                <div class="kolom3">
+                    <p><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+                    <p><i class="fas fa-phone-alt"></i> 0812-3456-7890</p>
+                    <p><i class="fas fa-envelope"></i> kelaskita@gmail.com</p>
+                </div>
+            </div>
+    
+            <div class="hr-footer">
+                <hr />
+            </div>
+            <div class="copyright">© 2025 KelasKita. All Rights Reserved.</div>
+        </footer>
+    </body>
+</html>

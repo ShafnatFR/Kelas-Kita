@@ -1,0 +1,302 @@
+.navbar {
+  background-color: #B6252A;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 100px;
+  object-fit: contain;
+}
+
+.nav-link {
+  color: white !important;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .navbar {
+      height: auto;
+      padding: 10px 0;
+  }
+
+  .navbar-brand img {
+      height: 100px; /* Logo lebih kecil di ponsel */
+  }
+
+  .nav-link {
+      font-size: 0.9rem; /* Font lebih kecil di perangkat kecil */
+  }
+
+  .navbar-toggler {
+      margin-right: 10px;
+  }
+
+  .navbar-nav .nav-item {
+      margin-bottom: 10px;
+  }
+}
+
+body {
+    background-color: #f4f5f7;
+    font-family: Arial, sans-serif;
+}
+
+.chat-container {
+    max-width: 900px;
+    margin: 20px auto;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.chat-header {
+    background-color: #B6252A;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.chat-messages {
+    height: 500px;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #ddd;
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.chat-message img {
+    max-width: 250px;
+    max-height: 150px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.chat-message video {
+    max-width: 300px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.chat-message .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chat-message .message-content {
+    max-width: 75%;
+}
+
+.chat-message .message-content .sender {
+    font-weight: bold;
+    color: #333;
+}
+
+.chat-message .message-content .text {
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 5px;
+    word-wrap: break-word;
+}
+
+.chat-footer {
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+}
+
+.chat-footer input[type="text"] {
+    flex: 1;
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+.chat-footer .btn {
+    border-radius: 50%;
+    padding: 10px 15px;
+    font-size: 1.2rem;
+}
+
+.chat-footer .btn-file {
+    border-radius: 50%;
+    padding: 10px 15px;
+    margin-left: 10px;
+    font-size: 1.2rem;
+}
+
+.chat-footer input[type="file"] {
+    display: none;
+}
+
+/* bagian Footer */
+
+footer {
+    background-color: #202326;
+    color: #ffffff;
+    padding: 40px 170px;
+    text-align: left;
+  }
+  
+  .logo-footer1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .img-logo1 {
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+  }
+  
+  .logo-footer2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .isi-footer1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: px;
+  }
+  
+  .kolom1, .kolom2, .kolom3 {
+    flex: 1;
+    min-width: 200px;
+    padding: 5px;
+  }
+  
+  .kolom2 {
+    margin-left: 40px;
+  }
+  
+  .kolom3 {
+    margin-left: -70px;
+  }
+  .kolom1 p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  
+  .social-icons a {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .social-icons a:hover {
+    color: #1da1f2;
+  }
+  
+  .kolom2 a, .kolom3 p {
+    color: #b8b8b8;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+  }
+  
+  .kolom2 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  
+  .hr-footer hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+  }
+  
+  .copyright {
+    text-align: center;
+    font-size: 14px;
+    color: #b8b8b8;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    footer {
+      padding: 40px 60px;
+    }
+  
+    .isi-footer1 {
+      gap: 10px;
+    }
+  
+    .kolom2 {
+      margin-left: 10px;
+    }
+  
+    .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 768px (Tablet Portrait) */
+  @media (max-width: 768px) {
+    .isi-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .kolom1, .kolom2, .kolom3 {
+      min-width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .kolom2, .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 480px (Smartphone) */
+  @media (max-width: 480px) {
+    .logo-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .img-logo1 {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
+  
+    .logo-footer2 {
+      font-size: 20px;
+    }
+  
+    footer {
+      padding: 20px 30px;
+    }
+  
+    .isi-footer1 {
+      gap: 15px;
+    }
+  }
+  /*batas Footer */
+  

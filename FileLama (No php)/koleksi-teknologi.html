@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="custom.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+        <title>Profil Siswa</title>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <a class="navbar-brand" href="Halamanutamalogin.html">
+                        <img src="logo.png" alt="KelasKita Logo">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
+                            <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                    </svg>
+                                    <span style="color: white;" class="ms-2">Michael</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+       
+    
+    <!-- Profil Siswa -->
+    <div class="container my-5">
+        <div class="card mb-0">
+            <div class="row g-0">
+                <!-- Bagian Foto Profil -->
+                <div class="col-12 col-md-4 d-flex justify-content-center align-items-center">
+                    <img src="fotoaliq.jpg" class="img-fluid rounded-circle" alt="Profile Picture">
+                </div>
+                <!-- Bagian Informasi Profil -->
+                <div class="col-12 col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Profil Siswa</strong></h5>
+                        <div class="row">
+                            <!-- Baris 1 -->
+                            <div class="col-12 col-sm-6">
+                                <p><strong>Nama:</strong> Michael</p>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                            <p><strong>Email:</strong> michael@gmail.com</p>
+                        </div>
+                        <!-- Baris 2 -->
+                        <div class="col-12 col-sm-6">
+                            <p><strong>Kelas:</strong> D3SI 48-04</p>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <p><strong>Phone:</strong> (+62) 8123456789</p>
+                        </div>
+                        <!-- Baris 3 -->
+                        <div class="col-12 col-sm-6">
+                            <p><strong>Program Studi:</strong> D3 Sistem Informasi</p>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <p><strong>Sosmed:</strong> @michael</p>
+                        </div>
+                        <!-- Baris 4 -->
+                        <div class="col-12 col-sm-6">
+                            <p><strong>Fakultas:</strong> Fakultas Ilmu Terapan</p>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <p><strong>LinkedIn:</strong></p>
+                        </div>
+                        <!-- Baris 5 -->
+                        <div class="col-12">
+                            <p><strong>Universitas:</strong> Telkom University</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="container mt-5">
+        <!-- Responsif: Center untuk mobile, Left untuk tablet/laptop -->
+         <div class="text-start mb-2">
+            <h2>Teknologi</h2>
+             <a class="btn btn-outline-danger active">Sering dipilih</a>
+             <a class="btn btn-outline-danger">Favorit</a>
+             <a class="btn btn-outline-danger">A-Z</a>
+             <a class="btn btn-outline-danger">Terbanyak-terdikit</a>
+             <a class="btn btn-outline-danger">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                     <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                    </svg>
+                </a>
+            </div>
+        <div class="row justify-content-center justify-content-md-start gap-10">
+            <!-- Web Programming Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="UID.jpg" class="card-img-top" alt="Web Programming">
+                    <div class="card-body">
+                        <h5 class="card-title">Web Programming</h5>
+                        <p class="card-text">Belajar membangun website dengan HTML, CSS, JavaScript, dan PHP.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Data Science Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="950321c11d_50173256_data-science-1.jpg" class="card-img-top" alt="Data Science">
+                    <div class="card-body">
+                        <h5 class="card-title">Data Science</h5>
+                        <p class="card-text">Pelajari cara menganalisis data dan membangun model prediksi.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- UI/UX Design Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="1_VGKkZwpf2Dg1m6NG7NTr5A.jpg" class="card-img-top" alt="UI/UX Design">
+                    <div class="card-body">
+                        <h5 class="card-title">UI/UX Design</h5>
+                        <p class="card-text">Belajar merancang pengalaman pengguna dan antarmuka yang ramah.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Mobile App Development Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="OIP.jpeg" class="card-img-top" alt="Mobile App Development">
+                    <div class="card-body">
+                        <h5 class="card-title">Mobile App Development</h5>
+                        <p class="card-text">Pelajari dasar pengembangan aplikasi mobile menggunakan Android Studio dan Flutter.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Cybersecurity Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="OIP (1).jpeg" class="card-img-top" alt="Cybersecurity">
+                    <div class="card-body">
+                        <h5 class="card-title">Cybersecurity</h5>
+                        <p class="card-text">Belajar teknik keamanan siber untuk melindungi data dan sistem dari serangan cyber.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Machine Learning Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <img src="OIP (2).jpeg" class="card-img-top" alt="Machine Learning">
+                    <div class="card-body">
+                        <h5 class="card-title">Machine Learning</h5>
+                        <p class="card-text">Pahami dasar-dasar machine learning dan kembangkan model AI untuk prediksi.</p>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Graphic Design Course Card -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card d-flex flex-column">
+                    <div class="text-center mt-5 " type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-center"><a data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1" class="stretched-link text-decoration-none">Tambahkan Kelas Baru</a></h5>
+                        <hr>
+                        <p class="card-text">Klik card ini untuk menambahkan kelas baru ke dalam koleksi ini.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <div class="collapse multi-collapse" id="multiCollapseExample1">
+                <div class="card card-body">
+                    <div class="card-title text-center">
+                        <h3>Tambahkan Kelas</h3>
+                    </div>
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Kelas terdaftar</label>
+                            <select class="form-select" id="inputGroupSelect01">
+                              <option selected>Pilih Kelas</option>
+                              <option value="1">Alpro</option>
+                              <option value="2">Jarkom</option>
+                              <option value="3">PTI</option>
+                            </select>
+                          </div>
+                          <div class="mb-3 mt-3 text-center">
+                            <a href="eksplore.html"><h6>Tambah lebih banyak kelas?</h6></a>
+                          </div>
+
+
+                          <div class="mb-3 justify-content-end align-items-end text-center">
+                            <button type="submit" class="btn btn-outline-danger mb-3">Selesai</button>
+                          </div>                    
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+    
+    
+    <footer>
+        <div class="logo-footer1">
+            <a href ="mainlogin.html">
+            <img src="kelass_kita-removebg-preview.png" alt="logo" class="img-logo1">
+            </a>
+            <span class="logo-footer2">KelasKita</span>
+        </div>
+
+        <div class="isi-footer1">
+            <div class="kolom1">
+                <p>"Belajar kapan saja, di mana saja. KelasKita hadir untuk mendukung perjalanan belajar Anda menuju masa depan yang lebih cerah."</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="kolom2">
+                <a href="aboutus1.html">Tentang Kami</a>
+                <a href="contackUs.html">Kontak Kami</a>
+                <a href="SyaratnKetentuan.html">Syarat & Ketentuan</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+            <div class="kolom3">
+                <p><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+                <p><i class="fas fa-phone-alt"></i> 0812-3456-7890</p>
+                <p><i class="fas fa-envelope"></i> kelaskita@gmail.com</p>
+            </div>
+        </div>
+
+        <div class="hr-footer">
+            <hr />
+        </div>
+        <div class="copyright">© 2025 KelasKita. All Rights Reserved.</div>
+        </footer>
+        </body>
+</html>
