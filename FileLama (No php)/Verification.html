@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            background-image: url('Tanpa judul (1920 x 1080 piksel) (1).png');
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            transition: 0.3s;
+            width: 90%;
+            max-width: 400px;
+            background-color: #fff;
+        }
+
+        .text-center {
+            color: red;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background-color: red;
+            color: white;
+            font-weight: 500;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .code-inputs .form-control {
+            flex: 1;
+            min-width: 40px;
+            height: auto;
+            font-size: 2vw;
+            text-align: center;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            margin: 0 0.5%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .code-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 1%;
+        }
+
+        .resend-link {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+            color: red;
+        }
+
+        @media (max-width: 320px) {
+            .code-inputs .form-control {
+                font-size: 3.5vw;
+                min-width: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="text-center">Verifikasi</h2>
+                <p>6-digit kode konfirmasi telah dikirimkan ke email anda</p>
+                
+                <form id="verificationForm">
+                    <div class="code-inputs form-group">
+                        <input type="text" class="form-control" maxlength="1" required>
+                        <input type="text" class="form-control" maxlength="1" required>
+                        <input type="text" class="form-control" maxlength="1" required>
+                        <input type="text" class="form-control" maxlength="1" required>
+                        <input type="text" class="form-control" maxlength="1" required>
+                        <input type="text" class="form-control" maxlength="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Kirim</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="resend-link">Kirim Ulang</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('verificationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const inputs = document.querySelectorAll('.code-inputs .form-control');
+            let code = '';
+
+            for (let input of inputs) {
+                if (input.value === '') {
+                    alert('Please complete the code before submitting.');
+                    return;
+                }
+                code += input.value;
+            }
+            window.location.href = 'PassBaru.html';
+
+            alert(`Verification successful! Your code is: ${code}`);
+
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

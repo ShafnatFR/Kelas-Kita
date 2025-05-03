@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styless.css">
+</head>
+<body>  
+    <div class="container-fluid vh-100">
+        <div class="row h-100">
+            <div class="col-md-7 d-flex flex-column justify-content-center align-items-center left-section1">
+                <h2 class="font-weight-bold text-danger">Sign In</h2>
+                <img src="Google1.png" alt="Google1" width="50" class="my-3">
+
+                <form class="w-75 mt-3" action="mainlogin.html" method="get">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Masukan Username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Masukan Email Anda" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Masukan Password" required>
+                    </div>
+                    <div class="text-right">
+                        <a href="ForgetPass.html" id="forgot-password" class="forgot-password">Lupa Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-block rounded-pill mt-3">Sign In</button>
+
+
+                    <div class="text-left mt-3">
+                        <a href="mainlogin.html" id="forgot-password" class="back">Kembali ke Halaman Utama</a>
+                    </div>
+                </form>
+                
+            </div>        
+        
+            
+            <div class="col-md-5 d-flex flex-column justify-content-center align-items-center right-section1">
+                <h1 class="display-4 font-weight-bold text-center">Hallo SobatKelas</h1>
+                <p class="text-center">Kami sangat senang anda berada dihalaman.<br>Ayo belajar dan kolaborasi bersama.</p>
+
+                <a href="HalamanSignUp.html" id="sign-up" class="btn btn-outline-light rounded-pill px-4 mt-3">Sign Up</a>
+            </div>
+        </div>
+    </div>
+    
+    
+</body>
+</html>

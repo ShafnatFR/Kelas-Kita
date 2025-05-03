@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styless.css">
+</head>
+<body>
+    <div class="container-fluid vh-100">
+        <div class="row h-100">
+            <!-- Left Side (Welcome Back) -->
+            <div class="col-md-5 d-flex flex-column justify-content-center align-items-center text-white left-section">
+                <h1 class="display-4 font-weight-bold text-center">Selamat Datang Kembali!</h1>
+                <p class="text-center">Untuk tetap terhubung, tolong log in dengan akun anda.</p>
+                <a href="HalamanSignIn.html" class="btn btn-outline-light rounded-pill px-4 mt-3">Sign In</a>
+            </div>
+            <!-- Right Side (Create Account) -->
+            <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
+                <h2 class="font-weight-bold text-danger">Buat Akun KelasKita</h2>
+                <img src="Google1.png" alt="Google Logo" width="50" class="my-3">
+
+                <form class="w-75 mt-3" action="HalamanSignIn.html" method="get">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Masukan Username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Masukan Email Anda" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="Masukan Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-block rounded-pill mt-3">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

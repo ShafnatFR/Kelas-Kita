@@ -1,0 +1,307 @@
+
+
+.navbar {
+    background-color: #B6252A;
+    height: 70px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-brand img {
+    height: 100px;
+    object-fit: contain;
+  }
+  
+  .nav-link {
+    color: white !important;
+  }
+  
+  .nav-link:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 576px) {
+    .navbar {
+        height: auto;
+        padding: 10px 0;
+    }
+  
+    .navbar-brand img {
+        height: 100px; /* Logo lebih kecil di ponsel */
+    }
+  
+    .nav-link {
+        font-size: 0.9rem; /* Font lebih kecil di perangkat kecil */
+    }
+  
+    .navbar-toggler {
+        margin-right: 10px;
+    }
+  
+    .navbar-nav .nav-item {
+        margin-bottom: 10px;
+    }
+  }
+
+.input-group {
+    border: 2px solid #B6252A;
+    border-radius: 25px;
+    overflow: hidden;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.input-group-text {
+    background-color: #B6252A;
+    color: white;
+    border: none;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+
+.square-image-container {
+position: relative;
+width: 100%;
+padding-top: 100%; 
+overflow: hidden;
+border-radius: 10px; 
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+.square-image-container img {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+/* bagian Footer */
+
+footer {
+    background-color: #202326;
+    color: #ffffff;
+    padding: 40px 170px;
+    text-align: left;
+  }
+  
+  .logo-footer1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .img-logo1 {
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+  }
+  
+  .logo-footer2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .isi-footer1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: px;
+  }
+  
+  .kolom1, .kolom2, .kolom3 {
+    flex: 1;
+    min-width: 200px;
+    padding: 5px;
+  }
+  
+  .kolom2 {
+    margin-left: 40px;
+  }
+  
+  .kolom3 {
+    margin-left: -70px;
+  }
+  .kolom1 p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  
+  .social-icons a {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .social-icons a:hover {
+    color: #1da1f2;
+  }
+  
+  .kolom2 a, .kolom3 p {
+    color: #b8b8b8;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+  }
+  
+  .kolom2 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  
+  .hr-footer hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+  }
+  
+  .copyright {
+    text-align: center;
+    font-size: 14px;
+    color: #b8b8b8;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    footer {
+      padding: 40px 60px;
+    }
+  
+    .isi-footer1 {
+      gap: 10px;
+    }
+  
+    .kolom2 {
+      margin-left: 10px;
+    }
+  
+    .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 768px (Tablet Portrait) */
+  @media (max-width: 768px) {
+    .isi-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .kolom1, .kolom2, .kolom3 {
+      min-width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .kolom2, .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 480px (Smartphone) */
+  @media (max-width: 480px) {
+    .logo-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .img-logo1 {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
+  
+    .logo-footer2 {
+      font-size: 20px;
+    }
+  
+    footer {
+      padding: 20px 30px;
+    }
+  
+    .isi-footer1 {
+      gap: 15px;
+    }
+  }
+  /*batas Footer */
+  
+.carousel-inner img {
+width: 100%;
+max-height: 500px; 
+object-fit: cover;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 992px) {
+.carousel-inner img {
+max-height: 300px; 
+}
+}
+
+@media (max-width: 768px) {
+.carousel-inner img {
+max-height: 250px; 
+}
+}
+
+@media (max-width: 576px) {
+.carousel-inner img {
+max-height: 200px; 
+}
+}
+
+
+/* Indikator Carousel */
+.carousel-indicators [data-bs-target] {
+    width: 12px; 
+    height: 12px;
+    border-radius: 50%; 
+    background-color: #fff; 
+    border: 2px solid #B6252A; 
+}
+
+.carousel-indicators .active {
+    background-color: #B6252A; 
+}
+
+/* Tombol Kontrol Carousel */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5); 
+    border-radius: 50%;
+    padding: 10px;
+    border: 2px solid #fff; 
+}
+
+.carousel-control-prev-icon:hover,
+.carousel-control-next-icon:hover {
+    background-color: #B6252A; 
+    border-color: #B6252A; 
+}
+
+/* Lebar Carousel */
+#carouselExampleIndicators {
+    max-width: 1400px; 
+    margin: 0 auto; 
+}

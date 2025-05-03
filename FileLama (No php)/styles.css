@@ -1,0 +1,158 @@
+/* General Styles */
+body {
+    background-image: url('Tanpa\ judul\ \(1920\ x\ 1080\ piksel\)\ \(1\).png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+/* Container Styles */
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Heading Styles */
+h2 {
+    margin-bottom: 15px;
+    color: red;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+/* Paragraph Styles */
+p {
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Form Group Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Input Styles */
+input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease-in-out;
+}
+
+input[type="email"]:focus {
+    outline: none;
+    border-color: red;
+}
+
+/* Button Styles */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease-in-out;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    background-color: red;
+}
+
+/* Link Styles */
+a {
+    display: block;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #e74c3c;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+}
+
+a:hover {
+    color: red;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    body {
+        padding: 20px;
+    }
+    h2 {
+        font-size: 22px;
+    }
+    p {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 25px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    p {
+        font-size: 12px;
+    }
+    input[type="email"] {
+        padding: 10px;
+        font-size: 14px;
+    }
+    .btn {
+        padding: 10px;
+        font-size: 14px;
+    }
+    a {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    h2 {
+        font-size: 18px;
+    }
+    p {
+        font-size: 12px;
+    }
+    input[type="email"] {
+        padding: 8px;
+        font-size: 12px;
+    }
+    .btn {
+        padding: 8px;
+        font-size: 12px;
+    }
+    a {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Serif+Text&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="ContactUs.css">
+
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="Halamanutamalogin.html">
+                <img src="logo.png" alt="KelasKita Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                            </svg>
+                            <span style="color: white;" class="ms-2">Michael</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+  <!-- Header Section -->
+  <section class="introBannerHolder d-flex w-100 bgCover " style="background-image: url('gambar\ banner\.png');">
+    <div class="container text-center">
+      <h3 class="display-5">Kontak Kami</h3>
+      <p class="text-muted text-center">
+        <a href="mainlogin.html">Beranda</a> / Kontak Kami
+      </p>
+    </div>
+  </section>
+
+  <div class="container-box text-center display-flex">
+    <h3>Kontak</h3>
+    <div class="contact">
+      <div class="contact-card col-md-4">
+          <i class="fas fa-map-marker-alt"></i>
+          <h3>Alamat</h3>
+          <p>Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+        </div>
+        <div class="contact-card col-md-4">
+          <i class="fas fa-phone-alt"></i>
+          <h3>Telepon</h3>
+          <p>0812-3456-7890</p>
+      </div>
+      <div class="contact-card col-md-4">
+          <i class="fas fa-envelope"></i>
+          <h3>Email</h3>
+          <p>kelaskita@gmail.com</p>
+    </div>
+  </div>
+</div>
+
+
+<div class="container-box mt-5">
+  <div class="contact-form">
+    <h3>Hubungi Kami</h3>
+    <p>Silahkan isi form di bawah ini untuk menghubungi kami.</p>
+    <form id="contactForm" class="row g-3">
+      <div class="col-md-6">
+        <label for="inputName4" class="form-label">Nama Lengkap</label>
+        <input type="text" class="form-control" id="inputName4" required>
+      </div>
+      <div class="col-md-6">
+        <label for="inputEmail4" class="form-label">Email</label>
+        <input type="email" class="form-control" id="inputEmail4" placeholder="emailanda@gmail.com" required>
+      </div>
+      <div class="col-md-12">
+        <label for="inputPhone4" class="form-label">Nomor HP</label>
+        <input type="text" class="form-control" id="inputPhone4" placeholder="081234567891" required>
+      </div>
+      <div class="col-12">
+        <label for="exampleFormControlTextarea1" class="form-label">Pesan</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" required></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-danger">Kirim</button>
+      </div>
+    </form>
+
+    <!-- Alert sukses -->
+    <div class="alert alert-success mt-3 d-none" id="successAlert" role="alert">
+      Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.
+    </div>
+  </div>
+</div>
+
+
+<section class="map-container">
+  <iframe 
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3162.9026069046157!2d-122.08373908469362!3d37.421999979824736!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808fb73074c9babb%3A0x936fefc8c88d2237!2sGoogleplex!5e0!3m2!1sen!2sus!4v1606234836005!5m2!1sen!2sus" 
+    width="600" 
+    height="450" 
+    style="border:0;" 
+    allowfullscreen="" 
+    loading="lazy">
+  </iframe>
+</section>
+
+<footer>
+  <div class="logo-footer1">
+    <a href ="mainlogin.html">
+      <img src="kelass_kita-removebg-preview.png" alt="logo" class="img-logo1">
+      </a>
+      <span class="logo-footer2">KelasKita</span>
+  </div>
+
+  <div class="isi-footer1">
+      <div class="kolom1">
+          <p>"Belajar kapan saja, di mana saja. KelasKita hadir untuk mendukung perjalanan belajar Anda menuju masa depan yang lebih cerah."</p>
+          <div class="social-icons">
+              <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+              <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+      </div>
+      <div class="kolom2">
+          <a href="aboutus1.html">Tentang Kami</a>
+          <a href="contackUs.html">Kontak Kami</a>
+          <a href="SyaratnKetentuan.html">Syarat & Ketentuan</a>
+          <a href="faq.html">FAQ</a>
+      </div>
+      <div class="kolom3">
+          <p><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+          <p><i class="fas fa-phone-alt"></i> 0812-3456-7890</p>
+          <p><i class="fas fa-envelope"></i> kelaskita@gmail.com</p>
+      </div>
+  </div>
+
+  <div class="hr-footer">
+      <hr />
+  </div>
+  <div class="copyright">© 2025 KelasKita. All Rights Reserved.</div>
+</footer>
+
+<script>
+  document.getElementById("contactForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // Mencegah reload halaman
+
+    // Menampilkan alert
+    document.getElementById("successAlert").classList.remove("d-none");
+    document.getElementById("successAlert").classList.add("show");
+
+    // Mengosongkan form setelah submit
+    this.reset();
+  });
+</script>
+
+
+</body>
+
+</html>

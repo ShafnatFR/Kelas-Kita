@@ -1,0 +1,236 @@
+body {
+    background: #f8f9fa;
+}
+
+.navbar {
+  background-color: #B6252A;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 100px;
+  object-fit: contain;
+}
+
+.nav-link {
+  color: white !important;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .navbar {
+      height: auto;
+      padding: 10px 0;
+  }
+
+  .navbar-brand img {
+      height: 100px; /* Logo lebih kecil di ponsel */
+  }
+
+  .nav-link {
+      font-size: 0.9rem; /* Font lebih kecil di perangkat kecil */
+  }
+
+  .navbar-toggler {
+      margin-right: 10px;
+  }
+
+  .navbar-nav .nav-item {
+      margin-bottom: 10px;
+  }
+}
+ /*Batas Header*/
+
+.terms-card {
+    width: 700px;
+    border-radius: 10px;
+    margin-top: 100px;
+}
+
+/* Styling untuk logo */
+.img-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Mengatur tampilan header */
+.card-header {
+    display: flex;
+    align-items: center;
+}
+
+
+
+.card-header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.card-footer {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.terms-card {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+footer {
+    background-color: #202326;
+    color: #ffffff;
+    margin-top: 100px;
+    padding: 40px 170px;
+    text-align: left;
+  }
+  
+  .logo-footer1 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .img-logo1 {
+    width: 90px;
+    height: 90px;
+    margin-right: 10px;
+  }
+  
+  .logo-footer2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .isi-footer1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: px;
+  }
+  
+  .kolom1, .kolom2, .kolom3 {
+    flex: 1;
+    min-width: 200px;
+    padding: 5px;
+  }
+  
+  .kolom2 {
+    margin-left: 40px;
+  }
+  
+  .kolom3 {
+    margin-left: -70px;
+  }
+  .kolom1 p {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  
+  .social-icons a {
+    color: #ffffff;
+    margin-right: 10px;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  
+  .social-icons a:hover {
+    color: #1da1f2;
+  }
+  
+  .kolom2 a, .kolom3 p {
+    color: #b8b8b8;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+  }
+  
+  .kolom2 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  
+  .hr-footer hr {
+    border: 0;
+    border-top: 1px solid #444;
+    margin: 20px 0;
+  }
+  
+  .copyright {
+    text-align: center;
+    font-size: 14px;
+    color: #b8b8b8;
+    margin-top: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    footer {
+      padding: 40px 60px;
+    }
+  
+    .isi-footer1 {
+      gap: 10px;
+    }
+  
+    .kolom2 {
+      margin-left: 10px;
+    }
+  
+    .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 768px (Tablet Portrait) */
+  @media (max-width: 768px) {
+    .isi-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .kolom1, .kolom2, .kolom3 {
+      min-width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .kolom2, .kolom3 {
+      margin-left: 0;
+    }
+  }
+  
+  /* Untuk layar dengan lebar maksimum 480px (Smartphone) */
+  @media (max-width: 480px) {
+    .logo-footer1 {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .img-logo1 {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
+  
+    .logo-footer2 {
+      font-size: 20px;
+    }
+  
+    footer {
+      padding: 20px 30px;
+    }
+  
+    .isi-footer1 {
+      gap: 15px;
+    }
+  }
+  /*batas Footer */
+  
+
