@@ -175,7 +175,7 @@ $toolsCount = "50+";
             font-family: 'Inter', sans-serif;
         }
         .hero-gradient {
-            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
+            background: linear-gradient(135deg,rgb(29, 188, 79) 0%, #60efff 100%);
         }
         .rating-stars {
             color: #FFD700;
