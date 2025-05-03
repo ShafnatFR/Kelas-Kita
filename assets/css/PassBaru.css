@@ -1,0 +1,81 @@
+body {
+    background-color: #f8f9fa;
+    background-image: url('../images/backgroundlogin.png');
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: 0.3s;
+    width: 90%;
+    max-width: 400px;
+    background-color: #fff;
+    font-size: medium;
+}
+
+.card h2{
+    font-size:27px;
+    margin-bottom: 0;
+}
+
+
+.card p {
+    color: #666;
+    font-size: 14px;
+}
+
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease-in-out;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+input[type="password"]:focus {
+    border-color: red;
+    outline: none;
+}
+
+.text-center {
+    color: red;
+    font-weight: 700;
+}
+
+.btn-danger {
+    background-color: red;
+    color: white;
+    font-weight: 500;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: darkred;
+}
+
+@media (max-width: 320px) {
+    .code-inputs .form-control {
+        font-size: 3.5vw;
+        min-width: 30px;
+    }
+}

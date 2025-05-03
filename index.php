@@ -5,6 +5,7 @@
     <title>Menu Setting</title>
 </head>
 <body>
+    
     <h1>Pengaturan Akun</h1>
     <ul>
         <li><a href="profile.php">Profil</a></li>
