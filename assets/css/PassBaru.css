@@ -1,6 +1,6 @@
 body {
     background-color: #f8f9fa;
-    background-image: url('../images/backgroundlogin.png');
+    background-image: url('../images/backgroundbiru.jpg');
     background-size: cover;
     background-position: center;
     font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@ body {
 }
 
 .card h2{
-    font-size:27px;
+    font-size:24px;
     margin-bottom: 0;
 }
 
@@ -48,17 +48,17 @@ input[type="password"] {
 }
 
 input[type="password"]:focus {
-    border-color: red;
+    border-color: rgb(7, 106, 255);
     outline: none;
 }
 
 .text-center {
-    color: red;
+    color: rgb(7, 106, 255);
     font-weight: 700;
 }
 
-.btn-danger {
-    background-color: red;
+.btn-primary {
+    background-color: rgb(7, 106, 255);
     color: white;
     font-weight: 500;
     border: none;
@@ -70,8 +70,8 @@ input[type="password"]:focus {
     transition: background-color 0.3s;
 }
 
-.btn-danger:hover {
-    background-color: darkred;
+.btn-primary:hover {
+    background-color: rgb(7, 106, 255);
 }
 
 @media (max-width: 320px) {
