@@ -4,6 +4,11 @@ include "db.php";
 
 $messege = "";
 
+if (isset($_SESSION['success_message'])) {
+    echo "<div class='alert alert-success'>" . $_SESSION['success_message'] . "</div>";
+    unset($_SESSION['success_message']);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -23,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $row['password'])) {
             // Jika password cocok, simpan username ke session dan arahkan ke halaman utama
             $_SESSION['username'] = $username;
-            header("Location: INDEX1.php"); // Ganti dengan halaman utama kamu
+            header("Location: index.php"); // Ganti dengan halaman utama kamu
             exit();
         } else {
             $messege = "Password salah!";
