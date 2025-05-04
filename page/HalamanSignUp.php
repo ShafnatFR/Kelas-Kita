@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <!-- Kanan -->
             <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
-                <h2 class="font-weight-bold text-danger">Buat Akun KelasKita</h2>
+                <h2 class="font-weight-bold text-primary">Buat Akun KelasKita</h2>
                 <img src="../assets/images/Google1.png" alt="Google Logo" width="50" class="my-3">
 
                 <?php if (!empty($messege)) : ?>
@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                          <input type="password" class="form-control" name="password" placeholder="Masukan Password" required>
                     </div>
                     <!-- Tombol akan memunculkan modal -->
-                    <button type="button" class="btn btn-danger btn-block rounded-pill mt-3" data-toggle="modal" data-target="#termsModal">Sign Up</button>
+                    <button type="button" class="btn btn-primary btn-block rounded-pill mt-3" data-toggle="modal" data-target="#termsModal">Sign Up</button>
                 </form>
             </div>
         </div>
@@ -103,8 +103,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <p>Dengan mendaftar, Anda menyetujui syarat dan ketentuan kami.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Tolak</button>
-                <button type="button" id="acceptTermsBtn" class="btn btn-danger">Terima</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Tolak</button>
+                <button type="button" id="acceptTermsBtn" class="btn btn-primary">Terima</button>
             </div>
         </div>
     </div>

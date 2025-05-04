@@ -1,7 +1,7 @@
 /* Styling for Left Section */
 .left-section {
     display: grid;
-    background-image: url('../images/backgroundlogin.png');
+    background-image: url('../images/backgroundbiru.jpg');
     background-size: cover; 
     background-repeat: no-repeat;
     background-position: center;
@@ -57,7 +57,7 @@ a:hover {
 }
 
 .btn-danger {
-    background-color: #D32F2F;
+    background-color: rgb(24, 91, 224);
     font-weight: bold;
 }
 
