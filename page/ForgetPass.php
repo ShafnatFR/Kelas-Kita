@@ -1,6 +1,7 @@
 <?php
 include "db.php";
 
+$pesan="";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
 
@@ -15,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: PassBaru.php?username=" . urlencode($username));
         exit;
     } else {
-        echo "Username tidak ditemukan.";
+        $pesan = "Username tidak ditemukan.";
     }
 }
 
@@ -32,6 +33,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h2>Reset Password Anda</h2>
+
+        <?php if (!empty($pesan)): ?>
+            <div class="form-error"><?= htmlspecialchars($pesan) ?></div>
+        <?php endif; ?>
+        
         <form id="resetForm" method="post" action="ForgetPass.php">
         <p>Masukkan username Anda:</p>
             <div class="form-group">
