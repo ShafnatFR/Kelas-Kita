@@ -1,3 +1,5 @@
+<!-- Catatan -->
+
 <?php
 session_start();
 include_once('db.php'); // Sesuaikan path ke file db.php
