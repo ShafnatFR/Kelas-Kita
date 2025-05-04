@@ -5,12 +5,10 @@ include "db.php";
 session_start();
 
 // Cek apakah keranjang sudah ada dalam session
-$_SESSION['cart'][] = [
-    'id' => $id,
-    'title' => $title,
-    'author' => $author,
-    'price' => $price
-];
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
 
 
 
