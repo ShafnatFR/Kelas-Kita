@@ -216,94 +216,97 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
             <div class="w-full lg:w-2/3">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-semibold mb-4"><?php echo count($_SESSION['cart']); ?> Course in Cart</h2>
-                    
-                    <?php if (empty($_SESSION['cart'])): ?>
-                        <div class="py-8 text-center">
-                            <p class="text-gray-500 mb-4">Your cart is empty.</p>
-                            <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Browse courses</a>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($_SESSION['cart'] as $item): ?>
-                            <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-                                <div class="md:w-1/4 mb-4 md:mb-0">
-                                    <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-                                </div>
-                                <div class="md:w-3/4 md:pl-6">
-                                    <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                                    <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                                    <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
-                                    
-                                    <div class="flex items-center mb-4">
-                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                                        <div class="flex items-center text-amber-500 ml-3">
-                                            <span class="text-sm">4.7</span>
-                                            <div class="mx-1">★★★★★</div>
-                                            <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex items-center justify-between mt-4">
-                                        <div class="space-x-2">
-                                            <?php foreach ($_SESSION['cart'] as $course_id => $item): ?>
-                                            <a href="cart.php?action=remove&id=<?= $course_id ?>">Remove</a>
-                                            <a href="cart.php?action=save_for_later&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
-                                            <a href="cart.php?action=move_to_wishlist&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Wishlist</a>
-                                        </div>
-                                        <div class="font-bold">
-                                            Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
-                                            <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                                <span class="text-gray-500 text-sm line-through ml-1"><?php echo 'Rp' . number_format((int)($item['price'] ?? 0), 0, ',', '.'); ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php if (empty($_SESSION['cart'])) { ?>
+    <div class="py-8 text-center">
+        <p class="text-gray-500 mb-4">Your cart is empty.</p>
+        <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Browse courses</a>
+    </div>
+<?php } else { ?>
+    <?php foreach ($_SESSION['cart'] as $course_id => $item) { ?>
+        <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
+            <div class="md:w-1/4 mb-4 md:mb-0">
+                <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
+            </div>
+            <div class="md:w-3/4 md:pl-6">
+                <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
+                <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
+                <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
+
+                <div class="flex items-center mb-4">
+                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
+                    <div class="flex items-center text-amber-500 ml-3">
+                        <span class="text-sm">4.7</span>
+                        <div class="mx-1">★★★★★</div>
+                        <span class="text-xs text-gray-500">(366,616 ratings)</span>
+                    </div>
                 </div>
-                
+
+                <div class="flex items-center justify-between mt-4 border-b pb-4">
+                    <div>
+                        <div class="mt-2 space-x-3">
+                            <a href="cart.php?action=remove&id=<?= $course_id ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
+                            <a href="cart.php?action=save_for_later&id=<?= $course_id ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
+                            <a href="cart.php?action=move_to_wishlist&id=<?= $course_id ?>" class="text-purple-600 hover:text-purple-800 text-sm font-medium">Move to Wishlist</a>
+                        </div>
+                    </div>
+                    <div class="font-bold">
+                        Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['price'])), 0, ',', '.'); ?>
+                        <?php if (!empty($item['original_price'])) { ?>
+                            <span class="text-gray-500 text-sm line-through ml-1">
+                                Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['original_price'])), 0, ',', '.'); ?>
+                            </span>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
+<?php } ?>
+             
                 <!-- Saved For Later (Optional Section) -->
                 <?php if (!empty($_SESSION['saved_for_later'])): ?>
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Saved for later (<?php echo count($_SESSION['saved_for_later']); ?>)</h2>
-                    
-                    <?php foreach ($_SESSION['saved_for_later'] as $item): ?>
-                        <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-                            <div class="md:w-1/4 mb-4 md:mb-0">
-                                <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-                            </div>
-                            <div class="md:w-3/4 md:pl-6">
-                                <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                                <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                                <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
-                                
-                                <div class="flex items-center mb-4">
-                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                                    <div class="flex items-center text-amber-500 ml-3">
-                                        <span class="text-sm">4.7</span>
-                                        <div class="mx-1">★★★★★</div>
-                                        <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center justify-between mt-4">
-                                    <div class="space-x-2">
-                                        <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
-                                        <a href="cart.php?action=move_to_cart&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Cart</a>
-                                    </div>
-                                    <div class="font-bold">
-                                        Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
-                                        <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                            <span class="text-gray-500 text-sm line-through ml-1"><?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+    <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Saved for later (<?php echo count($_SESSION['saved_for_later']); ?>)</h2>
+        
+        <?php foreach ($_SESSION['saved_for_later'] as $item): ?>
+            <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
+                <div class="md:w-1/4 mb-4 md:mb-0">
+                    <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
                 </div>
-                <?php endif; ?>
+                <div class="md:w-3/4 md:pl-6">
+                    <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
+                    <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
+                    <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
+                    
+                    <div class="flex items-center mb-4">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
+                        <div class="flex items-center text-amber-500 ml-3">
+                            <span class="text-sm">4.7</span>
+                            <div class="mx-1">★★★★★</div>
+                            <span class="text-xs text-gray-500">(366,616 ratings)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="space-x-2">
+                            <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
+                            <a href="cart.php?action=move_to_cart&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Cart</a>
+                        </div>
+                        <div class="font-bold">
+                            Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
+                            <?php if (isset($item['original_price']) && $item['original_price']): ?>
+                                <span class="text-gray-500 text-sm line-through ml-1">
+                                    Rp<?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+</div>
             
             <!-- Order Summary -->
             <div class="w-full lg:w-1/3">
@@ -316,12 +319,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                             <span>Rp<?php echo $total_formatted; ?></span>
                         </div>
                         
-                        <?php if ($applied_coupon): ?>
+                        <?php if ($applied_coupon): { ?>
                         <div class="flex justify-between mb-2 text-green-600">
                             <span>Discount (<?php echo $applied_coupon['discount']; ?>% off):</span>
                             <span>-Rp<?php echo $discount_amount_formatted; ?></span>
                         </div>
-                        <?php endif; ?>
+                        <?php } ; ?>
                         
                         <div class="flex justify-between font-bold text-2xl mt-4">
                             <span>Total:</span>
@@ -335,7 +338,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                     <div class="mb-6">
                         <h3 class="font-semibold mb-3">Promotions</h3>
                         
-                        <?php if ($applied_coupon): ?>
+                        <?php if ($applied_coupon): { ?>
                         <div class="flex justify-between items-center bg-gray-100 p-3 rounded-md mb-3">
                             <div>
                                 <span class="font-medium"><?php echo $applied_coupon['code']; ?></span>
@@ -345,18 +348,18 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                                 <i class="fas fa-times"></i>
                             </a>
                         </div>
-                        <?php endif; ?>
+                        <?php } ; ?>
 
                         <form action="cart.php" method="post" class="flex gap-2">
                             <input type="text" name="promo_code" placeholder="Enter Coupon" class="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <button type="submit" name="apply_promo" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Apply</button>
                         </form>
                         
-                        <?php if ($promo_message): ?>
+                        <?php if ($promo_message): { ?>
                         <p class="text-sm mt-2 <?php echo strpos($promo_message, 'Invalid') !== false ? 'text-red-600' : 'text-green-600'; ?>">
                             <?php echo $promo_message; ?>
                         </p>
-                        <?php endif; ?>
+                        <?php } ; ?>
                     </div>
                     
                     <!-- Checkout Button -->
