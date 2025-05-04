@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Ambil data user dari database
+    // Ambil data user dari database berdasarkan username
     $sql = "SELECT * FROM tbuser WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
@@ -19,10 +19,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
+        // Verifikasi password dengan hash yang ada di database
         if (password_verify($password, $row['password'])) {
-            // Simpan session dan arahkan ke halaman utama
+            // Jika password cocok, simpan username ke session dan arahkan ke halaman utama
             $_SESSION['username'] = $username;
-            header("Location: halamanUtama.php"); // Ganti sesuai halaman utama kamu
+            header("Location: INDEX1.php"); // Ganti dengan halaman utama kamu
             exit();
         } else {
             $messege = "Password salah!";
@@ -32,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
                 <?php endif; ?>
 
-                <form class="w-75 mt-3" method="post" action="Halamanutamalogin.php">
+                <form class="w-75 mt-3" method="post">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>

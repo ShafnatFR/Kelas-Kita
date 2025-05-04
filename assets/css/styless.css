@@ -104,8 +104,12 @@ a:hover {
 /* Styling for Right Section */
 .right-section {
     color: #fff;
-    text-align: center;
     padding: 40px;
+}
+
+.form-group label{
+    text-align: left;
+    color: grey;
 }
 
 .right-section1 h1 {
