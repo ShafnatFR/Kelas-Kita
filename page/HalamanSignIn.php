@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
                 <?php endif; ?>
 
-                <form class="w-75 mt-3" method="post" action="Halamanutamalogin.php">
+                <form class="w-75 mt-3" method="post" action="INDEX1.php">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>
