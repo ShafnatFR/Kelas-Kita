@@ -33,16 +33,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
 
 // Hapus dari cart
 if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
-    $remove_id = $_GET['id'];
-    if (isset($_SESSION['cart'][$remove_id])) {
-        unset($_SESSION['cart'][$remove_id]);
-    }
-    header('Location: cart.php');
-    exit;
-}
-
-// Handler untuk menghapus item dari keranjang
-if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
     $course_id = $_GET['id'];
     error_log("Remove action triggered for course_id: " . $course_id);
     error_log("Current cart keys: " . implode(", ", array_keys($_SESSION['cart'])));
@@ -94,6 +84,28 @@ if (isset($_GET['action']) && $_GET['action'] == 'move_to_wishlist' && isset($_G
     exit;
 }
 
+// Handler untuk memindahkan dari saved_for_later ke cart
+if (isset($_GET['action']) && $_GET['action'] == 'move_to_cart' && isset($_GET['id'])) {
+    $course_id = $_GET['id'];
+
+    if (!isset($_SESSION['saved_for_later'])) {
+        $_SESSION['saved_for_later'] = [];
+    }
+
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
+    if (isset($_SESSION['saved_for_later'][$course_id])) {
+        $_SESSION['cart'][$course_id] = $_SESSION['saved_for_later'][$course_id];
+        unset($_SESSION['saved_for_later'][$course_id]);
+    }
+
+    // Redirect kembali ke halaman keranjang
+    header('Location: cart.php');
+    exit;
+}
+
 // Hitung total belanja
 $total = 0;
 $discounted_total = 15;
@@ -115,7 +127,7 @@ $valid_promo_codes = [
 // Handle apply promo code
 if (isset($_POST['apply_promo'])) {
     $promo_code = strtoupper(trim($_POST['promo_code']));
-    
+
     if (isset($valid_promo_codes[$promo_code])) {
         $applied_coupon = [
             'code' => $promo_code,
@@ -319,12 +331,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                             <span>Rp<?php echo $total_formatted; ?></span>
                         </div>
                         
-                        <?php if ($applied_coupon): { ?>
+                        <?php if ($applied_coupon): ?>
                         <div class="flex justify-between mb-2 text-green-600">
                             <span>Discount (<?php echo $applied_coupon['discount']; ?>% off):</span>
                             <span>-Rp<?php echo $discount_amount_formatted; ?></span>
                         </div>
-                        <?php } ; ?>
+                        <?php endif; ?>
                         
                         <div class="flex justify-between font-bold text-2xl mt-4">
                             <span>Total:</span>
@@ -338,7 +350,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                     <div class="mb-6">
                         <h3 class="font-semibold mb-3">Promotions</h3>
                         
-                        <?php if ($applied_coupon): { ?>
+                        <?php if ($applied_coupon): ?>
                         <div class="flex justify-between items-center bg-gray-100 p-3 rounded-md mb-3">
                             <div>
                                 <span class="font-medium"><?php echo $applied_coupon['code']; ?></span>
@@ -348,18 +360,18 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                                 <i class="fas fa-times"></i>
                             </a>
                         </div>
-                        <?php } ; ?>
+                        <?php endif; ?>
 
                         <form action="cart.php" method="post" class="flex gap-2">
                             <input type="text" name="promo_code" placeholder="Enter Coupon" class="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <button type="submit" name="apply_promo" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Apply</button>
                         </form>
                         
-                        <?php if ($promo_message): { ?>
+                        <?php if ($promo_message): ?>
                         <p class="text-sm mt-2 <?php echo strpos($promo_message, 'Invalid') !== false ? 'text-red-600' : 'text-green-600'; ?>">
                             <?php echo $promo_message; ?>
                         </p>
-                        <?php } ; ?>
+                        <?php endif; ?>
                     </div>
                     
                     <!-- Checkout Button -->
