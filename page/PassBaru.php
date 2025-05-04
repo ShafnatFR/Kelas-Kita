@@ -41,7 +41,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masukkan Password Baru</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/PassBaru.css"> <!-- Optional -->
 </head>
 <body>
@@ -58,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="hidden" name="username" value="<?= htmlspecialchars($_GET['username'] ?? '') ?>">
                         <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password baru" required>
                     </div>
-                    <button type="submit" class="btn btn-danger">Kirim</button>
+                    <button type="submit" class="btn btn-primary">Kirim</button>
                 </form>
             </div>
         </div>
@@ -76,5 +78,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return true;
     }
     </script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

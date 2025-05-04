@@ -1,6 +1,6 @@
 /* General Styles */
 body {
-    background-image: url('../images/backgroundlogin.png');
+    background-image: url('../images/backgroundbiru.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0;
@@ -26,7 +26,7 @@ body {
 /* Heading Styles */
 h2 {
     margin-bottom: 15px;
-    color: red;
+    color: rgb(7, 106, 255);
     font-size: 24px;
     font-weight: bold;
     line-height: 1.2;
@@ -74,7 +74,7 @@ input[type="text"]:focus {
     display: block;
     width: 100%;
     padding: 12px;
-    background-color: red;
+    background-color: rgb(7, 106, 255);
     color: white;
     border: none;
     border-radius: 6px;
@@ -85,7 +85,7 @@ input[type="text"]:focus {
 }
 
 .btn:hover {
-    background-color: #cc0000;
+    background-color: rgb(7, 73, 255);
 }
 
 /* Link Styles */
@@ -93,13 +93,13 @@ a {
     display: block;
     margin-top: 20px;
     font-size: 14px;
-    color: #e74c3c;
+    color: rgb(7, 106, 255);
     text-decoration: none;
     transition: color 0.3s ease-in-out;
 }
 
 a:hover {
-    color: red;
+    color: rgb(7, 106, 255);
     text-decoration: underline;
 }
 

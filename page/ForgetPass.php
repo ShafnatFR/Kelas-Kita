@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                  <input type="text" id="username" name="username" required placeholder="Masukkan username anda">
             </div>
-        <button type="submit" class="btn btn-danger btn-block rounded-pill">Kirim</button>
+        <button type="submit" class="btn btn-primary btn-block rounded-pill">Kirim</button>
 </form>
         <a href="HalamanSignIn.html" id="backToLogin">Kembali ke Halaman Utama</a>
     </div>
