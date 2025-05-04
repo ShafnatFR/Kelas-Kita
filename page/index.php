@@ -172,7 +172,7 @@ $toolsCount = "50+";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upskill - Online Learning Platform</title>
+    <title>Kelas Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -181,7 +181,7 @@ $toolsCount = "50+";
             font-family: 'Inter', sans-serif;
         }
         .hero-gradient {
-            background: linear-gradient(135deg,rgb(29, 188, 79) 0%, #60efff 100%);
+            background: linear-gradient(135deg,rgb(2, 2, 253) 0%, #60efff 100%);
         }
         .rating-stars {
             color: #FFD700;
@@ -193,6 +193,15 @@ $toolsCount = "50+";
     <nav class="bg-white py-4 px-6 shadow-sm">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
+<<<<<<< HEAD
+                <a href="#" class="text-blue-600 font-bold text-2xl">Kelas Kita</a>
+                <div class="hidden md:flex ml-10 space-x-6">
+                    <a href="#" class="text-gray-900 font-medium">Rumah</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kursu</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">kontak</a>
+=======
                 <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
                     <a href="#" class="text-gray-900 font-medium">Beranda</a>
@@ -200,6 +209,7 @@ $toolsCount = "50+";
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kontak</a>
+>>>>>>> 61440e79511379fed6a364ba95a2fc77c1d7ce6c
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -263,15 +273,24 @@ function toggleDropdown() {
     <section class="hero-gradient text-white py-16">
         <div class="container mx-auto px-6 flex flex-col md:flex-row items-center">
             <div class="md:w-1/2 mb-10 md:mb-0">
+<<<<<<< HEAD
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Cara Lebih Cepat Untuk<br>Pertumbuhan & Kelas Kita</h1>
+                <p class="text-lg mb-8 text-blue-100">Pelajari Keterampilan yang anda butuhkan untuk memajukan kareri anda dengan Kursus yang di Pandu oleh para ahli kami</p>
+=======
                 <h1 class="text-4xl md:text-5xl font-bold mb-6">Cara Lebih Cepat Untuk<br>Tumbuh & Tingkatkan Keterampilan</h1>
                 <p class="text-lg mb-8 text-blue-100">Pelajari keterampilan yang Anda butuhkan untuk memajukan karir Anda dengan kursus kami yang dipimpin oleh para ahli</p>
+>>>>>>> 61440e79511379fed6a364ba95a2fc77c1d7ce6c
                 <div class="flex space-x-4">
-                    <a href="#" class="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition">Get Started</a>
-                    <a href="#" class="border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-blue-600 transition">Learn More</a>
+                    <a href="#" class="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition">Memulai</a>
+                    <a href="#" class="border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-blue-600 transition">pelajari Lebih Lanjut</a>
                 </div>
             </div>
             <div class="md:w-1/2 flex justify-end">
+<<<<<<< HEAD
+                <img src="../assets/images/1683125533-img1.avif" alt="Person learning online" class="rounded-lg w-64">
+=======
                 <img src="../assets/images/bahan 4.png" alt="Person learning online" class="rounded-lg max-w-full">
+>>>>>>> 61440e79511379fed6a364ba95a2fc77c1d7ce6c
             </div>
         </div>
     </section>
@@ -295,7 +314,7 @@ function toggleDropdown() {
     <!-- Featured Courses Section -->
     <section class="py-12 bg-gray-50">
         <div class="container mx-auto px-6">
-            <h2 class="text-2xl font-bold mb-10">Featured courses</h2>
+            <h2 class="text-2xl font-bold mb-10">Kursu unggulan</h2>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <?php foreach ($featuredCourses as $course): ?>
@@ -334,7 +353,7 @@ function toggleDropdown() {
     <!-- Popular Courses Section -->
     <section class="py-12 bg-white">
         <div class="container mx-auto px-6">
-            <h2 class="text-2xl font-bold mb-10">Popular classes</h2>
+            <h2 class="text-2xl font-bold mb-10">Kelas Populer</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <?php foreach ($popularCourses as $course): ?>
@@ -361,33 +380,33 @@ function toggleDropdown() {
                     <img src="assets/images/student-laptop.jpg" alt="Student using laptop" class="rounded-lg shadow-md w-full">
                 </div>
                 <div class="md:w-1/2">
-                    <h2 class="text-3xl font-bold mb-6">Why Upskill becomes the best training course & bootcamp</h2>
-                    <p class="text-gray-600 mb-8">We've designed our platform to provide the best learning experience with expert instructors, hands-on projects, and a supportive community.</p>
+                    <h2 class="text-3xl font-bold mb-6">Mengapa Upskill menjadi kursus pelatihan & bootcamp terbaik</h2>
+                    <p class="text-gray-600 mb-8">Kami telah merancang platform kami untuk menyediakan pengalaman belajar terbaik dengan instruktur ahli, proyek langsung, dan komunitas yang mendukung.</p>
                     
                     <div class="grid grid-cols-2 gap-6">
                         <div class="flex items-center">
                             <div class="bg-blue-100 p-3 rounded-full mr-4">
                                 <i class="fas fa-check text-blue-600"></i>
                             </div>
-                            <span class="font-medium">Skilled instructors</span>
+                            <span class="font-medium">Instruktur yang terampil</span>
                         </div>
                         <div class="flex items-center">
                             <div class="bg-blue-100 p-3 rounded-full mr-4">
                                 <i class="fas fa-check text-blue-600"></i>
                             </div>
-                            <span class="font-medium">Hands-on projects</span>
+                            <span class="font-medium">Sumber daya premium</span>
                         </div>
                         <div class="flex items-center">
                             <div class="bg-blue-100 p-3 rounded-full mr-4">
                                 <i class="fas fa-check text-blue-600"></i>
                             </div>
-                            <span class="font-medium">Premium resources</span>
+                            <span class="font-medium">Proyek langsung</span>
                         </div>
                         <div class="flex items-center">
                             <div class="bg-blue-100 p-3 rounded-full mr-4">
                                 <i class="fas fa-check text-blue-600"></i>
                             </div>
-                            <span class="font-medium">Lifetime access</span>
+                            <span class="font-medium">Akses seumur hidup</span>
                         </div>
                     </div>
                 </div>
@@ -401,23 +420,23 @@ function toggleDropdown() {
             <div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
                 <div class="p-4">
                     <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $workshopCount; ?>+</div>
-                    <p class="text-gray-600">Online Workshops</p>
+                    <p class="text-gray-600">Karya Daring</p>
                 </div>
                 <div class="p-4">
                     <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $studentsCount; ?></div>
-                    <p class="text-gray-600">Students</p>
+                    <p class="text-gray-600">Siswa</p>
                 </div>
                 <div class="p-4">
                     <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $instructorsCount; ?></div>
-                    <p class="text-gray-600">Instructors</p>
+                    <p class="text-gray-600">Instruktur</p>
                 </div>
                 <div class="p-4">
                     <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $coursesCount; ?></div>
-                    <p class="text-gray-600">Online Courses</p>
+                    <p class="text-gray-600">Kursus Online</p>
                 </div>
                 <div class="p-4">
                     <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $toolsCount; ?></div>
-                    <p class="text-gray-600">Practical Tools</p>
+                    <p class="text-gray-600">Alat Praktis</p>
                 </div>
             </div>
         </div>
@@ -428,8 +447,8 @@ function toggleDropdown() {
         <div class="container mx-auto px-6">
             <div class="bg-yellow-400 rounded-lg p-8 flex flex-col md:flex-row items-center justify-between">
                 <div class="md:w-2/3 mb-6 md:mb-0">
-                    <h3 class="text-2xl font-bold mb-2">Launch Your Career Journey</h3>
-                    <p class="text-gray-800">Through upskill</p>
+                    <h3 class="text-2xl font-bold mb-2">Luncurkan Perjalanan Karier Anda</h3>
+                    <p class="text-gray-800">Melalui peningkatan keterampilan</p>
                 </div>
                 <div>
                     <img src="assets/images/cta-people.png" alt="People learning" class="h-32">
@@ -443,8 +462,8 @@ function toggleDropdown() {
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
                 <div class="col-span-2 md:col-span-1">
-                    <h4 class="text-blue-600 font-bold text-xl mb-4">upskill</h4>
-                    <p class="text-gray-600 mb-4">The best platform to learn new skills and advance your career.</p>
+                    <h4 class="text-blue-600 font-bold text-xl mb-4">Kelas Kita</h4>
+                    <p class="text-gray-600 mb-4">Platform terbaik untuk mempelajari keterampilan baru dan memajukan karier Anda.</p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-facebook"></i></a>
                         <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-twitter"></i></a>
@@ -453,37 +472,37 @@ function toggleDropdown() {
                     </div>
                 </div>
                 <div>
-                    <h5 class="font-semibold mb-4">Courses</h5>
+                    <h5 class="font-semibold mb-4">kursus</h5>
                     <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Web Development</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Data Science</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Mobile Development</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Business</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Marketing</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Pengembang Web</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Ilmu Data</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Pengembang Seluler</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Bisnis</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Pemasaran</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h5 class="font-semibold mb-4">Company</h5>
+                    <h5 class="font-semibold mb-4">Perusahan</h5>
                     <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">About Us</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Careers</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Press</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Tentang Kami</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Karier</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Tekan</a></li>
                         <li><a href="#" class="hover:text-gray-900">Blog</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Contact</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Kontak</a></li>
                     </ul>
                 </div>
                 <div>
                     <h5 class="font-semibold mb-4">Support</h5>
                     <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Help Center</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Pusat Bantuan</a></li>
+                        <li><a href="#" class="hover:text-gray-900">ketentuan layanan</a></li>
                         <li><a href="#" class="hover:text-gray-900">Legal</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-gray-900">Kebijakan privasi</a></li>
                         <li><a href="#" class="hover:text-gray-900">Status</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h5 class="font-semibold mb-4">Download our app</h5>
+                    <h5 class="font-semibold mb-4">Unduh aplikasi</h5>
                     <div class="flex flex-col space-y-3">
                         <a href="#" class="block">
                             <img src="assets/images/app-store.png" alt="App Store" class="h-10">
