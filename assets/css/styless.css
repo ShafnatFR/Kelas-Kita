@@ -108,6 +108,10 @@ a:hover {
     padding: 40px;
 }
 
+.right-section label{
+    text-align: left;
+}
+
 .right-section1 h1 {
     font-size: 2.5rem;
 }
