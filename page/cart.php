@@ -4,46 +4,41 @@ include "db.php";
 // Session start untuk menyimpan data keranjang
 session_start();
 
-// Cek apakah keranjang sudah ada dalam session
+// Inisialisasi cart jika belum ada
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-
-
-
-// Handler untuk menambah item ke keranjang (dari halaman course-detail.php)
+// Tambah ke cart dari link ?action=add&id=...
 if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
+    include_once('tbkelas.php'); // file ini harus berisi $allCourses
+
     $course_id = $_GET['id'];
-    
-    // Database connection simulation (sama seperti di course-detail.php)
-    include_once('tbkelas.php'); // File yang berisi data kursus
-    
-    // Cari kursus berdasarkan ID
-    $course = null;
-    foreach ($allCourses as $c) {
-        if ($c['id'] == $course_id) {
-            $course = $c;
+    foreach ($allCourses as $course) {
+        if ($course['id'] == $course_id) {
+            $_SESSION['cart'][$course_id] = [
+                'id' => $course['id'],
+                'title' => $course['title'],
+                'instructor' => $course['instructor'],
+                'price' => $course['price'],
+                'image' => $course['image'] ?? '',
+            ];
             break;
         }
     }
-    
-    // Jika kursus ditemukan, tambahkan ke keranjang
-    if ($course) {
-        $_SESSION['cart'][$course_id] = [
-            'id' => $course['id'],
-            'title' => $course['title'],
-            'instructor' => $course['instructor'],
-            'price' => $course['price'],
-            'original_price' => $course['original_price'],
-            'image' => $course['image'],
-            'description' => $course['description'] ?? ''
-        ];
-        
-        // Redirect kembali ke halaman keranjang
-        header('Location: cart.php');
-        exit;
+
+    header('Location: cart.php');
+    exit;
+}
+
+// Hapus dari cart
+if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
+    $remove_id = $_GET['id'];
+    if (isset($_SESSION['cart'][$remove_id])) {
+        unset($_SESSION['cart'][$remove_id]);
     }
+    header('Location: cart.php');
+    exit;
 }
 
 // Handler untuk menghapus item dari keranjang
@@ -249,7 +244,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                                     
                                     <div class="flex items-center justify-between mt-4">
                                         <div class="space-x-2">
-                                            <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
+                                            <?php foreach ($_SESSION['cart'] as $course_id => $item): ?>
+                                            <a href="cart.php?action=remove&id=<?= $course_id ?>">Remove</a>
                                             <a href="cart.php?action=save_for_later&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
                                             <a href="cart.php?action=move_to_wishlist&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Wishlist</a>
                                         </div>
