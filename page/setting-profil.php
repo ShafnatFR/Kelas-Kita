@@ -1,34 +1,18 @@
 <?php
 session_start();
-include_once('../db.php'); // Sesuaikan path ke file db.php
+include_once('db.php'); // Sesuaikan path ke file db.php
 
-<<<<<<< Updated upstream:setting-profil.php
-// Contoh: user ID disimpan di session
-$user_id = $_SESSION['user_id'] ?? null;
-if (!$user_id) {
-    header('Location: ../HalamanSignIn.html');
-=======
 // Cek apakah user sudah login
 $user_id = $_SESSION['username'] ?? null;
 if (!$user_id) {
     header('Location: HalamanSignIn.php');
->>>>>>> Stashed changes:page/setting-profil.php
     exit();
 }
 
 // Tangani form submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-<<<<<<< Updated upstream:setting-profil.php
-    $namaDepan = $_POST['namaDepan'] ?? '';
-    $namaBelakang = $_POST['namaBelakang'] ?? '';
-    $kelas = $_POST['kelas'] ?? '';
-    $prodi = $_POST['prodi'] ?? '';
-    $fakultas = $_POST['fakultas'] ?? '';
-    $universitas = $_POST['universitas'] ?? '';
-=======
     $first_name = $_POST['first_name'] ?? '';
     $last_name = $_POST['last_name'] ?? '';
->>>>>>> Stashed changes:page/setting-profil.php
     $deskripsi = $_POST['deskripsi'] ?? '';
 
     $fotoBaru = '';
@@ -43,20 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-<<<<<<< Updated upstream:setting-profil.php
-    // Siapkan query update
-    $query = "UPDATE tbUser SET 
-                namaDepan = ?, 
-                namaBelakang = ?, 
-                kelas = ?, 
-                prodi = ?, 
-                fakultas = ?, 
-                universitas = ?, 
-=======
     $query = "UPDATE tbuser SET 
                 first_name = ?, 
                 last_name = ?, 
->>>>>>> Stashed changes:page/setting-profil.php
                 deskripsi = ?";
 
     $params = [$first_name, $last_name, $deskripsi];
@@ -76,8 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 ?>
-<<<<<<< Updated upstream:setting-profil.php
-=======
 
 <!DOCTYPE html>
 <html lang="id">
@@ -142,4 +113,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
->>>>>>> Stashed changes:page/setting-profil.php
