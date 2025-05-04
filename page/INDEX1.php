@@ -194,6 +194,7 @@ $toolsCount = "50+";
                     <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
+                    <a href="setting-profil.php" class="text-gray-500 hover:text-gray-900">Setting</a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
