@@ -1,4 +1,5 @@
 <?php
+include "db.php";
 // Database connection simulation
 $featuredCourses = [
     [
@@ -182,6 +183,7 @@ $toolsCount = "50+";
         }
     </style>
 </head>
+<?php session_start(); ?>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
     <nav class="bg-white py-4 px-6 shadow-sm">
@@ -198,8 +200,15 @@ $toolsCount = "50+";
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-                <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
+                <?php if (isset($_SESSION['username'])): ?>
+                    <div class="flex items-center space-x-2">
+                        <a href="setting-profil.php" class="text-gray-800 font-medium hover:underline"><?= htmlspecialchars($_SESSION['username']) ?></a>
+                        <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32" alt="Profile" class="rounded-full w-8 h-8">
+                    </div> <!-- <- Tambahan penutup div di sini -->
+                <?php else: ?>
+                    <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
+                    <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
