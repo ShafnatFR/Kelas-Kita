@@ -193,13 +193,13 @@ $toolsCount = "50+";
     <nav class="bg-white py-4 px-6 shadow-sm">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="#" class="text-blue-600 font-bold text-2xl">upskill</a>
+                <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="#" class="text-gray-900 font-medium">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Courses</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
+                    <a href="#" class="text-gray-900 font-medium">Beranda</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kelas</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kontak</a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -237,8 +237,8 @@ $toolsCount = "50+";
             </div>
         </div>
     <?php else: ?>
-        <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-        <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
+        <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Masuk</a>
+        <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Register</a>
     <?php endif; ?>
 </div>
 
@@ -257,21 +257,21 @@ function toggleDropdown() {
 </script>
             </div>
         </nav>
-    
+        
 
     <!-- Hero Section -->
     <section class="hero-gradient text-white py-16">
         <div class="container mx-auto px-6 flex flex-col md:flex-row items-center">
             <div class="md:w-1/2 mb-10 md:mb-0">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6">Faster Way For Your<br>Grow & Upskill</h1>
-                <p class="text-lg mb-8 text-blue-100">Learn the skills you need to advance your career with our expert-led courses</p>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Cara Lebih Cepat Untuk<br>Tumbuh & Tingkatkan Keterampilan</h1>
+                <p class="text-lg mb-8 text-blue-100">Pelajari keterampilan yang Anda butuhkan untuk memajukan karir Anda dengan kursus kami yang dipimpin oleh para ahli</p>
                 <div class="flex space-x-4">
                     <a href="#" class="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition">Get Started</a>
                     <a href="#" class="border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-blue-600 transition">Learn More</a>
                 </div>
             </div>
             <div class="md:w-1/2 flex justify-end">
-                <img src="assets/images/hero-person.png" alt="Person learning online" class="rounded-lg max-w-full">
+                <img src="../assets/images/bahan 4.png" alt="Person learning online" class="rounded-lg max-w-full">
             </div>
         </div>
     </section>
