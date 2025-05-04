@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $row['password'])) {
             // Simpan session dan arahkan ke halaman utama
             $_SESSION['username'] = $username;
-            header("Location: ./INDEX1.php"); // Ganti sesuai halaman utama kamu
+            header("Location: INDEX1.php"); // Ganti sesuai halaman utama kamu
             exit();
         } else {
             $messege = "Password salah!";
