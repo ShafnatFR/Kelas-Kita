@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $messege = "Password harus mengandung setidaknya 1 karakter khusus (contoh: !, @, #, $, %, dll).";
     } else {
         // Jika validasi password lolos, lanjut hash password
-        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $password = password_hash($password, PASSWORD_DEFAULT);
 
         // Cek apakah username sudah ada
         $sql = "SELECT * FROM tbuser WHERE username = ?";
@@ -26,11 +26,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
+            // Menyimpan username dan password yang sudah di-hash ke database
             $sql = "INSERT INTO tbuser (username, password) VALUES (?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ss", $username, $password);
 
             if ($stmt->execute()) {
+                // Redirect ke halaman login setelah berhasil registrasi
                 header("Location: HalamanSignIn.php");
                 exit();
             } else {
@@ -39,7 +41,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -70,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
                 <?php endif; ?>
 
-                <form id="signupForm" class="w-75 mt-3" method="post">
+                <form id="signupForm" class="w-75 mt-3" method="POST">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>

@@ -5,24 +5,25 @@ include "db.php";
 $messege = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Ambil input dengan aman
-    $username = htmlspecialchars(trim($_POST['username']));
+    $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Ambil data user berdasarkan username
+    // Ambil data user dari database berdasarkan username
     $sql = "SELECT * FROM tbuser WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Cek apakah user ditemukan
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
-        // Verifikasi password
+        // Verifikasi password dengan hash yang ada di database
         if (password_verify($password, $row['password'])) {
+            // Jika password cocok, simpan username ke session dan arahkan ke halaman utama
             $_SESSION['username'] = $username;
-            header("Location: INDEX1.php");
+            header("Location: INDEX1.php"); // Ganti dengan halaman utama kamu
             exit();
         } else {
             $messege = "Password salah!";
@@ -32,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,11 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
                 <?php endif; ?>
 
-<<<<<<< HEAD
                 <form class="w-75 mt-3" method="post">
-=======
-                <form class="w-75 mt-3" method="post" action="INDEX1.php">
->>>>>>> 9287c6190b8548d1d873c1c16af6706d894d895b
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>
