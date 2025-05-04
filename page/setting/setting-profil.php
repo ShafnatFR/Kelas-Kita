@@ -29,13 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Siapkan query update
-    $query = "UPDATE tbUser SET 
+    $query = "UPDATE tbuser SET 
                 namaDepan = ?, 
                 namaBelakang = ?, 
                 deskripsi = ?";
 
     $params = [$namaDepan, $namaBelakang, $deskripsi];
-
     // Jika ada foto baru, tambahkan ke query
     if ($fotoBaru !== '') {
         $query .= ", foto = ?";
