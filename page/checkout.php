@@ -1,6 +1,10 @@
 <?php
 // checkout.php - Halaman checkout
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Session start untuk mengakses data keranjang
 session_start();
 
@@ -16,10 +20,24 @@ $discounted_total = 0;
 $discount_amount = 0;
 
 // Calculate cart total
-foreach ($_SESSION['cart'] as $item) {
-    // Remove currency symbol and convert to numeric
-    $price = str_replace(['$', 'Rp', ','], '', $item['price']);
-    $total += (float)$price;
+if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+    // Debugging: log cart content type
+    // error_log('Cart content: ' . print_r($_SESSION['cart'], true));
+    foreach ($_SESSION['cart'] as $item) {
+        if (is_array($item) && isset($item['price']) && is_string($item['price']) && !empty($item['price'])) {
+            $price_str = $item['price'];
+                if ($price_str !== null) {
+                    $price = floatval(preg_replace('/[^\d.]/', '', $price_str));
+                    $total += $price * (isset($item['quantity']) ? (int)$item['quantity'] : 1);
+                }
+        } else {
+            // Skip invalid item or log error
+            // error_log('Invalid cart item: ' . print_r($item, true));
+        }
+    }
+} else {
+    // If cart is not array, clear it to prevent errors
+    $_SESSION['cart'] = [];
 }
 
 // Check for applied coupon
@@ -98,11 +116,28 @@ if (isset($_POST['complete_payment'])) {
 }
 
 // Check for success parameter (after payment)
-if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_GET['order_id']) && isset($_SESSION['last_order'])) {
+// Debugging: log the type and content of $_SESSION['last_order']
+if (isset($_SESSION['last_order'])) {
+    // error_log('$_SESSION[\'last_order\'] type: ' . gettype($_SESSION['last_order']));
+    // error_log('$_SESSION[\'last_order\'] content: ' . print_r($_SESSION['last_order'], true));
+}
+
+if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_GET['order_id']) && isset($_SESSION['last_order']) && is_array($_SESSION['last_order'])) {
     $payment_success = true;
     $order_id = $_GET['order_id'];
     $last_order = $_SESSION['last_order'];
+} else {
+    // If success parameters not set, prevent undefined variable errors
+    $order_id = null;
+    $last_order = null;
 }
+
+// Debugging: uncomment to check last_order and last_order_data content
+// var_dump($last_order);
+// var_dump($last_order_data);
+
+// Prepare safe last_order data for display
+$last_order_data = (is_array($last_order)) ? $last_order : [];
 ?>
 
 <!DOCTYPE html>
@@ -143,7 +178,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_GET['order_
 
     <!-- Content Section -->
     <div class="container mx-auto px-4 py-10">
-        <?php if ($payment_success): ?>
+        <?php if ($payment_success && $order_id !== null && $last_order !== null): ?>
             <!-- Order Success Page -->
             <div class="max-w-2xl mx-auto">
                 <div class="bg-white p-8 rounded-lg shadow-sm text-center">
@@ -157,21 +192,22 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_GET['order_
                     <div class="bg-gray-50 p-4 rounded-md mb-6">
                         <div class="flex justify-between mb-2">
                             <span class="font-medium">Order ID:</span>
-                            <span><?php echo $order_id; ?></span>
+                            <span><?php echo htmlspecialchars($order_id); ?></span>
                         </div>
                         <div class="flex justify-between mb-2">
                             <span class="font-medium">Date:</span>
-                            <span><?php echo date('F j, Y', strtotime($last_order['date'])); ?></span>
+                            <span><?php echo (is_array($last_order_data) && isset($last_order_data['date']) && $last_order_data['date'] !== null) ? htmlspecialchars(date('F j, Y', strtotime($last_order_data['date']))) : 'N/A'; ?></span>
                         </div>
                         <div class="flex justify-between mb-2">
                             <span class="font-medium">Amount:</span>
-                            <span>Rp<?php echo number_format($last_order['total'], 0, ',', '.'); ?></span>
+                            <span>Rp<?php echo (is_array($last_order_data) && isset($last_order_data['total']) && $last_order_data['total'] !== null) ? htmlspecialchars(number_format($last_order_data['total'], 0, ',', '.')) : '0'; ?></span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-medium">Payment Method:</span>
                             <span>Credit Card</span>
                         </div>
                         <a href="index.php" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Back to Home</a>
+                    </div>
                 </div>
             </div>
         <?php else: ?>
@@ -192,8 +228,9 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_GET['order_
                     <ul class="mb-2">
                         <?php foreach ($_SESSION['cart'] as $item): ?>
                             <li class="flex justify-between border-b py-2">
-                                <span><?php echo $item['title']; ?></span>
-                                <span>Rp<?php echo number_format((float)str_replace(['Rp', ','], '', $item['price']), 0, ',', '.'); ?></span>
+                                <span><?php echo isset($item['title']) ? htmlspecialchars($item['title']) : 'Unknown'; ?></span>
+                                <span>Rp<?php echo number_format((float)str_replace(['Rp', ','], '', (string)($item['price'] ?? 0)), 0, ',', '.'); ?></span>
+
                             </li>
                         <?php endforeach; ?>
                     </ul>

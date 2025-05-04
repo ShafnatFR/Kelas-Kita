@@ -1,13 +1,18 @@
 <?php
 // cart.php - Halaman keranjang belanja
-
+include "db.php";
 // Session start untuk menyimpan data keranjang
 session_start();
 
 // Cek apakah keranjang sudah ada dalam session
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
+$_SESSION['cart'][] = [
+    'id' => $id,
+    'title' => $title,
+    'author' => $author,
+    'price' => $price
+];
+
+
 
 // Handler untuk menambah item ke keranjang (dari halaman course-detail.php)
 if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
@@ -187,6 +192,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
         }
     </style>
 </head>
+<pre><?php print_r($_SESSION['cart']); ?></pre>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
     <nav class="bg-white py-4 px-6 shadow-sm">
@@ -252,7 +258,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                                         <div class="font-bold">
                                             Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
                                             <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                                <span class="text-gray-500 text-sm line-through ml-1"><?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?></span>
+                                                <span class="text-gray-500 text-sm line-through ml-1"><?php echo 'Rp' . number_format((int)($item['price'] ?? 0), 0, ',', '.'); ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
