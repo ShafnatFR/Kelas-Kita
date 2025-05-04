@@ -1,4 +1,10 @@
 <?php
+session_start();
+
+// Cek apakah keranjang sudah ada dalam session
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
 // Database connection simulation
 $featuredCourses = [
     [
@@ -197,11 +203,20 @@ $toolsCount = "50+";
                 </div>
             </div>
             <div class="flex items-center space-x-4">
+                <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <?php if(!empty($_SESSION['cart'])): ?>
+                        <span class="bg-red-500 text-white rounded-full px-2 py-1 text-xs"><?php echo count($_SESSION['cart']); ?></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+            <div class="flex items-center space-x-4">
                 <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
                 <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
             </div>
         </div>
     </nav>
+    
 
     <!-- Hero Section -->
     <section class="hero-gradient text-white py-16">

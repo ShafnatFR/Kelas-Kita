@@ -1,4 +1,44 @@
 <?php
+session_start();
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+// Handle add to cart action
+if (isset($_GET['add_to_cart'])) {
+    $add_course_id = intval($_GET['add_to_cart']);
+    
+    // Find the course data by ID
+    $course_to_add = null;
+    foreach ($allCourses as $c) {
+        if ($c['id'] == $add_course_id) {
+            $course_to_add = $c;
+            break;
+        }
+    }
+    
+    if ($course_to_add) {
+        if (!isset($_SESSION['cart'])) {
+            $_SESSION['cart'] = [];
+        }
+        if (!isset($_SESSION['cart'][$add_course_id])) {
+            $_SESSION['cart'][$add_course_id] = [
+                'id' => $course_to_add['id'],
+                'title' => $course_to_add['title'],
+                'instructor' => $course_to_add['instructor'],
+                'price' => $course_to_add['price'],
+                'original_price' => $course_to_add['original_price'],
+                'image' => $course_to_add['image'],
+                'description' => $course_to_add['description'] ?? ''
+            ];
+        }
+    }
+    
+    // Redirect to avoid resubmission on refresh
+    header("Location: course-detail.php?id=" . $course_id);
+    exit;
+}
+
 // Get course ID from URL
 $course_id = isset($_GET['id']) ? $_GET['id'] : 0;
 
@@ -574,6 +614,14 @@ foreach ($ratingDistribution as $rating => $count) {
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
                 </div>
+                <div class="flex items-center space-x-4">
+                <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <?php if(!empty($_SESSION['cart'])): ?>
+                        <span class="bg-red-500 text-white rounded-full px-2 py-1 text-xs"><?php echo count($_SESSION['cart']); ?></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
@@ -762,7 +810,7 @@ foreach ($ratingDistribution as $rating => $count) {
                         <span class="font-bold text-3xl"><?php echo $course['price']; ?></span>
                         <span class="text-gray-500 line-through ml-2"><?php echo $course['original_price']; ?></span>
                     </div>
-                    <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition mb-4">Tambah ke keranjang</button>
+                    <a href="course-detail.php?id=<?php echo $course_id; ?>&add_to_cart=<?php echo $course_id; ?>" class="w-full block text-center bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition mb-4">Tambah ke keranjang</a>
                     <button class="w-full border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</button>
                     
                     <div class="mt-6 text-center">
