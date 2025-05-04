@@ -1,22 +1,23 @@
 <?php
+
+session_start();
 include "db.php";
 
 $messege = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    // Validasi password: minimal 8 karakter dan ada karakter khusus
+    // Validasi password
     if (strlen($password) < 8) {
         $messege = "Password minimal 8 karakter.";
     } elseif (!preg_match('/[^a-zA-Z0-9]/', $password)) {
-        $messege = "Password harus mengandung setidaknya 1 karakter khusus (contoh: !, @, #, $, %, dll).";
+        $messege = "Password harus mengandung setidaknya 1 karakter khusus.";
     } else {
-        // Jika validasi password lolos, lanjut hash password
-        $password = password_hash($password, PASSWORD_DEFAULT);
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Cek apakah username sudah ada
+        // Cek username
         $sql = "SELECT * FROM tbuser WHERE username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $username);
@@ -26,13 +27,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
-            // Menyimpan username dan password yang sudah di-hash ke database
+            // Simpan ke DB
             $sql = "INSERT INTO tbuser (username, password) VALUES (?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $username, $password);
+            $stmt->bind_param("ss", $username, $hashedPassword);
 
             if ($stmt->execute()) {
-                // Redirect ke halaman login setelah berhasil registrasi
+                $_SESSION['success_messege'] = "Berhasil register. Silahkan login.";
                 header("Location: HalamanSignIn.php");
                 exit();
             } else {
@@ -71,15 +72,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
                 <?php endif; ?>
 
-                <form id="signupForm" class="w-75 mt-3" method="POST">
+                <!-- FORM -->
+                <form id="signupForm" class="w-75 mt-3" method="POST" action="">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" name="password" placeholder="Masukan Password" required>
+                         <label for="password">Password</label>
+                         <input type="password" class="form-control" name="password" placeholder="Masukan Password" required>
                     </div>
+                    <!-- Tombol akan memunculkan modal -->
                     <button type="button" class="btn btn-danger btn-block rounded-pill mt-3" data-toggle="modal" data-target="#termsModal">Sign Up</button>
                 </form>
             </div>
@@ -87,43 +90,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="termsModalLabel">Syarat dan Ketentuan KelasKita</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <h5>1. Pendahuluan</h5>
-                    <p>Selamat datang di KelasKita! Dengan mengakses dan menggunakan website kami, Anda dianggap telah menyetujui Syarat dan Ketentuan ini. Jika tidak setuju, mohon hentikan penggunaan.</p>
-
-                    <h5>2. Definisi</h5>
-                    <ul>
-                        <li>"Website" = situs web resmi kami.</li>
-                        <li>"Pengguna" = individu yang menggunakan website.</li>
-                        <li>"Layanan" = semua fitur dan informasi dalam website.</li>
-                    </ul>
-
-                    <h5>3. Perubahan</h5>
-                    <p>Kami bisa mengubah Syarat dan Ketentuan kapan saja. Harap cek halaman ini secara berkala.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Tolak</button>
-                    <button type="button" id="acceptTermsBtn" class="btn btn-danger">Terima</button>
-                </div>
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="termsModalLabel">Syarat dan Ketentuan</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Dengan mendaftar, Anda menyetujui syarat dan ketentuan kami.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Tolak</button>
+                <button type="button" id="acceptTermsBtn" class="btn btn-danger">Terima</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- JS -->
-    <script>
-        document.getElementById('acceptTermsBtn').addEventListener('click', function() {
+<!-- Script: Tutup modal lalu submit -->
+<script>
+    document.getElementById('acceptTermsBtn').addEventListener('click', function () {
+        $('#termsModal').modal('hide');
+        setTimeout(function () {
             document.getElementById('signupForm').submit();
-        });
-    </script>
+        }, 300); // Jeda agar modal benar-benar tertutup
+    });
+</script>
+
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>

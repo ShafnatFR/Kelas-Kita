@@ -210,12 +210,53 @@ $toolsCount = "50+";
                         <?php endif; ?>
                     </a>
                 </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-                <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
+                <div class="flex items-center space-x-4">
+    <?php if (isset($_SESSION['username'])): ?>
+        <div class="relative">
+            <!-- Tombol Profil -->
+            <button onclick="toggleDropdown()" class="focus:outline-none">
+                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32"
+                    alt="Profile" class="rounded-full w-8 h-8">
+            </button>
+
+            <!-- Dropdown -->
+            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50">
+                <div class="flex items-center space-x-3 border-b pb-3 mb-3">
+                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=48"
+                        alt="Profile" class="rounded-full w-12 h-12">
+                    <div>
+                        <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
+                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
+                    </div>
+                </div>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
+                    <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
+                    <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
+                </ul>
             </div>
         </div>
-    </nav>
+    <?php else: ?>
+        <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
+        <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
+    <?php endif; ?>
+</div>
+
+<script>
+function toggleDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('hidden');
+    // Klik di luar dropdown untuk nutup
+    document.addEventListener('click', function handleOutsideClick(event) {
+        if (!dropdown.contains(event.target) && !event.target.closest('button')) {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', handleOutsideClick);
+        }
+    });
+}
+</script>
+            </div>
+        </nav>
     
 
     <!-- Hero Section -->
