@@ -5,24 +5,24 @@ include "db.php";
 $messege = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
+    // Ambil input dengan aman
+    $username = htmlspecialchars(trim($_POST['username']));
     $password = $_POST['password'];
 
-    // Ambil data user dari database
+    // Ambil data user berdasarkan username
     $sql = "SELECT * FROM tbuser WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Cek apakah user ditemukan
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
+        // Verifikasi password
         if (password_verify($password, $row['password'])) {
-            // Simpan session dan arahkan ke halaman utama
             $_SESSION['username'] = $username;
-            header("Location: INDEX1.php"); // Ganti sesuai halaman utama kamu
+            header("Location: INDEX1.php");
             exit();
         } else {
             $messege = "Password salah!";
