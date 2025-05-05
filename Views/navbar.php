@@ -1,39 +1,53 @@
-<header>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container">
-                <a class="navbar-brand" href="Halamanutamalogin.html">
-                    <img src="logo.png" alt="KelasKita Logo">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link text-white" href="Halamanutamalogin.html">Beranda</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="kategori.html">Kategori</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="kelasKita[kosong].html">Kelasku</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="aboutus1.html">Tentang Kami</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="contackUs.html">Hubungi Kami</a></li>
-                        <li class="nav-item"><a class="nav-link" href="Blog.html">Blog</a></li>
-                        <li class="nav-item"><a class="nav-link" href="pengumuman.html">Pengumuman</a></li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                </svg>
-                                <span style="color: white;" class="ms-2">Michael</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="setting-profil.html">Pengaturan Profil</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="HalamanSignIn.html">Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-white py-4 px-6 shadow-sm">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
+                <div class="hidden md:flex ml-10 space-x-6">
+                    <a href="#" class="text-gray-900 font-medium">Rumah</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">kontak</a>
                 </div>
             </div>
-        </nav>
-    </header>
+            <div class="flex items-center space-x-4">
+                <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <?php if(!empty($_SESSION['cart'])): ?>
+                        <span class="bg-red-500 text-white rounded-full px-2 py-1 text-xs"><?php echo count($_SESSION['cart']); ?></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+    <?php if (isset($_SESSION['username'])): ?>
+        <div class="relative">
+            <!-- Tombol Profil -->
+            <button onclick="toggleDropdown()" class="focus:outline-none">
+                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32"
+                    alt="Profile" class="rounded-full w-8 h-8">
+            </button>
+
+            <!-- Dropdown -->
+            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50">
+                <div class="flex items-center space-x-3 border-b pb-3 mb-3">
+                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=48"
+                        alt="Profile" class="rounded-full w-12 h-12">
+                    <div>
+                        <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
+                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
+                    </div>
+                </div>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
+                    <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
+                    <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    <?php else: ?>
+        <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Masuk</a>
+        <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Register</a>
+    <?php endif; ?>
+</div>
