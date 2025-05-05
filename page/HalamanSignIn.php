@@ -80,6 +80,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <button type="submit" class="btn btn-primary btn-block rounded-pill">Sign In</button>
                     <div class="text-right mb-2">
                         <a href="ForgetPass.php" class="text-primary">Lupa Password?</a>
+                        <div class="text-left mb-2">
+                        <a href="index.php" class="text-primary">Kembali</a>
                     </div>
                 </form>
             </div>

@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Kanan -->
             <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
                 <h2 class="font-weight-bold text-primary">Buat Akun KelasKita</h2>
-                <img src="../assets/images/Google1.png" alt="Google Logo" width="50" class="my-3">
+                <!-- <img src="../assets/images/Google1.png" alt="Google Logo" width="50" class="my-3"> -->
 
                 <?php if (!empty($messege)) : ?>
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="termsModalLabel">Syarat dan Ketentuan</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span>&times;</span>
