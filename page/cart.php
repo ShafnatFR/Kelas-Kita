@@ -11,20 +11,27 @@ if (!isset($_SESSION['cart'])) {
 
 // Tambah ke cart dari link ?action=add&id=...
 if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
-    include_once('tbkelas.php'); // file ini harus berisi $allCourses
-
     $course_id = $_GET['id'];
-    foreach ($allCourses as $course) {
-        if ($course['id'] == $course_id) {
-            $_SESSION['cart'][$course_id] = [
-                'id' => $course['id'],
-                'title' => $course['title'],
-                'instructor' => $course['instructor'],
-                'price' => $course['price'],
-                'image' => $course['image'] ?? '',
-            ];
-            break;
+    
+    // Load data kursus
+    if (file_exists('tbkelas.php')) {
+        include_once('tbkelas.php'); // file ini harus berisi $allCourses
+        
+        foreach ($allCourses as $course) {
+            if ($course['id'] == $course_id) {
+                $_SESSION['cart'][$course_id] = [
+                    'id' => $course['id'],
+                    'title' => $course['title'],
+                    'instructor' => $course['instructor'],
+                    'price' => $course['price'],
+                    'image' => $course['image'] ?? '',
+                ];
+                break;
+            }
         }
+    } else {
+        // Fallback jika file tidak ada
+        $_SESSION['error_message'] = "Error: tbkelas.php tidak ditemukan";
     }
 
     header('Location: cart.php');
@@ -34,13 +41,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
 // Hapus dari cart
 if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
     $course_id = $_GET['id'];
-    error_log("Remove action triggered for course_id: " . $course_id);
-    error_log("Current cart keys: " . implode(", ", array_keys($_SESSION['cart'])));
     if (isset($_SESSION['cart'][$course_id])) {
         unset($_SESSION['cart'][$course_id]);
-        error_log("Course removed from cart: " . $course_id);
-    } else {
-        error_log("Course ID not found in cart: " . $course_id);
     }
     
     // Redirect kembali ke halaman keranjang
@@ -108,9 +110,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'move_to_cart' && isset($_GET['
 
 // Hitung total belanja
 $total = 0;
-$discounted_total = 15;
+$discounted_total = 0;
 $applied_coupon = null;
-$discount_amount = 20;
+$discount_amount = 0;
 
 // Handler untuk promo code
 $promo_message = '';
@@ -125,7 +127,7 @@ $valid_promo_codes = [
 ];
 
 // Handle apply promo code
-if (isset($_POST['apply_promo'])) {
+if (isset($_POST['apply_promo']) && isset($_POST['promo_code'])) {
     $promo_code = strtoupper(trim($_POST['promo_code']));
 
     if (isset($valid_promo_codes[$promo_code])) {
@@ -146,11 +148,13 @@ if (isset($_SESSION['applied_coupon'])) {
 }
 
 // Calculate cart total
-foreach ($_SESSION['cart'] as $item) {
-    if (isset($item['price']) && !empty($item['price'])) {
-        // Remove currency symbol and convert to numeric
-        $price = str_replace(['$', 'Rp', ','], '', $item['price']);
-        $total += (float)$price;
+if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $item) {
+        if (isset($item['price']) && !empty($item['price'])) {
+            // Remove currency symbol and convert to numeric
+            $price = str_replace(['$', 'Rp', ','], '', $item['price']);
+            $total += (float)$price;
+        }
     }
 }
 
@@ -180,6 +184,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
     header('Location: cart.php');
     exit;
 }
+
+// Tampilkan halaman keranjang belanja
 ?>
 
 <!DOCTYPE html>
@@ -187,7 +193,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart | Upskill - Online Learning Platform</title>
+    <title>Keranjang Belanja | Kelas Kita - </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -203,13 +209,13 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
     <nav class="bg-white py-4 px-6 shadow-sm">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="index.php" class="text-blue-600 font-bold text-2xl">upskill</a>
+                <a href="index.php" class="text-blue-600 font-bold text-2xl">Kelas Kita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="index.php" class="text-gray-500 hover:text-gray-900">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Courses</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
+                    <a href="index.php" class="text-gray-500 hover:text-gray-900">Beranda</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kontak</a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -221,17 +227,17 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
 
     <!-- Cart Section -->
     <div class="container mx-auto px-4 py-10">
-        <h1 class="text-3xl font-bold mb-10">Shopping Cart</h1>
+        <h1 class="text-3xl font-bold mb-10">Keranjang Belanja</h1>
         
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Cart Items -->
             <div class="w-full lg:w-2/3">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                    <h2 class="text-xl font-semibold mb-4"><?php echo count($_SESSION['cart']); ?> Course in Cart</h2>
+                    <h2 class="text-xl font-semibold mb-4"><?php echo count($_SESSION['cart']); ?> Kursus di Keranjang</h2>
                     <?php if (empty($_SESSION['cart'])) { ?>
     <div class="py-8 text-center">
-        <p class="text-gray-500 mb-4">Your cart is empty.</p>
-        <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Browse courses</a>
+        <p class="text-gray-500 mb-4">Keranjang Anda Kosong</p>
+        <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Telusuri Kursus</a>
     </div>
 <?php } else { ?>
     <?php foreach ($_SESSION['cart'] as $course_id => $item) { ?>
@@ -321,13 +327,42 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
 </div>
             
             <!-- Order Summary -->
+            <?php if ($applied_coupon): ?>
+    <div class="flex justify-between mb-2 text-green-600">
+        <span>Diskon (<?= htmlspecialchars($applied_coupon['code']) ?>):</span>
+        <span>- Rp<?= $discount_amount_formatted; ?></span>
+    </div>
+<?php endif; ?>
+
+<div class="flex justify-between font-bold text-lg mb-4">
+    <span>Total Akhir:</span>
+    <span>Rp<?= $discounted_total_formatted; ?></span>
+</div>
+
+<?php if ($promo_message): ?>
+    <div class="mb-4 text-sm <?= $applied_coupon ? 'text-green-600' : 'text-red-600' ?>">
+        <?= $promo_message ?>
+    </div>
+<?php endif; ?>
+
+<?php if (!$applied_coupon): ?>
+<form method="POST" class="flex items-center space-x-2 mb-4">
+    <input type="text" name="promo_code" placeholder="Kode Promo" class="border px-3 py-2 rounded w-full">
+    <button type="submit" name="apply_promo" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Terapkan</button>
+</form>
+<?php else: ?>
+    <a href="cart.php?action=remove_coupon" class="text-red-600 text-sm hover:underline">Hapus Kupon</a>
+<?php endif; ?>
+
+<a href="checkout.php" class="block w-full text-center mt-6 bg-green-600 text-white py-3 rounded hover:bg-green-700">Lanjutkan Pembayaran</a>
+
             <div class="w-full lg:w-1/3">
                 <div class="bg-white p-6 rounded-lg shadow-sm sticky top-6">
                     <h2 class="text-xl font-semibold mb-4">Total:</h2>
                     
                     <div class="mb-6">
                         <div class="flex justify-between mb-2">
-                            <span>Original Price:</span>
+                            <span>Harga Asli:</span>
                             <span>Rp<?php echo $total_formatted; ?></span>
                         </div>
                         
@@ -342,8 +377,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                             <span>Total:</span>
                             <span>Rp<?php echo $discounted_total_formatted; ?></span>
                         </div>
-                        
-                        <p class="text-sm text-gray-500 mt-2">You won't be charged yet</p>
+                        <p class="text-sm text-gray-500 mt-2">Anda belum akan dikenai biaya</p>
                     </div>
                     
                     <!-- Promotions Section -->
@@ -376,12 +410,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                     
                     <!-- Checkout Button -->
                     <a href="checkout.php" class="block w-full bg-purple-600 text-white text-center py-3 px-4 rounded-md font-medium hover:bg-purple-700 transition">
-                        Proceed to Checkout <i class="fas fa-arrow-right ml-1"></i>
+                        Lanjutkan ke Pembayaran <i class="fas fa-arrow-right ml-1"></i>
                     </a>
                     
                     <!-- Payment Methods -->
                     <div class="mt-6">
-                        <p class="text-sm text-gray-500 mb-2">Secure Payment Methods:</p>
+                        <p class="text-sm text-gray-500 mb-2">metode pembayaran Aman</p>
                         <div class="flex gap-2">
                             <div class="border border-gray-200 rounded p-2">
                                 <i class="fab fa-cc-visa text-blue-700"></i>
