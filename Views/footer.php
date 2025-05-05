@@ -46,10 +46,7 @@
                     <h5 class="font-semibold mb-4">Unduh aplikasi</h5>
                     <div class="flex flex-col space-y-3">
                         <a href="#" class="block">
-                            <img src="assets/images/app-store.png" alt="App Store" class="h-10">
-                        </a>
-                        <a href="#" class="block">
-                            <img src="assets/images/google-play.png" alt="Google Play" class="h-10">
+                            <img src="../assets/images/6acf4c84f55a52f6ccbdaa71ad2701ee.jpg" alt="App Store" class="h-10">
                         </a>
                     </div>
                 </div>

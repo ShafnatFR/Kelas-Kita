@@ -382,7 +382,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                     
                     <!-- Promotions Section -->
                     <div class="mb-6">
-                        <h3 class="font-semibold mb-3">Promotions</h3>
+                        <h3 class="font-semibold mb-3">Promosi</h3>
                         
                         <?php if ($applied_coupon): ?>
                         <div class="flex justify-between items-center bg-gray-100 p-3 rounded-md mb-3">
@@ -484,11 +484,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
                     </form>
                 </div>
             </div>
-            
+
             <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400">© 2025 Upskill. All rights reserved.</p>
                 <div class="mt-4 md:mt-0">
-                    <img src="assets/images/payment-methods.png" alt="Payment Methods" class="h-8">
+                    <img src="../assets/images/e3c90883212a5d017dbbb0fb0fe67ac0.jpg" alt="Payment Methods" class="h-12">
                 </div>
             </div>
         </div>

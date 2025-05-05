@@ -54,7 +54,7 @@ $featuredCourses = [
         'rating' => '4.8',
         'reviews' => '1,275',
         'tag' => 'BEST SELLER',
-        'image' => '../assets/images/digitalmarketing.php',
+        'image' => '../assets/images/Digitalmarketing.jpg',
         'badge' => 'HOT',
         'description' => 'Learn the most effective digital marketing strategies to grow your business online. This comprehensive course covers SEO, social media marketing, email marketing, content marketing, and paid advertising. You\'ll learn how to create effective marketing campaigns, analyze their performance, and optimize them for better results.',
         'what_you_learn' => [
@@ -95,7 +95,7 @@ $featuredCourses = [
         'rating' => '4.9',
         'reviews' => '852',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/mobile flutter.webp',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -135,7 +135,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '2,342',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/7212c4bbf2054dc64cb106f6145d01ea.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -175,7 +175,7 @@ $featuredCourses = [
         'rating' => '4.6',
         'reviews' => '1,062',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/6893cf238804d5855aef507b3b2569be.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -215,7 +215,7 @@ $featuredCourses = [
         'rating' => '4.5',
         'reviews' => '756',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/69591b7242604c6866f1293ed7701b1c.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -255,7 +255,7 @@ $featuredCourses = [
         'rating' => '4.9',
         'reviews' => '1,536',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/1d1834258e04d5f2241e33ef68d4357d.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -295,7 +295,7 @@ $featuredCourses = [
         'rating' => '4.8',
         'reviews' => '3,128',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/45b00ea9dc1ae612b7c53a7a93c1a1e3.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -335,7 +335,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '942',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg',
+        'image' => '../assets/images/3c6067ae93b24b166f7888bbf9809589.jpg',
         'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
         'what_you_learn' => [
             'Build beautiful, fast native-quality apps with Flutter',
@@ -586,7 +586,7 @@ foreach ($ratingDistribution as $rating => $count) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $course['title']; ?> | Upskill - Online Learning Platform</title>
+    <title><?php echo $course['title']; ?> | Kelas Kita - Online Learning Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -607,13 +607,13 @@ foreach ($ratingDistribution as $rating => $count) {
     <nav class="bg-white py-4 px-6 shadow-sm">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <a href="index.php" class="text-blue-600 font-bold text-2xl">upskill</a>
+                <a href="index.php" class="text-blue-600 font-bold text-2xl">Kelaskita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="index.php" class="text-gray-900 font-medium">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Courses</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
+                    <a href="index.php" class="text-gray-900 font-medium">Beranda</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Kontak</a>
                 </div>
                 <div class="flex items-center space-x-4">
                 <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
@@ -650,15 +650,15 @@ foreach ($ratingDistribution as $rating => $count) {
                     <div class="flex items-center mb-6">
                         <div class="rating-stars mr-2">★★★★★</div>
                         <span class="font-medium mr-1"><?php echo $course['rating']; ?></span>
-                        <span class="text-gray-400">(<?php echo $course['reviews']; ?> ratings)</span>
+                        <span class="text-gray-400">(<?php echo $course['reviews']; ?> Peringkat)</span>
                         <span class="mx-2">•</span>
-                        <span><?php echo count($course['reviews_list']); ?> reviews</span>
+                        <span><?php echo count($course['reviews_list']); ?> ulasan</span>
                         <span class="mx-2">•</span>
-                        <span>Created by <a href="#" class="text-blue-400 hover:text-blue-300"><?php echo $course['instructor']; ?></a></span>
+                        <span>Dibuat oleh <a href="#" class="text-blue-400 hover:text-blue-300"><?php echo $course['instructor']; ?></a></span>
                     </div>
                     
                     <div class="flex flex-wrap items-center">
-                        <a href="#" class="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition mr-4 mb-4 md:mb-0">Enroll Now</a>
+                        <a href="#" class="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition mr-4 mb-4 md:mb-0">Daftar sekarang</a>
                         <div class="flex items-center">
                             <span class="font-bold text-2xl"><?php echo $course['price']; ?></span>
                             <span class="text-gray-400 line-through ml-2"><?php echo $course['original_price']; ?></span>
@@ -749,7 +749,7 @@ foreach ($ratingDistribution as $rating => $count) {
                     </div>
                     
                     <!-- Reviews List -->
-                    <h3 class="text-xl font-semibold mb-6">Reviews</h3>
+                    <h3 class="text-xl font-semibold mb-6">Ulasan</h3>
                     
                     <?php foreach ($course['reviews_list'] as $review): ?>
                     <div class="border-b border-gray-200 pb-6 mb-6 last:border-b-0 last:pb-0 last:mb-0">
@@ -781,10 +781,10 @@ foreach ($ratingDistribution as $rating => $count) {
                     
                     <!-- Leave a Review Form -->
                     <div class="mt-8">
-                        <h3 class="text-xl font-semibold mb-4">Leave a Review</h3>
+                        <h3 class="text-xl font-semibold mb-4">Tingkatkan Ulasan</h3>
                         <form action="#" method="post" class="space-y-4">
                             <div>
-                                <label for="rating" class="block text-gray-700 mb-2">Your Rating</label>
+                                <label for="rating" class="block text-gray-700 mb-2">Peninilainan anda</label>
                                 <div class="flex text-2xl text-gray-400">
                                     <button type="button" class="mr-1 hover:text-yellow-500">☆</button>
                                     <button type="button" class="mr-1 hover:text-yellow-500">☆</button>
@@ -794,10 +794,10 @@ foreach ($ratingDistribution as $rating => $count) {
                                 </div>
                             </div>
                             <div>
-                                <label for="comment" class="block text-gray-700 mb-2">Your Review</label>
+                                <label for="comment" class="block text-gray-700 mb-2">Ulasan Anda</label>
                                 <textarea id="comment" name="comment" rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                             </div>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Submit Review</button>
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Kirimkan Ulasan</button>
                         </form>
                     </div>
                 </div>
@@ -815,12 +815,12 @@ foreach ($ratingDistribution as $rating => $count) {
                     <button class="w-full border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</button>
                     
                     <div class="mt-6 text-center">
-                        <p class="text-gray-500 text-sm mb-1">30-day money-back guarantee</p>
-                        <p class="text-gray-500 text-sm">Full lifetime access</p>
+                        <p class="text-gray-500 text-sm mb-1">Jaminan uang kembali 30 hari</p>
+                        <p class="text-gray-500 text-sm">Akses penuh seumur hidup</p>
                     </div>
                     
                     <div class="border-t border-gray-200 my-6 pt-6">
-                        <h4 class="font-semibold mb-4">Share this course</h4>
+                        <h4 class="font-semibold mb-4">Bagikan kursus ini</h4>
                         <div class="flex space-x-4">
                             <a href="#" class="text-gray-500 hover:text-blue-600"><i class="fab fa-facebook-f"></i></a>
                             <a href="#" class="text-gray-500 hover:text-blue-400"><i class="fab fa-twitter"></i></a>
@@ -836,7 +836,7 @@ foreach ($ratingDistribution as $rating => $count) {
     <!-- Related Courses Section -->
     <section class="py-12 bg-gray-50">
     <div class="container mx-auto px-6">
-        <h2 class="text-2xl font-bold mb-10">You might also like</h2>
+        <h2 class="text-2xl font-bold mb-10">Anda mungkin juga menyukai</h2>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php 
@@ -871,7 +871,7 @@ foreach ($ratingDistribution as $rating => $count) {
                             <span class="font-bold text-gray-900"><?php echo $relatedCourse['price']; ?></span>
                             <span class="text-gray-500 text-sm line-through ml-1"><?php echo $relatedCourse['original_price']; ?></span>
                         </div>
-                        <a href="course.php?id=<?php echo $relatedCourse['id']; ?>" class="text-blue-600 hover:text-blue-700 font-medium text-sm">View Course</a>
+                        <a href="course.php?id=<?php echo $relatedCourse['id']; ?>" class="text-blue-600 hover:text-blue-700 font-medium text-sm">Lihat Kursus</a>
                     </div>
                 </div>
             </div>
@@ -888,8 +888,8 @@ foreach ($ratingDistribution as $rating => $count) {
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <a href="index.php" class="text-blue-400 font-bold text-2xl mb-4 block">upskill</a>
-                    <p class="text-gray-400 mb-4">Transform your life through education with our online learning platform. Learn from industry experts and advance your career.</p>
+                    <a href="index.php" class="text-blue-400 font-bold text-2xl mb-4 block">Kelas Kita</a>
+                    <p class="text-gray-400 mb-4">Ubah hidup Anda melalui pendidikan dengan platform pembelajaran daring kami. Belajar dari para pakar industri dan tingkatkan karier Anda.</p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
@@ -899,7 +899,7 @@ foreach ($ratingDistribution as $rating => $count) {
                 </div>
                 
                 <div>
-                    <h3 class="font-semibold text-lg mb-4">Explore</h3>
+                    <h3 class="font-semibold text-lg mb-4">Mengeksplorasi</h3>
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-400 hover:text-white">Our Courses</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
@@ -910,7 +910,7 @@ foreach ($ratingDistribution as $rating => $count) {
                 </div>
                 
                 <div>
-                    <h3 class="font-semibold text-lg mb-4">Quick Links</h3>
+                    <h3 class="font-semibold text-lg mb-4">Tautan Cepat</h3>
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white">Terms & Conditions</a></li>
@@ -922,7 +922,7 @@ foreach ($ratingDistribution as $rating => $count) {
                 
                 <div>
                     <h3 class="font-semibold text-lg mb-4">Subscribe</h3>
-                    <p class="text-gray-400 mb-4">Subscribe to our newsletter to receive the latest updates and offers.</p>
+                    <p class="text-gray-400 mb-4">Berlangganan buletin kami untuk menerima pembaruan dan penawaran terkini.</p>
                     <form class="flex">
                         <input type="email" placeholder="Your email" class="px-4 py-2 w-full rounded-l-md focus:outline-none">
                         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition">
@@ -933,9 +933,9 @@ foreach ($ratingDistribution as $rating => $count) {
             </div>
             
             <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400">© 2025 Upskill. All rights reserved.</p>
+                <p class="text-gray-400">© 2025 Upskill. Semua hak dilindungi undang-undang.</p>
                 <div class="mt-4 md:mt-0">
-                    <img src="assets/images/payment-methods.png" alt="Payment Methods" class="h-8">
+                    <img src="../assets/images/e3c90883212a5d017dbbb0fb0fe67ac0.jpg" alt="Payment Methods" class="h-12">
                 </div>
             </div>
         </div>
