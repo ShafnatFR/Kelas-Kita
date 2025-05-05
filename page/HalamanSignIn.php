@@ -2,7 +2,7 @@
 session_start();
 include "db.php";
 
-$messege = "";
+$message = "";
 
 if (isset($_SESSION['success_message'])) {
     echo "<div class='alert alert-success'>" . $_SESSION['success_message'] . "</div>";
@@ -24,20 +24,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
-        // Verifikasi password dengan hash yang ada di database
+        // Verifikasi password
         if (password_verify($password, $row['password'])) {
-            // Jika password cocok, simpan username ke session dan arahkan ke halaman utama
-            $_SESSION['username'] = $username;
-            header("Location: index.php"); // Ganti dengan halaman utama kamu
+            // Simpan ke session
+            $_SESSION['id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['first_name'] = $row['first_name'];
+            $_SESSION['last_name'] = $row['last_name'];
+            $_SESSION['role'] = $row['role'];
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['fotoProfil'] = $row['fotoProfil'];
+            $_SESSION['bahasa'] = $row['bahasa'];
+            $_SESSION['zona_waktu'] = $row['zona_waktu'];
+            $_SESSION['deskripsi'] = $row['deskripsi'];
+            $_SESSION['balasan_ke_komentar'] = $row['balasan_ke_komentar'];
+            $_SESSION['komentar_baru'] = $row['komentar_baru'];
+            $_SESSION['notifikasi_postingan_baru'] = $row['notifikasi_postingan_baru'];
+            $_SESSION['instagram'] = $row['instagram'];
+            $_SESSION['twitter'] = $row['twitter'];
+            $_SESSION['linkdin'] = $row['linkdin'];
+            $_SESSION['github'] = $row['github'];
+
+            header("Location: index.php"); // Ganti dengan halaman setelah login
             exit();
         } else {
-            $messege = "Password salah!";
+            $message = "Password salah!";
         }
     } else {
-        $messege = "Username tidak ditemukan!";
+        $message = "Username tidak ditemukan!";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,32 +73,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h1 class="display-4 font-weight-bold text-center">Halo Teman Baru!</h1>
                 <p class="text-center">Silakan daftar akun baru jika belum memiliki akun.</p>
                 <a href="HalamanSignUp.php" class="btn btn-outline-light rounded-pill px-4 mt-3">Sign Up</a>
-            </div><?php
-            
-            ?>
-            
+            </div>
+
             <!-- Kanan -->
             <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
                 <h2 class="font-weight-bold text-primary">Masuk ke KelasKita</h2>
                 <img src="Google1.png" alt="Google Logo" width="50" class="my-3">
 
-                <?php if (!empty($messege)) : ?>
-                    <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
+                <?php if (!empty($message)) : ?>
+                    <div class="alert alert-warning w-75"><?php echo $message; ?></div>
                 <?php endif; ?>
 
                 <form class="w-75 mt-3" method="post">
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" class="form-control" name="username" placeholder="Masukan Username" required>
+                        <input type="text" class="form-control" name="username" placeholder="Masukkan Username" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" class="form-control" name="password" id="password"placeholder="Masukan Password" required>
+                        <input type="password" class="form-control" name="password" placeholder="Masukkan Password" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block rounded-pill">Sign In</button>
-                    <div class="text-right mb-2">
+
+                    <div class="d-flex justify-content-between mt-3">
                         <a href="ForgetPass.php" class="text-primary">Lupa Password?</a>
-                        <div class="text-left mb-2">
                         <a href="index.php" class="text-primary">Kembali</a>
                     </div>
                 </form>
