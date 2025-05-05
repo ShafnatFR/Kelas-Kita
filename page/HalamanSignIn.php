@@ -94,15 +94,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="password" class="form-control" name="password" placeholder="Masukkan Password" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block rounded-pill">Sign In</button>
-<<<<<<< HEAD
 
                     <div class="d-flex justify-content-between mt-3">
                         <a href="ForgetPass.php" class="text-primary">Lupa Password?</a>
-=======
-                    <div class="text-right mb-2 mt-2">
-                        <a href="ForgetPass.php" class="text-primary">Lupa Password?</a>
-                        <div class="text-left">
->>>>>>> 12e16fa6df0c666852b9efd08b3fa36ec6fcf20a
                         <a href="index.php" class="text-primary">Kembali</a>
                     </div>
                 </form>
