@@ -83,7 +83,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                          <input type="password" class="form-control" name="password" placeholder="Masukan Password" required>
                     </div>
                     <!-- Tombol akan memunculkan modal -->
-                    <button type="button" class="btn btn-primary btn-block rounded-pill mt-3" data-toggle="modal" data-target="#termsModal">Sign Up</button>
+                    <button type="button" class="btn btn-primary btn-block rounded-pill mt-4" data-toggle="modal" data-target="#termsModal">Sign Up</button>
+                    <div class="text-left mb-2 mt-3">
+                        <a href="index.php" class="text-primary">Kembali</a>
+                    </div>
                 </form>
             </div>
         </div>

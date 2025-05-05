@@ -302,16 +302,15 @@ function toggleDropdown() {
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="py-16 bg-gray-50">
+    <section class="py-16 bg-white">
         <div class="container mx-auto px-6">
             <div class="flex flex-col md:flex-row items-center gap-10">
                 <div class="md:w-1/2">
-                    <img src="assets/images/student-laptop.jpg" alt="Student using laptop" class="rounded-lg shadow-md w-full">
+                    <img src="../assets/images/megang laptop.jpg" alt="Student using laptop" class="rounded-lg w-128">
                 </div>
                 <div class="md:w-1/2">
                     <h2 class="text-3xl font-bold mb-6">Mengapa Upskill menjadi kursus pelatihan & bootcamp terbaik</h2>
                     <p class="text-gray-600 mb-8">Kami telah merancang platform kami untuk menyediakan pengalaman belajar terbaik dengan instruktur ahli, proyek langsung, dan komunitas yang mendukung.</p>
-                    
                     <div class="grid grid-cols-2 gap-6">
                         <div class="flex items-center">
                             <div class="bg-blue-100 p-3 rounded-full mr-4">
