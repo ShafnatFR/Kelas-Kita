@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Kanan -->
             <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
                 <h2 class="font-weight-bold text-primary">Masuk ke KelasKita</h2>
-                <img src="Google1.png" alt="Google Logo" width="50" class="my-3">
+                <!-- <img src="Google1.png" alt="Google Logo" width="50" class="my-3"> -->
 
                 <?php if (!empty($messege)) : ?>
                     <div class="alert alert-warning w-75"><?php echo $messege; ?></div>
@@ -78,9 +78,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="password" class="form-control" name="password" id="password"placeholder="Masukan Password" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block rounded-pill">Sign In</button>
-                    <div class="text-right mb-2">
+                    <div class="text-right mb-2 mt-2">
                         <a href="ForgetPass.php" class="text-primary">Lupa Password?</a>
-                        <div class="text-left mb-2">
+                        <div class="text-left">
                         <a href="index.php" class="text-primary">Kembali</a>
                     </div>
                 </form>
