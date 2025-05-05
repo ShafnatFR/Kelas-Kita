@@ -23,7 +23,7 @@ $user = $stmt->get_result()->fetch_assoc();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="custom.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
-    <title>Profil Siswa</title>
+    <title>Profil</title>
 </head>
 <body class="d-flex flex-column min-vh-100">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -35,18 +35,18 @@ $user = $stmt->get_result()->fetch_assoc();
                 <div class="col-12 col-md-3 d-flex flex-column align-items-center pt-3">
                     <div class="text-center">
                         <img src="../upload/<?= htmlspecialchars($user['fotoProfil'] ?? 'default.jpg') ?>" 
-                        class="img-fluid rounded-circle w-75 mb-2" 
-                        style="aspect-ratio: 1/1; object-fit: cover;" 
+                        class="img-fluid rounded-circle w-75 mb-2"
+                        style="aspect-ratio: 1/1; object-fit: cover;"
                         alt="Profile Picture">
                         <p class="fw-bold mb-3"><?= htmlspecialchars($user['username'] ?? '') ?></p>
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
-                        <a href="setting-profil.html" class="btn btn-primary active">Profil</a>
-                        <a href="setting-preferensi.html" class="btn btn-outline-primary">Preferensi</a>
-                        <a href="setting-notifikasi.html" class="btn btn-outline-primary">Notifikasi</a>
-                        <a href="setting-hubungkanAkun.html" class="btn btn-outline-primary">Hubungkan Akun</a>
-                        <a href="setting-keluar.html" class="btn btn-outline-primary">Keluar</a>
-                        <a href="setting-tutupAkun.html" class="btn btn-outline-primary">Tutup Akun</a>
+                        <a href="setting-profil.php" class="btn btn-primary active">Profil</a>
+                        <a href="setting-preferensi.php" class="btn btn-outline-primary">Preferensi</a>
+                        <a href="setting-notifikasi.php" class="btn btn-outline-primary">Notifikasi</a>
+                        <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary">Hubungkan Akun</a>
+                        <a href="setting-keluar.php" class="btn btn-outline-primary">Keluar</a>
+                        <a href="setting-tutupAkun.php" class="btn btn-outline-primary">Tutup Akun</a>
                     </div>
                 </div>
                 <!-- Informasi Profil -->
@@ -59,17 +59,17 @@ $user = $stmt->get_result()->fetch_assoc();
                             <div class="mb-2">
                                 <label for="first_name" class="form-label">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name"
-                                       value="<?= htmlspecialchars($user['first_name'] ?? '') ?>" placeholder="First Name">
+                                value="<?= htmlspecialchars($user['first_name'] ?? '') ?>" placeholder="First Name">
                             </div>
                             <div class="mb-2">
                                 <label for="last_name" class="form-label">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name"
-                                       value="<?= htmlspecialchars($user['last_name'] ?? '') ?>" placeholder="Last Name">
+                                value="<?= htmlspecialchars($user['last_name'] ?? '') ?>" placeholder="Last Name">
                             </div>
                             <div class="mb-2">
                                 <label for="deskripsi" class="form-label">Deskripsi</label>
                                 <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
-                                          placeholder="Deskripsi diri"><?= htmlspecialchars($user['deskripsi'] ?? '') ?></textarea>
+                                placeholder="Deskripsi diri"><?= htmlspecialchars($user['deskripsi'] ?? '') ?></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="foto" class="form-label">Ganti Foto Profil</label>
