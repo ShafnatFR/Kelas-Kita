@@ -5,7 +5,7 @@
             <div class="flex items-center">
                 <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="#" class="text-gray-900 font-medium">Rumah</a>
+                    <a href="#" class="text-gray-900 font-medium">Beranda</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
