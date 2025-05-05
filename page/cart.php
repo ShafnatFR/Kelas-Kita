@@ -4,49 +4,34 @@ include "db.php";
 // Session start untuk menyimpan data keranjang
 session_start();
 
-// Cek apakah keranjang sudah ada dalam session
+// Inisialisasi cart jika belum ada
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-
-
-
-// Handler untuk menambah item ke keranjang (dari halaman course-detail.php)
+// Tambah ke cart dari link ?action=add&id=...
 if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
+    include_once('tbkelas.php'); // file ini harus berisi $allCourses
+
     $course_id = $_GET['id'];
-    
-    // Database connection simulation (sama seperti di course-detail.php)
-    include_once('tbkelas.php'); // File yang berisi data kursus
-    
-    // Cari kursus berdasarkan ID
-    $course = null;
-    foreach ($allCourses as $c) {
-        if ($c['id'] == $course_id) {
-            $course = $c;
+    foreach ($allCourses as $course) {
+        if ($course['id'] == $course_id) {
+            $_SESSION['cart'][$course_id] = [
+                'id' => $course['id'],
+                'title' => $course['title'],
+                'instructor' => $course['instructor'],
+                'price' => $course['price'],
+                'image' => $course['image'] ?? '',
+            ];
             break;
         }
     }
-    
-    // Jika kursus ditemukan, tambahkan ke keranjang
-    if ($course) {
-        $_SESSION['cart'][$course_id] = [
-            'id' => $course['id'],
-            'title' => $course['title'],
-            'instructor' => $course['instructor'],
-            'price' => $course['price'],
-            'original_price' => $course['original_price'],
-            'image' => $course['image'],
-            'description' => $course['description'] ?? ''
-        ];
-        
-        // Redirect kembali ke halaman keranjang
-        header('Location: cart.php');
-        exit;
-    }
+
+    header('Location: cart.php');
+    exit;
 }
 
-// Handler untuk menghapus item dari keranjang
+// Hapus dari cart
 if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
     $course_id = $_GET['id'];
     error_log("Remove action triggered for course_id: " . $course_id);
@@ -99,6 +84,28 @@ if (isset($_GET['action']) && $_GET['action'] == 'move_to_wishlist' && isset($_G
     exit;
 }
 
+// Handler untuk memindahkan dari saved_for_later ke cart
+if (isset($_GET['action']) && $_GET['action'] == 'move_to_cart' && isset($_GET['id'])) {
+    $course_id = $_GET['id'];
+
+    if (!isset($_SESSION['saved_for_later'])) {
+        $_SESSION['saved_for_later'] = [];
+    }
+
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
+    if (isset($_SESSION['saved_for_later'][$course_id])) {
+        $_SESSION['cart'][$course_id] = $_SESSION['saved_for_later'][$course_id];
+        unset($_SESSION['saved_for_later'][$course_id]);
+    }
+
+    // Redirect kembali ke halaman keranjang
+    header('Location: cart.php');
+    exit;
+}
+
 // Hitung total belanja
 $total = 0;
 $discounted_total = 15;
@@ -120,7 +127,7 @@ $valid_promo_codes = [
 // Handle apply promo code
 if (isset($_POST['apply_promo'])) {
     $promo_code = strtoupper(trim($_POST['promo_code']));
-    
+
     if (isset($valid_promo_codes[$promo_code])) {
         $applied_coupon = [
             'code' => $promo_code,
@@ -221,93 +228,97 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
             <div class="w-full lg:w-2/3">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-semibold mb-4"><?php echo count($_SESSION['cart']); ?> Course in Cart</h2>
-                    
-                    <?php if (empty($_SESSION['cart'])): ?>
-                        <div class="py-8 text-center">
-                            <p class="text-gray-500 mb-4">Your cart is empty.</p>
-                            <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Browse courses</a>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($_SESSION['cart'] as $item): ?>
-                            <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-                                <div class="md:w-1/4 mb-4 md:mb-0">
-                                    <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-                                </div>
-                                <div class="md:w-3/4 md:pl-6">
-                                    <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                                    <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                                    <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
-                                    
-                                    <div class="flex items-center mb-4">
-                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                                        <div class="flex items-center text-amber-500 ml-3">
-                                            <span class="text-sm">4.7</span>
-                                            <div class="mx-1">★★★★★</div>
-                                            <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex items-center justify-between mt-4">
-                                        <div class="space-x-2">
-                                            <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
-                                            <a href="cart.php?action=save_for_later&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
-                                            <a href="cart.php?action=move_to_wishlist&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Wishlist</a>
-                                        </div>
-                                        <div class="font-bold">
-                                            Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
-                                            <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                                <span class="text-gray-500 text-sm line-through ml-1"><?php echo 'Rp' . number_format((int)($item['price'] ?? 0), 0, ',', '.'); ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php if (empty($_SESSION['cart'])) { ?>
+    <div class="py-8 text-center">
+        <p class="text-gray-500 mb-4">Your cart is empty.</p>
+        <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Browse courses</a>
+    </div>
+<?php } else { ?>
+    <?php foreach ($_SESSION['cart'] as $course_id => $item) { ?>
+        <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
+            <div class="md:w-1/4 mb-4 md:mb-0">
+                <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
+            </div>
+            <div class="md:w-3/4 md:pl-6">
+                <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
+                <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
+                <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
+
+                <div class="flex items-center mb-4">
+                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
+                    <div class="flex items-center text-amber-500 ml-3">
+                        <span class="text-sm">4.7</span>
+                        <div class="mx-1">★★★★★</div>
+                        <span class="text-xs text-gray-500">(366,616 ratings)</span>
+                    </div>
                 </div>
-                
+
+                <div class="flex items-center justify-between mt-4 border-b pb-4">
+                    <div>
+                        <div class="mt-2 space-x-3">
+                            <a href="cart.php?action=remove&id=<?= $course_id ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
+                            <a href="cart.php?action=save_for_later&id=<?= $course_id ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
+                            <a href="cart.php?action=move_to_wishlist&id=<?= $course_id ?>" class="text-purple-600 hover:text-purple-800 text-sm font-medium">Move to Wishlist</a>
+                        </div>
+                    </div>
+                    <div class="font-bold">
+                        Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['price'])), 0, ',', '.'); ?>
+                        <?php if (!empty($item['original_price'])) { ?>
+                            <span class="text-gray-500 text-sm line-through ml-1">
+                                Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['original_price'])), 0, ',', '.'); ?>
+                            </span>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
+<?php } ?>
+             
                 <!-- Saved For Later (Optional Section) -->
                 <?php if (!empty($_SESSION['saved_for_later'])): ?>
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h2 class="text-xl font-semibold mb-4">Saved for later (<?php echo count($_SESSION['saved_for_later']); ?>)</h2>
-                    
-                    <?php foreach ($_SESSION['saved_for_later'] as $item): ?>
-                        <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-                            <div class="md:w-1/4 mb-4 md:mb-0">
-                                <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-                            </div>
-                            <div class="md:w-3/4 md:pl-6">
-                                <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                                <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                                <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
-                                
-                                <div class="flex items-center mb-4">
-                                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                                    <div class="flex items-center text-amber-500 ml-3">
-                                        <span class="text-sm">4.7</span>
-                                        <div class="mx-1">★★★★★</div>
-                                        <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center justify-between mt-4">
-                                    <div class="space-x-2">
-                                        <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
-                                        <a href="cart.php?action=move_to_cart&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Cart</a>
-                                    </div>
-                                    <div class="font-bold">
-                                        Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
-                                        <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                            <span class="text-gray-500 text-sm line-through ml-1"><?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+    <div class="bg-white p-6 rounded-lg shadow-sm">
+        <h2 class="text-xl font-semibold mb-4">Saved for later (<?php echo count($_SESSION['saved_for_later']); ?>)</h2>
+        
+        <?php foreach ($_SESSION['saved_for_later'] as $item): ?>
+            <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
+                <div class="md:w-1/4 mb-4 md:mb-0">
+                    <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
                 </div>
-                <?php endif; ?>
+                <div class="md:w-3/4 md:pl-6">
+                    <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
+                    <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
+                    <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
+                    
+                    <div class="flex items-center mb-4">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
+                        <div class="flex items-center text-amber-500 ml-3">
+                            <span class="text-sm">4.7</span>
+                            <div class="mx-1">★★★★★</div>
+                            <span class="text-xs text-gray-500">(366,616 ratings)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="space-x-2">
+                            <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
+                            <a href="cart.php?action=move_to_cart&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Cart</a>
+                        </div>
+                        <div class="font-bold">
+                            Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
+                            <?php if (isset($item['original_price']) && $item['original_price']): ?>
+                                <span class="text-gray-500 text-sm line-through ml-1">
+                                    Rp<?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+</div>
             
             <!-- Order Summary -->
             <div class="w-full lg:w-1/3">
