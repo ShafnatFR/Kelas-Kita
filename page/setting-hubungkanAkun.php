@@ -66,7 +66,7 @@ $user = $stmt->get_result()->fetch_assoc();
                             style="aspect-ratio: 1/1; object-fit:cover;">
                             <!-- problem
                             sudah di add username pada SQL, tetap tidak muncul. Sebagai alternatif menggunakan session -->
-                            <p class="fw-bold mb-3"><?= htmlspecialchars($username) ?></p>
+                            <h4 class="fw-bold mb-3"><?= htmlspecialchars($username) ?></4>
                         </div>
                         <!-- Tombol Rata Kanan Kiri -->
                         <div class="d-grid gap-2 w-75 mb-4">
