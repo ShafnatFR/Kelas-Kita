@@ -16,7 +16,7 @@ $featuredCourses = [
         'rating' => '4.8',
         'reviews' => '1,275',
         'tag' => 'BEST SELLER',
-        'image' => 'assets/images/course1.jpg',
+        'image' => '../assets/images/Digitalmarketing.jpg',
         'badge' => 'HOT'
     ],
     [
@@ -28,7 +28,7 @@ $featuredCourses = [
         'rating' => '4.9',
         'reviews' => '852',
         'tag' => 'NEW',
-        'image' => 'assets/images/course2.jpg'
+        'image' => '../assets/images/mobile flutter.webp'
     ],
     [
         'id' => 3,
@@ -39,7 +39,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '2,342',
         'tag' => 'POPULAR',
-        'image' => 'assets/images/course3.jpg'
+        'image' => '../assets/images/7212c4bbf2054dc64cb106f6145d01ea.jpg'
     ],
     [
         'id' => 4,
@@ -50,7 +50,7 @@ $featuredCourses = [
         'rating' => '4.6',
         'reviews' => '1,064',
         'tag' => 'TRENDING',
-        'image' => 'assets/images/course4.jpg'
+        'image' => '../assets/images/6893cf238804d5855aef507b3b2569be.jpg'
     ],
     [
         'id' => 5,
@@ -61,7 +61,7 @@ $featuredCourses = [
         'rating' => '4.5',
         'reviews' => '756',
         'tag' => 'BEGINNER',
-        'image' => 'assets/images/course5.jpg'
+        'image' => '../assets/images/69591b7242604c6866f1293ed7701b1c.jpg'
     ],
     [
         'id' => 6,
@@ -72,7 +72,7 @@ $featuredCourses = [
         'rating' => '4.9',
         'reviews' => '1,536',
         'tag' => 'ADVANCED',
-        'image' => 'assets/images/course6.jpg'
+        'image' => '../assets/images/1d1834258e04d5f2241e33ef68d4357d.jpg'
     ],
     [
         'id' => 7,
@@ -83,7 +83,7 @@ $featuredCourses = [
         'rating' => '4.8',
         'reviews' => '3,128',
         'tag' => 'BEST SELLER',
-        'image' => 'assets/images/course7.jpg'
+        'image' => '../assets/images/45b00ea9dc1ae612b7c53a7a93c1a1e3.jpg'
     ],
     [
         'id' => 8,
@@ -94,7 +94,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '942',
         'tag' => 'POPULAR',
-        'image' => 'assets/images/course8.jpg'
+        'image' => '../assets/images/3c6067ae93b24b166f7888bbf9809589.jpg'
     ]
 ];
 
@@ -157,7 +157,7 @@ $categories = [
     ['name' => 'Design', 'icon' => 'palette'],
     ['name' => 'Health', 'icon' => 'heart'],
     ['name' => 'Finance', 'icon' => 'chart-bar'],
-    ['name' => 'IT & Software', 'icon' => 'computer']
+    ['name' => 'IT & Software', 'icon' => 'Computer']
 ];
 
 $workshopCount = 253;
@@ -186,23 +186,23 @@ $toolsCount = "50+";
         .rating-stars {
             color: #FFD700;
         }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <?php include "../Views/navbar.php" ?>
-<script>
-function toggleDropdown() {
-    const dropdown = document.getElementById('profileDropdown');
-    dropdown.classList.toggle('hidden');
+        </style>
+        </head>
+        <body class="bg-gray-50">
+            <?php include "../Views/navbar.php" ?>
+            <script>
+            function toggleDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
     // Klik di luar dropdown untuk nutup
     document.addEventListener('click', function handleOutsideClick(event) {
         if (!dropdown.contains(event.target) && !event.target.closest('button')) {
             dropdown.classList.add('hidden');
             document.removeEventListener('click', handleOutsideClick);
-        }
-    });
-}
-</script>
+            }
+            });
+            }
+            </script>
             </div>
         </nav>
         
@@ -243,7 +243,7 @@ function toggleDropdown() {
     <!-- Featured Courses Section -->
     <section class="py-12 bg-gray-50">
         <div class="container mx-auto px-6">
-            <h2 class="text-2xl font-bold mb-10">Kursu unggulan</h2>
+            <h2 class="text-2xl font-bold mb-10">Kursus unggulan</h2>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <?php foreach ($featuredCourses as $course): ?>
@@ -251,8 +251,8 @@ function toggleDropdown() {
                     <div class="relative">
                         <img src="<?php echo $course['image']; ?>" alt="<?php echo $course['title']; ?>" class="w-full h-40 object-cover">
                         <?php if (isset($course['badge'])): ?>
-                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded"><?php echo $course['badge']; ?></span>
-                        <?php endif; ?>
+                            <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded"><?php echo $course['badge']; ?></span>
+                            <?php endif; ?>
                         <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded"><?php echo $course['tag']; ?></span>
                     </div>
                     <div class="p-4">
@@ -379,72 +379,12 @@ function toggleDropdown() {
                     <p class="text-gray-800">Melalui peningkatan keterampilan</p>
                 </div>
                 <div>
-                    <img src="assets/images/cta-people.png" alt="People learning" class="h-32">
+                    <img src="../assets/images/5de63102937d14a8350c852d3bf689be.jpg" alt="People learning" class="h-32">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-white pt-16 pb-12 border-t">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
-                <div class="col-span-2 md:col-span-1">
-                    <h4 class="text-blue-600 font-bold text-xl mb-4">Kelas Kita</h4>
-                    <p class="text-gray-600 mb-4">Platform terbaik untuk mempelajari keterampilan baru dan memajukan karier Anda.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">kursus</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Pengembang Web</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Ilmu Data</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Pengembang Seluler</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Bisnis</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Pemasaran</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Perusahan</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Tentang Kami</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Karier</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Tekan</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Blog</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Kontak</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Support</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Pusat Bantuan</a></li>
-                        <li><a href="#" class="hover:text-gray-900">ketentuan layanan</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Legal</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Kebijakan privasi</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Status</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Unduh aplikasi</h5>
-                    <div class="flex flex-col space-y-3">
-                        <a href="#" class="block">
-                            <img src="assets/images/app-store.png" alt="App Store" class="h-10">
-                        </a>
-                        <a href="#" class="block">
-                            <img src="assets/images/google-play.png" alt="Google Play" class="h-10">
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
-                <p>© 2025 Upskill. All rights reserved. | www.DownloadRealProjectSource.com</p>
-            </div>
-        </div>
-    </footer>
+    <?php include "../Views/footer.php";  ?>
 </body>
 </html>

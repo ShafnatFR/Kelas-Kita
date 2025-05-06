@@ -1,4 +1,5 @@
 <?php
+include "db.php";
 session_start();
 
 // Cek apakah keranjang sudah ada dalam session
@@ -189,58 +190,7 @@ $toolsCount = "50+";
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation Bar -->
-    <nav class="bg-white py-4 px-6 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <a href="#" class="text-blue-600 font-bold text-2xl">upskill</a>
-                <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="#" class="text-gray-900 font-medium">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Courses</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
-                    <i class="fas fa-shopping-cart"></i>
-                    <?php if(!empty($_SESSION['cart'])): ?>
-                        <span class="bg-red-500 text-white rounded-full px-2 py-1 text-xs"><?php echo count($_SESSION['cart']); ?></span>
-                        <?php endif; ?>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-    <?php if (isset($_SESSION['username'])): ?>
-        <div class="relative">
-            <!-- Tombol Profil -->
-            <button onclick="toggleDropdown()" class="focus:outline-none">
-                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32"
-                    alt="Profile" class="rounded-full w-8 h-8">
-            </button>
-
-            <!-- Dropdown -->
-            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50">
-                <div class="flex items-center space-x-3 border-b pb-3 mb-3">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=48"
-                        alt="Profile" class="rounded-full w-12 h-12">
-                    <div>
-                        <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
-                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
-                    </div>
-                </div>
-                <ul class="space-y-2 text-sm">
-                    <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
-                    <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
-                    <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
-                </ul>
-            </div>
-        </div>
-    <?php else: ?>
-        <a href="HalamanSignIn.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-        <a href="HalamanSignUp.php" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
-    <?php endif; ?>
-</div>
+<?php  include "../Views/navbar.php"?>
 
 <script>
 function toggleDropdown() {
@@ -358,7 +308,7 @@ function toggleDropdown() {
         <div class="container mx-auto px-6">
             <div class="flex flex-col md:flex-row items-center gap-10">
                 <div class="md:w-1/2">
-                    <img src="assets/images/student-laptop.jpg" alt="Student using laptop" class="rounded-lg shadow-md w-full">
+                    <img src="../assets/images/stdnt using laptop.jpg" alt="Student using laptop" class="rounded-lg shadow-md w-full">
                 </div>
                 <div class="md:w-1/2">
                     <h2 class="text-3xl font-bold mb-6">Why Upskill becomes the best training course & bootcamp</h2>
@@ -439,65 +389,6 @@ function toggleDropdown() {
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white pt-16 pb-12 border-t">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
-                <div class="col-span-2 md:col-span-1">
-                    <h4 class="text-blue-600 font-bold text-xl mb-4">upskill</h4>
-                    <p class="text-gray-600 mb-4">The best platform to learn new skills and advance your career.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-gray-800"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Courses</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Web Development</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Data Science</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Mobile Development</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Business</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Marketing</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Company</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">About Us</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Careers</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Press</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Blog</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Contact</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Support</h5>
-                    <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-gray-900">Help Center</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Legal</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-gray-900">Status</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="font-semibold mb-4">Download our app</h5>
-                    <div class="flex flex-col space-y-3">
-                        <a href="#" class="block">
-                            <img src="assets/images/app-store.png" alt="App Store" class="h-10">
-                        </a>
-                        <a href="#" class="block">
-                            <img src="assets/images/google-play.png" alt="Google Play" class="h-10">
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
-                <p>© 2025 Upskill. All rights reserved. | www.DownloadRealProjectSource.com</p>
-            </div>
-        </div>
-    </footer>
+<?php include "../Views/footer.php"; ?>
 </body>
 </html>
