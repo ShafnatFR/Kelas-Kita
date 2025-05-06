@@ -104,7 +104,7 @@ $user = $stmt->get_result()->fetch_assoc();
                                 </div>
                             </div> -->
                             <div class="text-end">
-                                <button type="submit" class="btn btn-outline-primary">Simpan Preferensi</button>
+                                <button type="submit" class="btn btn-outline-primary">Simpan Perubahan</button>
                             </div>
                         </form>
                     </div>
