@@ -812,7 +812,7 @@ foreach ($ratingDistribution as $rating => $count) {
                         <span class="text-gray-500 line-through ml-2"><?php echo $course['original_price']; ?></span>
                     </div>
                     <a href="course-detail.php?id=<?php echo $course_id; ?>&add_to_cart=<?php echo $course_id; ?>" class="w-full block text-center bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition mb-4">Tambah ke keranjang</a>
-                    <button class="w-full border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</button>
+                    <a href="cart.php" class="w-full block text-center border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</a>
                     
                     <div class="mt-6 text-center">
                         <p class="text-gray-500 text-sm mb-1">Jaminan uang kembali 30 hari</p>
