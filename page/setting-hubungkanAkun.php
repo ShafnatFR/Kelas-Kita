@@ -73,7 +73,7 @@ $user = $stmt->get_result()->fetch_assoc();
                             <a href="setting-profil.php" class="btn btn-outline-primary">Profil</a>
                             <a href="setting-preferensi.php" class="btn btn-outline-primary">Preferensi</a>
                             <a href="setting-notifikasi.php" class="btn btn-outline-primary">Notifikasi</a>
-                            <a href="setting-hubungkanAkun.php" class="btn btn-primary active">Hubungkan Akun</a>
+                            <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary active">Hubungkan Akun</a>
                             <a href="setting-keluar.php" class="btn btn-outline-primary">Keluar</a>
                             <a href="setting-tutupAkun.php" class="btn btn-outline-primary">Tutup Akun</a>
                         </div>

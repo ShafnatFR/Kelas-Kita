@@ -60,7 +60,7 @@ $user = $stmt->get_result()->fetch_assoc();
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
                         <a href="setting-profil.php" class="btn btn-outline-primary">Profil</a>
-                        <a href="setting-prefeensi.php" class="btn btn-primary active">Preferensi</a>
+                        <a href="setting-prefeensi.php" class="btn btn-outline-primary active">Preferensi</a>
                         <a href="setting-notifikasi.php" class="btn btn-outline-primary">Notifikasi</a>
                         <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary">Hubungkan Akun</a>
                         <a href="setting-keluar.php" class="btn btn-outline-primary">Keluar</a>
