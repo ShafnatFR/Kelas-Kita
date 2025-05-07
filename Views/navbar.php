@@ -50,14 +50,17 @@ if (isset($_SESSION['username'])) {
                 alt="Profile" 
                 class="rounded-full w-8 h-8 object-cover">
 
-
             </button>
 
             <!-- Dropdown -->
             <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50">
                 <div class="flex items-center space-x-3 border-b pb-3 mb-3">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=48"
-                        alt="Profile" class="rounded-full w-12 h-12">
+                    <img 
+                    src="<?= (!empty($user['fotoProfil']) && file_exists('../upload/' . $user['fotoProfil'])) 
+                        ? '../upload/' . htmlspecialchars($user['fotoProfil']) 
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['username']) . '&background=0D8ABC&color=fff&rounded=true&size=64' ?>" 
+                    alt="Profile" 
+                    class="rounded-full w-8 h-8 object-cover">
                     <div>
                         <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
                         <p class="text-gray-500 text-sm block w-full max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></p>
