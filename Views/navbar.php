@@ -5,11 +5,11 @@
             <div class="flex items-center">
                 <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="#" class="text-gray-900 font-medium">Beranda</a>
+                    <a href="index.php" class="text-gray-900 font-medium">Beranda</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">kontak</a>
+                    <a href="contackUs.php" class="text-gray-500 hover:text-gray-900">kontak</a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -42,6 +42,7 @@
                 <ul class="space-y-2 text-sm">
                     <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
+                    <li><a href="add-course.php" class="block text-gray-700 hover:text-blue-600 transition">Tambah Kelas</a></li>
                     <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
                 </ul>
             </div>

@@ -884,63 +884,7 @@ foreach ($ratingDistribution as $rating => $count) {
 </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <a href="index.php" class="text-blue-400 font-bold text-2xl mb-4 block">upskill</a>
-                    <p class="text-gray-400 mb-4">Transform your life through education with our online learning platform. Learn from industry experts and advance your career.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Explore</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Our Courses</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Instructors</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Career</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Become an Instructor</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms & Conditions</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Support</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Subscribe</h3>
-                    <p class="text-gray-400 mb-4">Subscribe to our newsletter to receive the latest updates and offers.</p>
-                    <form class="flex">
-                        <input type="email" placeholder="Your email" class="px-4 py-2 w-full rounded-l-md focus:outline-none">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400">© 2025 Upskill. All rights reserved.</p>
-                <div class="mt-4 md:mt-0">
-                    <img src="assets/images/payment-methods.png" alt="Payment Methods" class="h-8">
-                </div>
-            </div>
-        </div>
-    </footer>
-
+    <?php include "../Views/footer.php"  ?>
     <script>
         // Rating stars functionality
         const ratingButtons = document.querySelectorAll('.flex.text-2xl.text-gray-400 button');
