@@ -88,27 +88,27 @@ $user = $stmt->get_result()->fetch_assoc();
                                 <div class="mb-0">
                                     <label for="email" class="form-label">Email</label>
                                     <input type="email" class="form-control" id="email"
-                                    value="<?= htmlspecialchars($user['email'] ?? '')?>" placeholder="Email">
+                                    name="email" value="<?= htmlspecialchars($user['email'] ?? '')?>" placeholder="Email">
                                 </div>
                                 <div class="mb-0">
                                     <label for="instagram" class="form-label">Instagram</label>
                                     <input type="text" class="form-control" id="instagram"
-                                    value="<?= htmlspecialchars($user['instagram'] ?? '')?>" placeholder="Instagram">
+                                    name="instagram" value="<?= htmlspecialchars($user['instagram'] ?? '')?>" placeholder="Instagram">
                                 </div>
                                 <div class="mb-0">
                                     <label for="twitter" class="form-label">Twitter</label>
                                     <input type="text" class="form-control" id="twitter"
-                                    value="<?= htmlspecialchars($user['twitter'] ?? '')?>" placeholder="">
+                                    name="twitter" value="<?= htmlspecialchars($user['twitter'] ?? '')?>" placeholder="">
                                 </div>
                                 <div class="mb-0">
                                     <label for="linkdin" class="form-label">Linkedln</label>
                                     <input type="text" class="form-control" id="linkdin"
-                                    value="<?= htmlspecialchars($user['linkdin'] ?? '')?>" placeholder="">
+                                    name="linkdin" value="<?= htmlspecialchars($user['linkdin'] ?? '')?>" placeholder="">
                                 </div>
                                 <div class="mb-0">
                                     <label for="github" class="form-label">Github</label>
                                     <input type="text" class="form-control" id="github"
-                                    value="<?= htmlspecialchars($user['github'])?>" placeholder="">
+                                    name="github" value="<?= htmlspecialchars($user['github'])?>" placeholder="">
                                 </div>
                                 <div class="text-end mt-2">
                                     <button type="submit" class="btn btn-outline-primary">Simpan Perubahan</button>

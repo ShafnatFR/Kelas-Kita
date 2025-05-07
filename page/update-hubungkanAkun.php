@@ -16,7 +16,7 @@ $github = $_POST['github'] ?? '';
 
 $query = "UPDATE tbuser SET email = ?, instagram = ?, twitter = ?, linkdin = ?, github = ? WHERE username = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ssis", $email, $instagram, $twitter, $linkdin, $github);
+$stmt->bind_param("ssssss", $email, $instagram, $twitter, $linkdin, $github, $username);
 
 if ($stmt->execute()){
     header("Location: setting-hubungkanAkun.php?update=success");
