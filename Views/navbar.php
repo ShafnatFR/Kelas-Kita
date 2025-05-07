@@ -43,6 +43,7 @@
                     </div>
                 </div>
                 <ul class="space-y-2 text-sm">
+                    <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">KelasKu</a></li>
                     <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
                     <li><a href="add-course.php" class="block text-gray-700 hover:text-blue-600 transition">Tambah Kelas</a></li>

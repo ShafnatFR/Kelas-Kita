@@ -41,7 +41,7 @@ $user = $stmt->get_result()->fetch_assoc();
                         <p class="fw-bold mb-3"><?= htmlspecialchars($user['username'] ?? '') ?></p>
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
-                        <a href="setting-profil.php" class="btn btn-outline-primary active">Profil</a>
+                        <a href="setting-profil.php" class="btn btn-primary active">Profil</a>
                         <a href="setting-preferensi.php" class="btn btn-outline-primary">Preferensi</a>
                         <a href="setting-notifikasi.php" class="btn btn-outline-primary">Notifikasi</a>
                         <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary">Hubungkan Akun</a>

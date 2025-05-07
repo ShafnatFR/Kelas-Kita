@@ -41,44 +41,33 @@ $user = $stmt->get_result()->fetch_assoc();
                         <p class="fw-bold mb-3"><?= htmlspecialchars($user['username'] ?? '') ?></p>
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
-                        <a href="setting-profil.php" class="btn btn-outline-primary active">Profil</a>
+                        <a href="setting-profil.php" class="btn btn-outline-primary">Profil</a>
                         <a href="setting-preferensi.php" class="btn btn-outline-primary">Preferensi</a>
                         <a href="setting-notifikasi.php" class="btn btn-outline-primary">Notifikasi</a>
                         <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary">Hubungkan Akun</a>
                         <a href="setting-keluar.php" class="btn btn-outline-primary">Keluar</a>
-                        <a href="setting-tutupAkun.php" class="btn btn-outline-primary">Tutup Akun</a>
+                        <a href="setting-tutupAkun.php" class="btn btn-outline-primary active">Hapus Akun</a>
                     </div>
                 </div>
-                <!-- Informasi Profil -->
+                <!-- Bagian Informasi Profil -->
                 <div class="col-12 col-md-9 p-3">
                     <div class="card-body">
-                        <div class="card-title text-center">
-                            <h4 class="mb-4"><strong>Profil Siswa</strong></h4>
+                        <div class="text-center">
+                            <h3 class="mb-4"><strong>Hapus Akun</strong></h3>
                         </div>
-                        <form method="POST" action="update-profil.php" enctype="multipart/form-data">
-                            <div class="mb-2">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name"
-                                value="<?= htmlspecialchars($user['first_name'] ?? '') ?>" placeholder="First Name">
-                            </div>
-                            <div class="mb-2">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name"
-                                value="<?= htmlspecialchars($user['last_name'] ?? '') ?>" placeholder="Last Name">
-                            </div>
-                            <div class="mb-2">
-                                <label for="deskripsi" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
-                                placeholder="Deskripsi diri"><?= htmlspecialchars($user['deskripsi'] ?? '') ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="foto" class="form-label">Ganti Foto Profil</label>
-                                <input type="file" class="form-control" id="foto" name="foto">
-                            </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-outline-primary">Simpan Perubahan</button>
-                            </div>
-                        </form>
+                        <div class="accordion-body text-center mx-5 px-5 mt-1">
+                            <p>
+                                Untuk memastikan anda benar-benar memutuskan untuk menutup atau menghapus akun ini, silakan isi ulang username anda di bawah ini.
+                            </p>
+                            <form method="POST" action="hapusAkun.php" enctype="multipart/form-data">
+                                <div class="mb-0">
+                                    <input type="text" name="konfirmasi_username" class="form-control" id="konfirmasi_username" placeholder="<?= htmlspecialchars($username) ?>" required>
+                                </div>
+                                <div class="mt-2">
+                                    <button type="submit" class="btn btn-outline-primary">Hapus Akun</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
