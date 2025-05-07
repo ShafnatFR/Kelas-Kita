@@ -76,7 +76,7 @@ $user = $stmt->get_result()->fetch_assoc();
                                 <input type="file" class="form-control" id="foto" name="foto">
                             </div>
                             <div class="text-end">
-                                <button type="submit" class="btn btn-outline-primary">Ubah</button>
+                                <button type="submit" class="btn btn-outline-primary">Simpan Perubahan</button>
                             </div>
                         </form>
                     </div>

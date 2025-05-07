@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="../assets/css/navbar.css">
+
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
     <nav class="bg-white py-4 px-6 shadow-sm">
@@ -11,8 +13,7 @@
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
                     <a href="contackUs.php" class="text-gray-500 hover:text-gray-900">kontak</a>
                 </div>
-            </div>
-            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4">
                 <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
                     <i class="fas fa-shopping-cart"></i>
                     <?php if(!empty($_SESSION['cart'])): ?>
@@ -20,6 +21,7 @@
                         <?php endif; ?>
                     </a>
                 </div>
+            </div>
                 <div class="flex items-center space-x-4">
     <?php if (isset($_SESSION['username'])): ?>
         <div class="relative">

@@ -39,7 +39,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '2,342',
         'tag' => 'POPULAR',
-        'image' => 'assets/images/course3.jpg'
+        'image' => '../assets/images/7212c4bbf2054dc64cb106f6145d01ea.jpg'
     ],
     [
         'id' => 4,
@@ -50,7 +50,7 @@ $featuredCourses = [
         'rating' => '4.6',
         'reviews' => '1,064',
         'tag' => 'TRENDING',
-        'image' => 'assets/images/course4.jpg'
+        'image' => '../assets/images/6893cf238804d5855aef507b3b2569be.jpg'
     ],
     [
         'id' => 5,
@@ -61,7 +61,7 @@ $featuredCourses = [
         'rating' => '4.5',
         'reviews' => '756',
         'tag' => 'BEGINNER',
-        'image' => 'assets/images/course5.jpg'
+        'image' => '../assets/images/69591b7242604c6866f1293ed7701b1c.jpg'
     ],
     [
         'id' => 6,
@@ -72,7 +72,7 @@ $featuredCourses = [
         'rating' => '4.9',
         'reviews' => '1,536',
         'tag' => 'ADVANCED',
-        'image' => 'assets/images/course6.jpg'
+        'image' => '../assets/images/1d1834258e04d5f2241e33ef68d4357d.jpg'
     ],
     [
         'id' => 7,
@@ -83,7 +83,7 @@ $featuredCourses = [
         'rating' => '4.8',
         'reviews' => '3,128',
         'tag' => 'BEST SELLER',
-        'image' => 'assets/images/course7.jpg'
+        'image' => '../assets/images/45b00ea9dc1ae612b7c53a7a93c1a1e3.jpg'
     ],
     [
         'id' => 8,
@@ -94,7 +94,7 @@ $featuredCourses = [
         'rating' => '4.7',
         'reviews' => '942',
         'tag' => 'POPULAR',
-        'image' => 'assets/images/course8.jpg'
+        'image' => '../assets/images/3c6067ae93b24b166f7888bbf9809589.jpg'
     ]
 ];
 
@@ -157,7 +157,7 @@ $categories = [
     ['name' => 'Design', 'icon' => 'palette'],
     ['name' => 'Health', 'icon' => 'heart'],
     ['name' => 'Finance', 'icon' => 'chart-bar'],
-    ['name' => 'IT & Software', 'icon' => 'computer']
+    ['name' => 'IT & Software', 'icon' => 'Computer']
 ];
 
 $workshopCount = 253;
@@ -186,23 +186,23 @@ $toolsCount = "50+";
         .rating-stars {
             color: #FFD700;
         }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <?php include "../Views/navbar.php" ?>
-<script>
-function toggleDropdown() {
-    const dropdown = document.getElementById('profileDropdown');
-    dropdown.classList.toggle('hidden');
+        </style>
+        </head>
+        <body class="bg-gray-50">
+            <?php include "../Views/navbar.php" ?>
+            <script>
+            function toggleDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
     // Klik di luar dropdown untuk nutup
     document.addEventListener('click', function handleOutsideClick(event) {
         if (!dropdown.contains(event.target) && !event.target.closest('button')) {
             dropdown.classList.add('hidden');
             document.removeEventListener('click', handleOutsideClick);
-        }
-    });
-}
-</script>
+            }
+            });
+            }
+            </script>
             </div>
         </nav>
         
@@ -379,7 +379,7 @@ function toggleDropdown() {
                     <p class="text-gray-800">Melalui peningkatan keterampilan</p>
                 </div>
                 <div>
-                    <img src="assets/images/cta-people.png" alt="People learning" class="h-32">
+                    <img src="../assets/images/5de63102937d14a8350c852d3bf689be.jpg" alt="People learning" class="h-32">
                 </div>
             </div>
         </div>
