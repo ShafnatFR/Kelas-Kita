@@ -5,40 +5,7 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Handle add to cart action
-if (isset($_GET['add_to_cart'])) {
-    $add_course_id = intval($_GET['add_to_cart']);
-    
-    // Find the course data by ID
-    $course_to_add = null;
-    foreach ($allCourses as $c) {
-        if ($c['id'] == $add_course_id) {
-            $course_to_add = $c;
-            break;
-        }
-    }
-    
-    if ($course_to_add) {
-        if (!isset($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-        if (!isset($_SESSION['cart'][$add_course_id])) {
-            $_SESSION['cart'][$add_course_id] = [
-                'id' => $course_to_add['id'],
-                'title' => $course_to_add['title'],
-                'instructor' => $course_to_add['instructor'],
-                'price' => $course_to_add['price'],
-                'original_price' => $course_to_add['original_price'],
-                'image' => $course_to_add['image'],
-                'description' => $course_to_add['description'] ?? ''
-            ];
-        }
-    }
-    
-    // Redirect to avoid resubmission on refresh
-    header("Location: course-detail.php?id=" . $course_id);
-    exit;
-}
+
 
 // Get course ID from URL
 $course_id = isset($_GET['id']) ? $_GET['id'] : 0;
@@ -811,8 +778,8 @@ foreach ($ratingDistribution as $rating => $count) {
                         <span class="font-bold text-3xl"><?php echo $course['price']; ?></span>
                         <span class="text-gray-500 line-through ml-2"><?php echo $course['original_price']; ?></span>
                     </div>
-                    <a href="course-detail.php?id=<?php echo $course_id; ?>&add_to_cart=<?php echo $course_id; ?>" class="w-full block text-center bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition mb-4">Tambah ke keranjang</a>
-                    <a href="cart.php" class="w-full block text-center border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</a>
+                        <a href="cart.php?action=add&id=<?php echo $course_id; ?>" class="w-full block text-center bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition mb-4">Tambah ke keranjang</a>
+                        <a href="cart.php?action=buy_now&id=<?php echo $course_id; ?>" class="w-full block text-center border border-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium hover:bg-gray-50 transition">Beli sekarang</a>
                     
                     <div class="mt-6 text-center">
                         <p class="text-gray-500 text-sm mb-1">Jaminan uang kembali 30 hari</p>
