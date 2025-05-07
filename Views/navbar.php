@@ -1,4 +1,20 @@
-<link rel="stylesheet" href="../assets/css/navbar.css">
+<?php
+session_start();
+include_once('db.php');
+
+$user = null; // default
+
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+
+    // Ambil data user berdasarkan username
+    $stmt = $conn->prepare("SELECT fotoProfil FROM tbuser WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+}
+?>
 
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
@@ -7,11 +23,11 @@
             <div class="flex items-center">
                 <a href="#" class="text-blue-600 font-bold text-2xl">KelasKita</a>
                 <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="index.php" class="text-gray-900 font-medium">Beranda</a>
+                    <a href="#" class="text-gray-900 font-medium">Beranda</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="contackUs.php" class="text-gray-500 hover:text-gray-900">kontak</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">kontak</a>
                 </div>
                 <div class="flex items-center space-x-4">
                 <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
@@ -27,8 +43,14 @@
         <div class="relative">
             <!-- Tombol Profil -->
             <button onclick="toggleDropdown()" class="focus:outline-none">
-                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32"
-                    alt="Profile" class="rounded-full w-8 h-8">
+                <img 
+                src="<?= (!empty($user['fotoProfil']) && file_exists('../upload/' . $user['fotoProfil'])) 
+                    ? '../upload/' . htmlspecialchars($user['fotoProfil']) 
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['username']) . '&background=0D8ABC&color=fff&rounded=true&size=64' ?>" 
+                alt="Profile" 
+                class="rounded-full w-8 h-8 object-cover">
+
+
             </button>
 
             <!-- Dropdown -->
@@ -45,7 +67,6 @@
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">KelasKu</a></li>
                     <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
-                    <li><a href="add-course.php" class="block text-gray-700 hover:text-blue-600 transition">Tambah Kelas</a></li>
                     <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
                 </ul>
             </div>
