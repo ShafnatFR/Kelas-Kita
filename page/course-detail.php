@@ -851,6 +851,9 @@ foreach ($ratingDistribution as $rating => $count) {
 </section>
 
     <!-- Footer -->
+<<<<<<< HEAD
+    <?php include "../Views/footer.php"  ?>
+=======
     <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -908,6 +911,7 @@ foreach ($ratingDistribution as $rating => $count) {
         </div>
     </footer>
 
+>>>>>>> 3230ddee6e7061cc32471c31693c2655c65a61a9
     <script>
         // Rating stars functionality
         const ratingButtons = document.querySelectorAll('.flex.text-2xl.text-gray-400 button');
