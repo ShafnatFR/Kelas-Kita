@@ -22,7 +22,7 @@
                     </a>
                 </div>
             </div>
-                <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-4">
     <?php if (isset($_SESSION['username'])): ?>
         <div class="relative">
             <!-- Tombol Profil -->
@@ -38,7 +38,8 @@
                         alt="Profile" class="rounded-full w-12 h-12">
                     <div>
                         <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
-                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
+                        <p class="text-gray-500 text-sm block w-full max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></p>
+
                     </div>
                 </div>
                 <ul class="space-y-2 text-sm">
