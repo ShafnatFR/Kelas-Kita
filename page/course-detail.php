@@ -851,67 +851,7 @@ foreach ($ratingDistribution as $rating => $count) {
 </section>
 
     <!-- Footer -->
-<<<<<<< HEAD
     <?php include "../Views/footer.php"  ?>
-=======
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <a href="index.php" class="text-blue-400 font-bold text-2xl mb-4 block">Kelas Kita</a>
-                    <p class="text-gray-400 mb-4">Ubah hidup Anda melalui pendidikan dengan platform pembelajaran daring kami. Belajar dari para pakar industri dan tingkatkan karier Anda.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Mengeksplorasi</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Our Courses</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Instructors</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Career</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Become an Instructor</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Tautan Cepat</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms & Conditions</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Support</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Subscribe</h3>
-                    <p class="text-gray-400 mb-4">Berlangganan buletin kami untuk menerima pembaruan dan penawaran terkini.</p>
-                    <form class="flex">
-                        <input type="email" placeholder="Your email" class="px-4 py-2 w-full rounded-l-md focus:outline-none">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400">© 2025 Upskill. Semua hak dilindungi undang-undang.</p>
-                <div class="mt-4 md:mt-0">
-                    <img src="../assets/images/e3c90883212a5d017dbbb0fb0fe67ac0.jpg" alt="Payment Methods" class="h-12">
-                </div>
-            </div>
-        </div>
-    </footer>
-
->>>>>>> 3230ddee6e7061cc32471c31693c2655c65a61a9
     <script>
         // Rating stars functionality
         const ratingButtons = document.querySelectorAll('.flex.text-2xl.text-gray-400 button');
