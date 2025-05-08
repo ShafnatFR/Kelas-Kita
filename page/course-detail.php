@@ -16,40 +16,40 @@ $featuredCourses = [
         'id' => 1,
         'title' => 'Digital Marketing Masterclass',
         'instructor' => 'John Smith',
-        'price' => '$79.99',
-        'original_price' => '$129.99',
+        'price' => 'Rp,900.000',
+        'original_price' => 'Rp,1.500.000',
         'rating' => '4.8',
         'reviews' => '1,275',
         'tag' => 'BEST SELLER',
         'image' => '../assets/images/Digitalmarketing.jpg',
         'badge' => 'HOT',
-        'description' => 'Learn the most effective digital marketing strategies to grow your business online. This comprehensive course covers SEO, social media marketing, email marketing, content marketing, and paid advertising. You\'ll learn how to create effective marketing campaigns, analyze their performance, and optimize them for better results.',
+        'description' => 'Pelajari strategi pemasaran digital yang paling efektif untuk mengembangkan bisnis Anda secara daring. Kursus komprehensif ini mencakup SEO, pemasaran media sosial, pemasaran email, pemasaran konten, dan iklan berbayar. Anda akan mempelajari cara membuat kampanye pemasaran yang efektif, menganalisis kinerjanya, dan mengoptimalkannya untuk hasil yang lebih baik.',
         'what_you_learn' => [
-            'Create effective digital marketing strategies',
-            'Optimize websites for search engines (SEO)',
-            'Run successful social media campaigns',
-            'Create and optimize paid advertising campaigns',
-            'Build and grow an email marketing list',
-            'Analyze marketing data and create reports'
+            'Buat strategi pemasaran digital yang efektif',
+            'Optimalkan situs web untuk mesin pencari (SEO)',
+            'Jalankan kampanye media sosial yang sukses',
+            'Buat dan optimalkan kampanye iklan berbayar',
+            'Bangun dan kembangkan daftar pemasaran email',
+            'Analisis data pemasaran dan buat laporan'
         ],
         'reviews_list' => [
             [
                 'name' => 'Sarah Johnson',
                 'rating' => 5,
                 'date' => '15 April 2025',
-                'comment' => 'This course completely transformed my marketing approach. The instructor explains complex concepts in a simple way, and the practical exercises helped me implement what I learned immediately. Highly recommended!'
+                'comment' => 'Kursus ini benar-benar mengubah pendekatan pemasaran saya. Instruktur menjelaskan konsep yang rumit dengan cara yang sederhana, dan latihan praktis membantu saya menerapkan apa yang saya pelajari dengan segera. Sangat direkomendasikan!'
             ],
             [
                 'name' => 'Michael Brown',
                 'rating' => 4,
                 'date' => '2 April 2025',
-                'comment' => 'Very comprehensive course with lots of real-world examples. The section on SEO was particularly helpful for my business. Only thing missing was more case studies.'
+                'comment' => 'Kursus yang sangat komprehensif dengan banyak contoh nyata. Bagian tentang SEO sangat membantu bisnis saya. Yang kurang hanyalah lebih banyak studi kasus.'
             ],
             [
                 'name' => 'Emma Wilson',
                 'rating' => 4.5,
                 'date' => '27 March 2025',
-                'comment' => 'John is an amazing instructor. His explanations are clear and the course content is up-to-date with the latest marketing trends. I\'ve already seen significant improvements in my campaigns.'
+                'comment' => 'John adalah instruktur yang luar biasa. Penjelasannya jelas dan konten kursusnya selalu mengikuti tren pemasaran terkini. Saya telah melihat peningkatan yang signifikan dalam kampanye saya.'
             ]
         ]
     ],
@@ -57,8 +57,8 @@ $featuredCourses = [
         'id' => 2,
         'title' => 'Mobile Flutter Development',
         'instructor' => 'Sarah Johnson',
-        'price' => '$89.99',
-        'original_price' => '$149.99',
+        'price' => 'Rp,1.400.000',
+        'original_price' => 'Rp,1.500.000',
         'rating' => '4.9',
         'reviews' => '852',
         'tag' => 'NEW',
