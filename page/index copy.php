@@ -1,6 +1,33 @@
 <?php
 include "db.php";
 session_start();
+
+if (!isset($_SESSION['username'])) {
+    header("Location: HalamanSignIn.php");
+    exit;
+}
+
+$kelas_id = $_POST['kelas_id'] ?? null;
+$username = $_SESSION['username'];
+
+// Cari user_id berdasarkan username
+$queryUser = mysqli_query($conn, "SELECT id FROM tbuser WHERE username = '$username'");
+$userData = mysqli_fetch_assoc($queryUser);
+$user_id = $userData['id'];
+
+if ($kelas_id && $user_id) {
+    // Cek apakah sudah ada di keranjang
+    $check = mysqli_query($conn, "SELECT * FROM keranjang WHERE user_id = '$user_id' AND kelas_id = '$kelas_id'");
+    if (mysqli_num_rows($check) == 0) {
+        $insert = mysqli_query($conn, "INSERT INTO keranjang (user_id, kelas_id) VALUES ('$user_id', '$kelas_id')");
+    }
+    header("Location: index.php"); // kembali ke halaman utama atau kursus
+    exit;
+} else {
+    echo "Gagal menambahkan ke keranjang.";
+}
+
+
 // Cek apakah keranjang sudah ada dalam session
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -11,8 +38,8 @@ $featuredCourses = [
         'id' => 1,
         'title' => 'Digital Marketing Masterclass',
         'instructor' => 'John Smith',
-        'price' => 'Rp. 80.000',
-        'original_price' => 'Rp. 100.000',
+        'price' => '$79.99',
+        'original_price' => '$129.99',
         'rating' => '4.8',
         'reviews' => '1,275',
         'tag' => 'BEST SELLER',
@@ -23,8 +50,8 @@ $featuredCourses = [
         'id' => 2,
         'title' => 'Mobile Flutter Development',
         'instructor' => 'Sarah Johnson',
-        'price' => 'Rp. 100.000',
-        'original_price' => 'Rp. 130.000',
+        'price' => '$89.99',
+        'original_price' => '$149.99',
         'rating' => '4.9',
         'reviews' => '852',
         'tag' => 'NEW',
@@ -34,8 +61,8 @@ $featuredCourses = [
         'id' => 3,
         'title' => 'Advanced Python for Data Science',
         'instructor' => 'Michael Wang',
-        'price' => 'Rp. 130.000',
-        'original_price' => 'Rp. 150.000',
+        'price' => '$99.99',
+        'original_price' => '$169.99',
         'rating' => '4.7',
         'reviews' => '2,342',
         'tag' => 'POPULAR',
@@ -45,8 +72,8 @@ $featuredCourses = [
         'id' => 4,
         'title' => 'UX Complete Start-to-Finish',
         'instructor' => 'Emma Brooks',
-        'price' => 'Rp. 110.000',
-        'original_price' => 'Rp. 120.000',
+        'price' => '$69.99',
+        'original_price' => '$119.99',
         'rating' => '4.6',
         'reviews' => '1,064',
         'tag' => 'TRENDING',
@@ -56,8 +83,8 @@ $featuredCourses = [
         'id' => 5,
         'title' => 'Graphic Design Fundamentals',
         'instructor' => 'Alex Martinez',
-        'price' => 'Rp. 60.000',
-        'original_price' => 'Rp. 80.000',
+        'price' => '$59.99',
+        'original_price' => '$99.99',
         'rating' => '4.5',
         'reviews' => '756',
         'tag' => 'BEGINNER',
@@ -67,8 +94,8 @@ $featuredCourses = [
         'id' => 6,
         'title' => 'Business Leadership Mastery',
         'instructor' => 'Jessica Lee',
-        'price' => 'Rp. 150.000',
-        'original_price' => 'Rp. 180.000',
+        'price' => '$119.99',
+        'original_price' => '$199.99',
         'rating' => '4.9',
         'reviews' => '1,536',
         'tag' => 'ADVANCED',
@@ -78,8 +105,8 @@ $featuredCourses = [
         'id' => 7,
         'title' => 'Web Development Bootcamp',
         'instructor' => 'David Chen',
-        'price' => 'Rp. 175.000',
-        'original_price' => 'Rp. 200.000',
+        'price' => '$94.99',
+        'original_price' => '$159.99',
         'rating' => '4.8',
         'reviews' => '3,128',
         'tag' => 'BEST SELLER',
@@ -89,8 +116,8 @@ $featuredCourses = [
         'id' => 8,
         'title' => 'Social Media Marketing',
         'instructor' => 'Olivia Wilson',
-        'price' => 'Rp. 110.000',
-        'original_price' => 'Rp. 130.000',
+        'price' => '$69.99',
+        'original_price' => '$119.99',
         'rating' => '4.7',
         'reviews' => '942',
         'tag' => 'POPULAR',
@@ -103,8 +130,8 @@ $popularCourses = [
         'id' => 9,
         'title' => 'Project Management Professional',
         'instructor' => 'Robert Johnson',
-        'price' => 'Rp. 199.000',
-        'original_price' => 'Rp. 230.000',
+        'price' => '$129.99',
+        'original_price' => '$199.99',
         'rating' => '4.9',
         'reviews' => '2,156',
         'tag' => 'CERTIFICATION',
@@ -115,8 +142,8 @@ $popularCourses = [
         'id' => 10,
         'title' => 'Financial Analysis Masterclass',
         'instructor' => 'Linda Thompson',
-        'price' => 'Rp. 150.000',
-        'original_price' => 'Rp.199.000',
+        'price' => '$109.99',
+        'original_price' => '$189.99',
         'rating' => '4.8',
         'reviews' => '1,245',
         'tag' => 'PROFESSIONAL',
@@ -127,8 +154,8 @@ $popularCourses = [
         'id' => 11,
         'title' => 'Machine Learning A-Z',
         'instructor' => 'James Wilson',
-        'price' => 'Rp. 140.000',
-        'original_price' => 'Rp. 160.000',
+        'price' => '$119.99',
+        'original_price' => '$199.99',
         'rating' => '4.9',
         'reviews' => '3,542',
         'tag' => 'ADVANCED',
@@ -139,8 +166,8 @@ $popularCourses = [
         'id' => 12,
         'title' => 'Content Creation Masterclass',
         'instructor' => 'Sophia Lee',
-        'price' => 'Rp. 140.000',
-        'original_price' => 'Rp. 150.000',
+        'price' => '$89.99',
+        'original_price' => '$149.99',
         'rating' => '4.7',
         'reviews' => '1,832',
         'tag' => 'CREATIVE',
