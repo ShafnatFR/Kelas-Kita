@@ -1,13 +1,15 @@
 <?php
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
 include_once('db.php');
+if (session_status() === PHP_SESSION_NONE) session_start();
 
-$user = null; // default
-
+$user = null;
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 
-    // Ambil data user berdasarkan username
     $stmt = $conn->prepare("SELECT fotoProfil FROM tbuser WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
