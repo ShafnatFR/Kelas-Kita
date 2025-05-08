@@ -1,394 +1,538 @@
 <?php
-include "db.php";
+include "db.php";  // Include the database connection file
+
+// Start the session and initialize cart if needed
 session_start();
-// Cek apakah keranjang sudah ada dalam session
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
-// Database connection simulation
-$featuredCourses = [
-    [
-        'id' => 1,
-        'title' => 'Digital Marketing Masterclass',
-        'instructor' => 'John Smith',
-        'price' => 'Rp,900.000',
-        'original_price' => 'Rp,1.500.000',
-        'rating' => '4.8',
-        'reviews' => '1,275',
-        'tag' => 'BEST SELLER',
-        'image' => '../assets/images/Digitalmarketing.jpg',
-        'badge' => 'HOT'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Mobile Flutter Development',
-        'instructor' => 'Sarah Johnson',
-        'price' => 'Rp,1.400.000',
-        'original_price' => 'Rp,1.800.000',
-        'rating' => '4.9',
-        'reviews' => '852',
-        'tag' => 'NEW',
-        'image' => '../assets/images/mobile flutter.webp'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Advanced Python for Data Science',
-        'instructor' => 'Michael Wang',
-        'price' => 'Rp,900.000',
-        'original_price' => 'Rp,1,600,000',
-        'rating' => '4.7',
-        'reviews' => '2,342',
-        'tag' => 'POPULAR',
-        'image' => '../assets/images/7212c4bbf2054dc64cb106f6145d01ea.jpg'
-    ],
-    [
-        'id' => 4,
-        'title' => 'UX Complete Start-to-Finish',
-        'instructor' => 'Emma Brooks',
-        'price' => 'Rp,600.000',
-        'original_price' => 'Rp,1.100.000',
-        'rating' => '4.6',
-        'reviews' => '1,064',
-        'tag' => 'TRENDING',
-        'image' => '../assets/images/6893cf238804d5855aef507b3b2569be.jpg'
-    ],
-    [
-        'id' => 5,
-        'title' => 'Graphic Design Fundamentals',
-        'instructor' => 'Alex Martinez',
-        'price' => 'Rp,500,000',
-        'original_price' => 'Rp,900.000',
-        'rating' => '4.5',
-        'reviews' => '756',
-        'tag' => 'BEGINNER',
-        'image' => '../assets/images/69591b7242604c6866f1293ed7701b1c.jpg'
-    ],
-    [
-        'id' => 6,
-        'title' => 'Business Leadership Mastery',
-        'instructor' => 'Jessica Lee',
-        'price' => 'Rp,1.100.000',
-        'original_price' => 'Rp,1.900.000',
-        'rating' => '4.9',
-        'reviews' => '1,536',
-        'tag' => 'ADVANCED',
-        'image' => '../assets/images/1d1834258e04d5f2241e33ef68d4357d.jpg'
-    ],
-    [
-        'id' => 7,
-        'title' => 'Web Development Bootcamp',
-        'instructor' => 'David Chen',
-        'price' => 'Rp,900.000',
-        'original_price' => 'Rp,1.600.000',
-        'rating' => '4.8',
-        'reviews' => '3,128',
-        'tag' => 'BEST SELLER',
-        'image' => '../assets/images/45b00ea9dc1ae612b7c53a7a93c1a1e3.jpg'
-    ],
-    [
-        'id' => 8,
-        'title' => 'Social Media Marketing',
-        'instructor' => 'Olivia Wilson',
-        'price' => 'Rp,600.000',
-        'original_price' => 'Rp,1.100.000',
-        'rating' => '4.7',
-        'reviews' => '942',
-        'tag' => 'POPULAR',
-        'image' => '../assets/images/3c6067ae93b24b166f7888bbf9809589.jpg'
-    ]
-];
 
-$popularCourses = [
-    [
-        'id' => 9,
-        'title' => 'Project Management Professional',
-        'instructor' => 'Robert Johnson',
-        'price' => 'Rp,1.200.000',
-        'original_price' => 'Rp,1.600.000',
-        'rating' => '4.9',
-        'reviews' => '2,156',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100'
-    ],
-    [
-        'id' => 10,
-        'title' => 'Financial Analysis Masterclass',
-        'instructor' => 'Linda Thompson',
-        'price' => 'Rp,1000.000',
-        'original_price' => 'Rp,1.800.000',
-        'rating' => '4.8',
-        'reviews' => '1,245',
-        'tag' => 'PROFESSIONAL',
-        'image' => 'assets/images/course10.jpg',
-        'color' => 'bg-orange-100'
-    ],
-    [
-        'id' => 11,
-        'title' => 'Machine Learning A-Z',
-        'instructor' => 'James Wilson',
-        'price' => 'Rp,1.100.000',
-        'original_price' => 'Rp,1.900.000',
-        'rating' => '4.9',
-        'reviews' => '3,542',
-        'tag' => 'ADVANCED',
-        'image' => 'assets/images/course11.jpg',
-        'color' => 'bg-green-100'
-    ],
-    [
-        'id' => 12,
-        'title' => 'Content Creation Masterclass',
-        'instructor' => 'Sophia Lee',
-        'price' => 'Rp,800.000',
-        'original_price' => 'Rp,1.400.000',
-        'rating' => '4.7',
-        'reviews' => '1,832',
-        'tag' => 'CREATIVE',
-        'image' => 'assets/images/course12.jpg',
-        'color' => 'bg-purple-100'
-    ]
-];
+// Fetch courses from the database with proper error handling
+$featuredCourses = [];
+$popularCourses = [];
 
+try {
+    $query = "SELECT * FROM courses WHERE status = 'active'";  // Only fetch active courses
+    $result = mysqli_query($conn, $query);
+    
+    if (!$result) {
+        throw new Exception("Database query failed: " . mysqli_error($conn));
+    }
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        // Separate featured and popular courses by tag
+        if ($row['tag'] == 'FEATURED') {
+            $featuredCourses[] = $row;
+        } elseif ($row['tag'] == 'POPULAR') {
+            $popularCourses[] = $row;
+        }
+    }
+} catch (Exception $e) {
+    // Log error but don't show to users
+    error_log("Error: " . $e->getMessage());
+    // Could set an error message variable here to display to admins if needed
+}
+
+// Categories data with proper icon references
 $categories = [
-    ['name' => 'All', 'icon' => 'grid'],
-    ['name' => 'Development', 'icon' => 'code'],
-    ['name' => 'Business', 'icon' => 'briefcase'],
-    ['name' => 'Marketing', 'icon' => 'megaphone'],
-    ['name' => 'Design', 'icon' => 'palette'],
-    ['name' => 'Health', 'icon' => 'heart'],
-    ['name' => 'Finance', 'icon' => 'chart-bar'],
-    ['name' => 'IT & Software', 'icon' => 'Computer']
+    ['name' => 'All', 'icon' => 'th-large', 'slug' => 'all'],
+    ['name' => 'Development', 'icon' => 'code', 'slug' => 'development'],
+    ['name' => 'Business', 'icon' => 'briefcase', 'slug' => 'business'],
+    ['name' => 'Marketing', 'icon' => 'bullhorn', 'slug' => 'marketing'],
+    ['name' => 'Design', 'icon' => 'paint-brush', 'slug' => 'design'],
+    ['name' => 'Health', 'icon' => 'heartbeat', 'slug' => 'health'],
+    ['name' => 'Finance', 'icon' => 'chart-line', 'slug' => 'finance'],
+    ['name' => 'IT & Software', 'icon' => 'laptop-code', 'slug' => 'it-software']
 ];
 
-$workshopCount = 253;
-$studentsCount = "100K+";
-$instructorsCount = "1.2K+";
-$coursesCount = "2.5K+";
-$toolsCount = "50+";
+// Function to sanitize output
+function escape($string) {
+    return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+}
+
+// Add to cart functionality
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_cart') {
+    if (isset($_POST['kelas_id'])) {
+        $kelasId = (int)$_POST['kelas_id'];
+        
+        // Check if course exists in database
+        $checkQuery = "SELECT id, title, price FROM courses WHERE id = ?";
+        $stmt = mysqli_prepare($conn, $checkQuery);
+        mysqli_stmt_bind_param($stmt, "i", $kelasId);
+        mysqli_stmt_execute($stmt);
+        $checkResult = mysqli_stmt_get_result($stmt);
+        
+        if ($course = mysqli_fetch_assoc($checkResult)) {
+            // Check if the course is already in the cart
+            $courseExists = false;
+            foreach ($_SESSION['cart'] as $item) {
+                if ($item['id'] == $kelasId) {
+                    $courseExists = true;
+                    break;
+                }
+            }
+            
+            if (!$courseExists) {
+                $_SESSION['cart'][] = [
+                    'id' => $course['id'],
+                    'title' => $course['title'],
+                    'price' => $course['price']
+                ];
+                $_SESSION['flash_message'] = "Kursus berhasil ditambahkan ke keranjang!";
+                $_SESSION['flash_type'] = "success";
+            } else {
+                $_SESSION['flash_message'] = "Kursus sudah ada di keranjang!";
+                $_SESSION['flash_type'] = "warning";
+            }
+        }
+        
+        // Redirect to prevent form resubmission
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelas Kita</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Kelas Kita - Platform belajar online untuk meningkatkan keterampilan Anda dengan kursus dari para ahli">
+    <title>Kelas Kita - Belajar Online Untuk Meningkatkan Karier</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
         }
-        .hero-gradient {
-            background: linear-gradient(135deg,rgb(2, 2, 253) 0%, #60efff 100%);
-        }
-        .rating-stars {
-            color: #FFD700;
-        }
-        </style>
-        </head>
-        <body class="bg-gray-50">
-            <?php include "../Views/navbar.php" ?>
-            <script>
-            function toggleDropdown() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('hidden');
-    // Klik di luar dropdown untuk nutup
-    document.addEventListener('click', function handleOutsideClick(event) {
-        if (!dropdown.contains(event.target) && !event.target.closest('button')) {
-            dropdown.classList.add('hidden');
-            document.removeEventListener('click', handleOutsideClick);
-            }
-            });
-            }
-            </script>
-            </div>
-        </nav>
         
+        .hero-gradient {
+            background: linear-gradient(135deg, #3a5efc 0%, #5c87ff 100%);
+            padding: 80px 0;
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background-color: #f0f7ff;
+            color: #3a5efc;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover .category-icon {
+            background-color: #3a5efc;
+            color: #ffffff;
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-img-top {
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .rating {
+            color: #FFC107;
+        }
+        
+        .text-purple {
+            color: #6f42c1;
+        }
+        
+        .bg-purple {
+            background-color: #6f42c1;
+        }
+        
+        .section-heading {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .section-heading:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background-color: #3a5efc;
+        }
+        
+        .flash-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Navbar -->
+    <?php include "../Views/navbarbootstrap.php"; ?>
+    
+    <!-- Flash Messages -->
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="flash-message">
+            <div class="alert alert-<?= $_SESSION['flash_type'] ?? 'info' ?> alert-dismissible fade show" role="alert">
+                <?= $_SESSION['flash_message'] ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        <?php 
+        // Clear the flash message
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+        ?>
+    <?php endif; ?>
 
     <!-- Hero Section -->
-    <section class="hero-gradient text-white py-16">
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center">
-            <div class="md:w-1/2 mb-10 md:mb-0">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6">Cara Lebih Cepat Untuk<br>Pertumbuhan & Kelas Kita</h1>
-                <p class="text-lg mb-8 text-blue-100">Pelajari Keterampilan yang anda butuhkan untuk memajukan kareri anda dengan Kursus yang di Pandu oleh para ahli kami</p>
-                <div class="flex space-x-4">
-                    <a href="#" class="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition">Memulai</a>
-                    <a href="#" class="border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-blue-600 transition">Pelajari Lebih Lanjut</a>
+    <section class="hero-gradient text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <h1 class="display-4 fw-bold mb-4">Cara Lebih Cepat Untuk Pertumbuhan Karier Anda</h1>
+                    <p class="lead mb-4">Pelajari keterampilan yang Anda butuhkan untuk memajukan karier dengan kursus yang dipandu oleh para ahli kami.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="courses.php" class="btn btn-light btn-lg fw-bold text-primary">Memulai</a>
+                        <a href="about.php" class="btn btn-outline-light btn-lg">Pelajari Lebih Lanjut</a>
+                    </div>
                 </div>
-            </div>
-            <div class="md:w-1/2 flex justify-end">
-                <img src="../assets/images/1683125533-img1.avif" alt="Person learning online" class="rounded-lg w-64">
+                <div class="col-lg-6 text-center">
+                    <img src="../assets/images/hero-image.webp" alt="Siswa belajar online" class="img-fluid rounded-4 shadow">
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Categories Section -->
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="flex flex-wrap justify-center gap-6">
+    <section class="py-5 bg-white">
+        <div class="container">
+            <h2 class="text-center section-heading">Kategori Kursus</h2>
+            <div class="row justify-content-center g-4">
                 <?php foreach ($categories as $category): ?>
-                <div class="flex flex-col items-center bg-gray-50 p-6 rounded-lg w-24 h-24 justify-center hover:shadow-md transition cursor-pointer">
-                    <div class="bg-blue-100 text-blue-600 p-2 rounded-full mb-2">
-                        <i class="fas fa-<?php echo $category['icon']; ?>"></i>
-                    </div>
-                    <span class="text-sm font-medium text-gray-700"><?php echo $category['name']; ?></span>
+                <div class="col-6 col-md-3 col-lg-3">
+                    <a href="courses.php?category=<?= $category['slug'] ?>" class="text-decoration-none">
+                        <div class="card h-100 text-center p-3 shadow-sm">
+                            <div class="category-icon">
+                                <i class="fas fa-<?= escape($category['icon']) ?> fa-lg"></i>
+                            </div>
+                            <h5 class="card-title"><?= escape($category['name']) ?></h5>
+                        </div>
+                    </a>
                 </div>
                 <?php endforeach; ?>
             </div>
         </div>
     </section>
-
     <!-- Featured Courses Section -->
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-6">
-            <h2 class="text-2xl font-bold mb-10">Kursus unggulan</h2>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <?php foreach ($featuredCourses as $course): ?>
-                <a href="course-detail.php?id=<?php echo $course['id']; ?>" class="block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="relative">
-                        <img src="<?php echo $course['image']; ?>" alt="<?php echo $course['title']; ?>" class="w-full h-40 object-cover">
-                        <?php if (isset($course['badge'])): ?>
-                            <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded"><?php echo $course['badge']; ?></span>
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center section-heading">Featured Courses</h2>
+        <div class="row g-4">
+            <?php 
+            // Check if there are featured courses to display
+            if (!empty($featuredCourses)): 
+                foreach ($featuredCourses as $course): 
+            ?>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <?php if (!empty($course['image'])): ?>
+                            <img src="<?= escape($course['image']) ?>" class="card-img-top" alt="<?= escape($course['title']) ?>">
+                        <?php else: ?>
+                            <img src="../assets/images/course-placeholder.jpg" class="card-img-top" alt="Course Image">
+                        <?php endif; ?>
+                        
+                        <div class="card-body">
+                            <?php if (!empty($course['tag'])): ?>
+                                <span class="badge bg-primary mb-2"><?= escape($course['tag']) ?></span>
                             <?php endif; ?>
-                        <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded"><?php echo $course['tag']; ?></span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-lg mb-2"><?php echo $course['title']; ?></h3>
-                        <p class="text-gray-600 text-sm mb-3"><?php echo $course['instructor']; ?></p>
-                        <div class="flex items-center mb-3">
-                            <div class="rating-stars mr-1">★★★★★</div>
-                            <span class="text-yellow-500 font-medium"><?php echo $course['rating']; ?></span>
-                            <span class="text-gray-500 text-sm ml-1">(<?php echo $course['reviews']; ?>)</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="font-bold text-gray-900"><?php echo $course['price']; ?></span>
-                                <span class="text-gray-500 text-sm line-through ml-2"><?php echo $course['original_price']; ?></span>
+                            
+                            <h5 class="card-title"><?= escape($course['title']) ?></h5>
+                            <p class="card-text text-muted"><?= escape($course['instructor'] ?? 'Expert Instructor') ?></p>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-2 rating">
+                                    <?php 
+                                    $rating = !empty($course['rating']) ? (float)$course['rating'] : 0;
+                                    $fullStars = floor($rating);
+                                    $halfStar = ($rating - $fullStars) >= 0.5;
+                                    
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        if ($i <= $fullStars) {
+                                            echo '<i class="fas fa-star"></i>';
+                                        } elseif ($i == $fullStars + 1 && $halfStar) {
+                                            echo '<i class="fas fa-star-half-alt"></i>';
+                                        } else {
+                                            echo '<i class="far fa-star"></i>';
+                                        }
+                                    }
+                                    ?>
+                                </div>
+                                <?php if (!empty($course['rating']) && !empty($course['reviews_count'])): ?>
+                                    <span class="fw-bold"><?= number_format($course['rating'], 1) ?></span>
+                                    <span class="text-muted ms-1">(<?= number_format($course['reviews_count']) ?>)</span>
+                                <?php endif; ?>
                             </div>
-                            <form method="POST" action="keranjang-saya.php">
-                                <input type="hidden" name="kelas_id" value="<?= $course['id']; ?>">
-                                <button type="submit" class="text-blue-600 hover:text-blue-800" title="Tambah ke Keranjang">
-                                <i class="fas fa-shopping-cart"></i>
-                                </button>
-                            </form>
-
-                        </div>
-                    </div>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-
-    <!-- Popular Courses Section -->
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-2xl font-bold mb-10">Kelas Populer</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <?php foreach ($popularCourses as $course): ?>
-                <a href="course-detail.php?id=<?php echo $course['id']; ?>" class="block <?php echo $course['color']; ?> rounded-lg overflow-hidden p-4 hover:shadow-md transition">
-                    <span class="inline-block bg-white text-blue-600 text-xs px-2 py-1 rounded mb-4"><?php echo $course['tag']; ?></span>
-                    <h3 class="font-semibold text-lg mb-2"><?php echo $course['title']; ?></h3>
-                    <p class="text-gray-700 text-sm mb-3"><?php echo $course['instructor']; ?></p>
-                    <div class="flex items-center mb-3">
-                        <div class="rating-stars mr-1">★★★★★</div>
-                        <span class="text-yellow-500 font-medium"><?php echo $course['rating']; ?></span>
-                        <span class="text-gray-700 text-sm ml-1">(<?php echo $course['reviews']; ?>)</span>
-                    </div>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why Choose Us Section -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="flex flex-col md:flex-row items-center gap-10">
-                <div class="md:w-1/2">
-                    <img src="../assets/images/megang laptop.jpg" alt="Student using laptop" class="rounded-lg w-128">
-                </div>
-                <div class="md:w-1/2">
-                    <h2 class="text-3xl font-bold mb-6">Mengapa Upskill menjadi kursus pelatihan & bootcamp terbaik</h2>
-                    <p class="text-gray-600 mb-8">Kami telah merancang platform kami untuk menyediakan pengalaman belajar terbaik dengan instruktur ahli, proyek langsung, dan komunitas yang mendukung.</p>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-check text-blue-600"></i>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <?php if (!empty($course['price'])): ?>
+                                        <?php if (!empty($course['original_price']) && $course['original_price'] > $course['price']): ?>
+                                            <span class="text-muted text-decoration-line-through me-2">Rp<?= number_format($course['original_price'], 0, ',', '.') ?></span>
+                                        <?php endif; ?>
+                                        <span class="fw-bold">Rp<?= number_format($course['price'], 0, ',', '.') ?></span>
+                                    <?php else: ?>
+                                        <span class="fw-bold text-success">Free</span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <form method="post" action="<?= $_SERVER['PHP_SELF'] ?>">
+                                    <input type="hidden" name="action" value="add_to_cart">
+                                    <input type="hidden" name="kelas_id" value="<?= $course['id'] ?>">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                                    </button>
+                                </form>
                             </div>
-                            <span class="font-medium">Instruktur yang terampil</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-check text-blue-600"></i>
-                            </div>
-                            <span class="font-medium">Sumber daya premium</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-check text-blue-600"></i>
-                            </div>
-                            <span class="font-medium">Proyek langsung</span>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="bg-blue-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-check text-blue-600"></i>
-                            </div>
-                            <span class="font-medium">Akses seumur hidup</span>
                         </div>
                     </div>
                 </div>
+            <?php 
+                endforeach; 
+            else: 
+            ?>
+                <div class="col-12 text-center">
+                    <p>No featured courses available at the moment. Please check back later!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+    <!-- Why Upskill Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <img src="../assets/images/student_laptop.jpg" alt="Student using laptop" class="img-fluid rounded-3 shadow">
+                </div>
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-4">Why Upskill becomes the best training course & bootcamp</h2>
+                    <p class="mb-4">We've designed our platform to provide the best learning experience with expert instructors, hands-on projects, and a supportive community.</p>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                            <i class="fas fa-check text-primary"></i>
+                        </div>
+                        <span class="fw-medium">Skilled instructors</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                            <i class="fas fa-check text-primary"></i>
+                        </div>
+                        <span class="fw-medium">Hands-on projects</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                            <i class="fas fa-check text-primary"></i>
+                        </div>
+                        <span class="fw-medium">Premium resources</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                            <i class="fas fa-check text-primary"></i>
+                        </div>
+                        <span class="fw-medium">Lifetime access</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Statistics Section -->
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
-                <div class="p-4">
-                    <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $workshopCount; ?>+</div>
-                    <p class="text-gray-600">Karya Daring</p>
+    <!-- Popular Classes Section -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <h2 class="mb-4">Popular classes</h2>
+            <div class="row g-4">
+                <!-- Project Management Card -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #EBF5FF;">
+                        <div class="card-body">
+                            <span class="badge bg-primary bg-opacity-25 text-primary mb-2">CERTIFICATION</span>
+                            <h5 class="card-title fw-bold">Project Management Professional</h5>
+                            <p class="card-text text-muted mb-2">Robert Johnson</p>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="fw-bold">4.9</span>
+                                <span class="text-muted ms-1">(2,156)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $studentsCount; ?></div>
-                    <p class="text-gray-600">Siswa</p>
+                
+                <!-- Financial Analysis Card -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #FFF8EB;">
+                        <div class="card-body">
+                            <span class="badge bg-warning bg-opacity-25 text-warning mb-2">PROFESSIONAL</span>
+                            <h5 class="card-title fw-bold">Financial Analysis Masterclass</h5>
+                            <p class="card-text text-muted mb-2">Linda Thompson</p>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="fw-bold">4.8</span>
+                                <span class="text-muted ms-1">(1,245)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $instructorsCount; ?></div>
-                    <p class="text-gray-600">Instruktur</p>
+                
+                <!-- Machine Learning Card -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #EBFFF3;">
+                        <div class="card-body">
+                            <span class="badge bg-success bg-opacity-25 text-success mb-2">ADVANCED</span>
+                            <h5 class="card-title fw-bold">Machine Learning A-Z</h5>
+                            <p class="card-text text-muted mb-2">James Wilson</p>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="fw-bold">4.9</span>
+                                <span class="text-muted ms-1">(3,542)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $coursesCount; ?></div>
-                    <p class="text-gray-600">Kursus Online</p>
+                
+                <!-- Content Creation Card -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #F8EBFF;">
+                        <div class="card-body">
+                            <span class="badge bg-purple bg-opacity-25 text-purple mb-2">CREATIVE</span>
+                            <h5 class="card-title fw-bold">Content Creation Masterclass</h5>
+                            <p class="card-text text-muted mb-2">Sophia Lee</p>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="fw-bold">4.7</span>
+                                <span class="text-muted ms-1">(1,832)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div class="text-4xl font-bold text-blue-600 mb-2"><?php echo $toolsCount; ?></div>
-                    <p class="text-gray-600">Alat Praktis</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <div class="row text-center g-4">
+                <div class="col">
+                    <h2 class="fw-bold text-primary mb-1">253+</h2>
+                    <p class="text-muted">Online Workshops</p>
+                </div>
+                <div class="col">
+                    <h2 class="fw-bold text-primary mb-1">100K+</h2>
+                    <p class="text-muted">Students</p>
+                </div>
+                <div class="col">
+                    <h2 class="fw-bold text-primary mb-1">1.2K+</h2>
+                    <p class="text-muted">Instructors</p>
+                </div>
+                <div class="col">
+                    <h2 class="fw-bold text-primary mb-1">2.5K+</h2>
+                    <p class="text-muted">Online Courses</p>
+                </div>
+                <div class="col">
+                    <h2 class="fw-bold text-primary mb-1">50+</h2>
+                    <p class="text-muted">Practical Tools</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Launch Career Section -->
+    <section class="py-5 bg-warning">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-2">Launch Your Career Journey</h2>
+                    <p class="mb-0">Through upskill</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <img src="../assets/images/people_learning.jpg" alt="People learning" class="img-fluid rounded-3" style="max-height: 120px;">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-6">
-            <div class="bg-yellow-400 rounded-lg p-8 flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-2/3 mb-6 md:mb-0">
-                    <h3 class="text-2xl font-bold mb-2">Luncurkan Perjalanan Karier Anda</h3>
-                    <p class="text-gray-800">Melalui peningkatan keterampilan</p>
-                </div>
-                <div>
-                    <img src="../assets/images/5de63102937d14a8350c852d3bf689be.jpg" alt="People learning" class="h-32">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <?php include "../Views/footer.php";  ?>
+    <!-- Footer -->
+    <?php include "../Views/footerbootsrap.php"; ?>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto dismiss flash messages after 5 seconds
+        setTimeout(function() {
+            const flashMessage = document.querySelector('.flash-message .alert');
+            if (flashMessage) {
+                const bsAlert = new bootstrap.Alert(flashMessage);
+                bsAlert.close();
+            }
+        }, 5000);
+    });
+    </script>
 </body>
 </html>
