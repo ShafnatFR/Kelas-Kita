@@ -14,7 +14,7 @@ $notifikasi_postingan_baru = isset($_POST['notifikasi_postingan_baru']) ? 1 : 0;
 
 $query = "UPDATE tbuser SET balasan_ke_komentar = ?, komentar_baru = ?, notifikasi_postingan_baru = ? WHERE username = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ssis", $balasan_ke_komentar, $komentar_baru, $notifikasi_postingan_baru, $username);
+$stmt->bind_param("iiis", $balasan_ke_komentar, $komentar_baru, $notifikasi_postingan_baru, $username);
 
 if ($stmt->execute()) {
     header("Location: setting-notifikasi.php?update=success");
