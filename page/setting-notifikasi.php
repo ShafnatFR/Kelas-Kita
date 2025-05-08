@@ -53,16 +53,19 @@ $user = $stmt->get_result()->fetch_assoc();
                 <!-- Foto Profil -->
                 <div class="col-12 col-md-3 d-flex flex-column align-items-center pt-3">
                     <div class="text-center">
-                        <img src="../upload/<?= htmlspecialchars($user['fotoProfil'] ?? 'default.jpg') ?>" 
-                        class="img-fluid rounded-circle w-75 mb-2"
-                        style="aspect-ratio: 1/1; object-fit: cover;"
-                        alt="Profile Picture">
-                        <p class="fw-bold mb-3"><?= htmlspecialchars($user['username'] ?? '') ?></p>
+                        <img
+                            src="<?= (!empty($user['fotoProfil']) && file_exists('../upload/' . $user['fotoProfil'])) 
+                                ? '../upload/' . htmlspecialchars($user['fotoProfil']) 
+                                : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['username']) . '&background=0D8ABC&color=fff&rounded=true&size=128' ?>" 
+                            class="img-fluid rounded-circle w-75 mb-2"
+                            style="aspect-ratio: 1/1; object-fit: cover;"
+                            alt="Profile Picture">
+                        <h4 class="fw-bold mb-3"><?= htmlspecialchars($username) ?></4>
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
                         <a href="setting-profil.php" class="btn btn-outline-primary">Profil</a>
                         <a href="setting-preferensi.php" class="btn btn-outline-primary">Preferensi</a>
-                        <a href="setting-notifikasi.php" class="btn btn btn-primary active">Notifikasi</a>
+                        <a href="setting-notifikasi.php" class="btn btn-outline-primary active">Notifikasi</a>
                         <a href="setting-hubungkanAkun.php" class="btn btn-outline-primary">Hubungkan Akun</a>
                         <a href="setting-keluar.php" class="btn btn-outline-primary">Keluar</a>
                         <a href="setting-tutupAkun.php" class="btn btn-outline-primary">Tutup Akun</a>

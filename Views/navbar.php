@@ -1,3 +1,21 @@
+<?php
+session_start();
+include_once('db.php');
+
+$user = null; // default
+
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+
+    // Ambil data user berdasarkan username
+    $stmt = $conn->prepare("SELECT fotoProfil FROM tbuser WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+}
+?>
+
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
     <nav class="bg-white py-4 px-6 shadow-sm">
@@ -20,26 +38,37 @@
                     </a>
                 </div>
             </div>
-                <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-4">
     <?php if (isset($_SESSION['username'])): ?>
         <div class="relative">
             <!-- Tombol Profil -->
             <button onclick="toggleDropdown()" class="focus:outline-none">
-                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=32"
-                    alt="Profile" class="rounded-full w-8 h-8">
+                <img 
+                src="<?= (!empty($user['fotoProfil']) && file_exists('../upload/' . $user['fotoProfil'])) 
+                    ? '../upload/' . htmlspecialchars($user['fotoProfil']) 
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['username']) . '&background=0D8ABC&color=fff&rounded=true&size=64' ?>" 
+                alt="Profile" 
+                class="rounded-full w-8 h-8 object-cover">
+
             </button>
 
             <!-- Dropdown -->
             <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-50">
                 <div class="flex items-center space-x-3 border-b pb-3 mb-3">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['username']) ?>&background=0D8ABC&color=fff&rounded=true&size=48"
-                        alt="Profile" class="rounded-full w-12 h-12">
+                    <img 
+                    src="<?= (!empty($user['fotoProfil']) && file_exists('../upload/' . $user['fotoProfil'])) 
+                        ? '../upload/' . htmlspecialchars($user['fotoProfil']) 
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($_SESSION['username']) . '&background=0D8ABC&color=fff&rounded=true&size=64' ?>" 
+                    alt="Profile" 
+                    class="rounded-full w-8 h-8 object-cover">
                     <div>
                         <p class="text-gray-800 font-semibold"><?= htmlspecialchars($_SESSION['username']) ?></p>
-                        <p class="text-gray-500 text-sm"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
+                        <p class="text-gray-500 text-sm block w-full max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></p>
+
                     </div>
                 </div>
                 <ul class="space-y-2 text-sm">
+                    <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">KelasKu</a></li>
                     <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
                     <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>

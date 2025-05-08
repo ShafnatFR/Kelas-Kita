@@ -1,0 +1,6 @@
+.text-gray-500 {
+    white-space: nowrap; /* Hindari teks dibungkus */
+    overflow: hidden; /* Sembunyikan bagian yang melebihi */
+    text-overflow: ellipsis; /* Menambahkan '...' di akhir teks yang terlalu panjang */
+}
+
