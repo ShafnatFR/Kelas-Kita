@@ -1,1273 +1,398 @@
 <?php
-// cart.php - Halaman keranjang belanja
+// Start a session to maintain state
 include "db.php";
-// Session start untuk menyimpan data keranjang
 session_start();
 
-// Course data arrays copied from course-detail.php
-$featuredCourses = [
-    [
-        'id' => 1,
-        'title' => 'Digital Marketing Masterclass',
-        'instructor' => 'John Smith',
-        'price' => '$79.99',
-        'original_price' => '$129.99',
-        'rating' => '4.8',
-        'reviews' => '1,275',
-        'tag' => 'BEST SELLER',
-        'image' => '../assets/images/Digitalmarketing.jpg',
-        'badge' => 'HOT',
-        'description' => 'Learn the most effective digital marketing strategies to grow your business online. This comprehensive course covers SEO, social media marketing, email marketing, content marketing, and paid advertising. You\'ll learn how to create effective marketing campaigns, analyze their performance, and optimize them for better results.',
-        'what_you_learn' => [
-            'Create effective digital marketing strategies',
-            'Optimize websites for search engines (SEO)',
-            'Run successful social media campaigns',
-            'Create and optimize paid advertising campaigns',
-            'Build and grow an email marketing list',
-            'Analyze marketing data and create reports'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Sarah Johnson',
-                'rating' => 5,
-                'date' => '15 April 2025',
-                'comment' => 'This course completely transformed my marketing approach. The instructor explains complex concepts in a simple way, and the practical exercises helped me implement what I learned immediately. Highly recommended!'
-            ],
-            [
-                'name' => 'Michael Brown',
-                'rating' => 4,
-                'date' => '2 April 2025',
-                'comment' => 'Very comprehensive course with lots of real-world examples. The section on SEO was particularly helpful for my business. Only thing missing was more case studies.'
-            ],
-            [
-                'name' => 'Emma Wilson',
-                'rating' => 4.5,
-                'date' => '27 March 2025',
-                'comment' => 'John is an amazing instructor. His explanations are clear and the course content is up-to-date with the latest marketing trends. I\'ve already seen significant improvements in my campaigns.'
-            ]
-        ]
-    ],
-    [
-        'id' => 2,
-        'title' => 'Mobile Flutter Development',
-        'instructor' => 'Sarah Johnson',
-        'price' => '$89.99',
-        'original_price' => '$149.99',
-        'rating' => '4.9',
-        'reviews' => '852',
-        'tag' => 'NEW',
-        'image' => '../assets/images/mobile flutter.webp',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-    [
-        'id' => 3,
-        'title' => 'Advanced python for data science',
-        'instructor' => 'Michael Wang',
-        'price' => '$99.99',
-        'original_price' => '$169.99',
-        'rating' => '4.7',
-        'reviews' => '2,342',
-        'tag' => 'NEW',
-        'image' => '../assets/images/7212c4bbf2054dc64cb106f6145d01ea.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-```php
-// cart.php - Halaman keranjang belanja
-<?php
-// Include database connection
-include "db.php";
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "KelasKita";
 
-// Start session to store cart data
-session_start();
+$conn = mysqli_connect($host, $username, $password, $database);
 
-// Define course data arrays
-$featuredCourses = [
-    // ... existing course data ...
-];
-
-// Function to calculate total cost
-function calculateTotal($cart) {
-    $total = 0;
-    foreach ($cart as $item) {
-        $price = str_replace(['$', 'Rp', ','], '', $item['price']);
-        $total += (float)$price;
-    }
-    return $total;
+if (!$conn) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// Function to apply promo code
-function applyPromoCode($promoCode, $total) {
-    $validPromoCodes = [
-        'KEEPLEARNING' => 15, // 15% discount
-        'WELCOME10' => 10,    // 10% discount
-        'FLASH25' => 25,      // 25% discount
-        'NEWYEAR20' => 20     // 20% discount
-    ];
-
-    if (isset($validPromoCodes[$promoCode])) {
-        $discount = $total * ($validPromoCodes[$promoCode] / 100);
-        return $total - $discount;
-    } else {
-        return $total;
-    }
-}
-
-// Check if promo code is applied
-if (isset($_SESSION['applied_coupon'])) {
-    $appliedCoupon = $_SESSION['applied_coupon'];
-} else {
-    $appliedCoupon = null;
-}
-
-// Calculate cart total
-if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-    $total = calculateTotal($_SESSION['cart']);
-    if ($appliedCoupon) {
-        $discountedTotal = applyPromoCode($appliedCoupon['code'], $total);
-    } else {
-        $discountedTotal = $total;
-    }
-} else {
-    $total = 0;
-    $discountedTotal = 0;
-}
-
-// Format numbers for display
-$totalFormatted = number_format($total, 0, ',', '.');
-$discountedTotalFormatted = number_format($discountedTotal, 0, ',', '.');
-
-// ... rest of the code remains the same ...
-```            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-    [
-        'id' => 6,
-        'title' => 'Business leadership Mastery',
-        'instructor' => 'Jessica Lee',
-        'price' => '$119.99',
-        'original_price' => '$199.99',
-        'rating' => '4.9',
-        'reviews' => '1,536',
-        'tag' => 'NEW',
-        'image' => '../assets/images/1d1834258e04d5f2241e33ef68d4357d.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-    [
-        'id' => 7,
-        'title' => 'Web Development Bootcamp',
-        'instructor' => 'David Chen ',
-        'price' => '$94.99',
-        'original_price' => '$159.99',
-        'rating' => '4.8',
-        'reviews' => '3,128',
-        'tag' => 'NEW',
-        'image' => '../assets/images/45b00ea9dc1ae612b7c53a7a93c1a1e3.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-    [
-        'id' => 8,
-        'title' => 'Social Media Marketing',
-        'instructor' => 'Olivia Wilson',
-        'price' => '$69.99',
-        'original_price' => '$119.99',
-        'rating' => '4.7',
-        'reviews' => '942',
-        'tag' => 'NEW',
-        'image' => '../assets/images/3c6067ae93b24b166f7888bbf9809589.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-];
-
-$popularCourses = [
-    [
-        'id' => 9,
-        'title' => 'Project Management Professional',
-        'instructor' => 'Robert Johnson',
-        'price' => '$129.99',
-        'original_price' => '$199.99',
-        'rating' => '4.9',
-        'reviews' => '2,156',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 10,
-        'title' => 'Finalcial Analysis Masterclass',
-        'instructor' => 'linda Thompson',
-        'price' => '$119.99',
-        'original_price' => '$189.99',
-        'rating' => '4.8',
-        'reviews' => '1,245',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 11,
-        'title' => 'Machice Learning A-Z',
-        'instructor' => 'James Wilson',
-        'price' => '$149.99',
-        'original_price' => '$200.99',
-        'rating' => '4.9',
-        'reviews' => '3,542',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 12,
-        'title' => 'Content Creation MasterClass',
-        'instructor' => 'Shopia Lee',
-        'price' => '$110.99',
-        'original_price' => '$140.99',
-        'rating' => '4.7',
-        'reviews' => '1,832',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-
-];
-
-$popularCourses = [
-    [
-        'id' => 9,
-        'title' => 'Project Management Professional',
-        'instructor' => 'Robert Johnson',
-        'price' => '$129.99',
-        'original_price' => '$199.99',
-        'rating' => '4.9',
-        'reviews' => '2,156',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 10,
-        'title' => 'Finalcial Analysis Masterclass',
-        'instructor' => 'linda Thompson',
-        'price' => '$119.99',
-        'original_price' => '$189.99',
-        'rating' => '4.8',
-        'reviews' => '1,245',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 11,
-        'title' => 'Machice Learning A-Z',
-        'instructor' => 'James Wilson',
-        'price' => '$149.99',
-        'original_price' => '$200.99',
-        'rating' => '4.9',
-        'reviews' => '3,542',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 12,
-        'title' => 'Content Creation MasterClass',
-        'instructor' => 'Shopia Lee',
-        'price' => '$110.99',
-        'original_price' => '$140.99',
-        'rating' => '4.7',
-        'reviews' => '1,832',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-
-];
-
-$popularCourses = [
-    [
-        'id' => 9,
-        'title' => 'Project Management Professional',
-        'instructor' => 'Robert Johnson',
-        'price' => '$129.99',
-        'original_price' => '$199.99',
-        'rating' => '4.9',
-        'reviews' => '2,156',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        'description' => 'Prepare for the PMP certification exam with this comprehensive course. Learn all aspects of professional project management following the PMBOK guide. This course includes practice exams, case studies, and templates to help you succeed in your PMP certification journey.',
-        'what_you_learn' => [
-            'Master the PMBOK Guide concepts and processes',
-            'Prepare effectively for the PMP certification exam',
-            'Apply project management best practices',
-            'Lead projects successfully from initiation to closure',
-            'Manage project scope, schedule, cost, and quality',
-            'Develop leadership and communication skills'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'Jennifer Lee',
-                'rating' => 5,
-                'date' => '20 April 2025',
-                'comment' => 'I passed my PMP exam on the first try thanks to this course! Robert covers all the content thoroughly and the practice questions were very similar to the actual exam.'
-            ],
-            [
-                'name' => 'Thomas Brown',
-                'rating' => 5,
-                'date' => '12 April 2025',
-                'comment' => 'Excellent course with great explanations of complex project management concepts. The templates provided are invaluable for my day-to-day work.'
-            ],
-            [
-                'name' => 'Maria Garcia',
-                'rating' => 4,
-                'date' => '5 April 2025',
-                'comment' => 'Very comprehensive and well-structured. The only improvement would be to add more agile project management content.'
-            ]
-        ]
-    ],
-    [
-        'id' => 10,
-        'title' => 'Finalcial Analysis Masterclass',
-        'instructor' => 'linda Thompson',
-        'price' => '$119.99',
-        'original_price' => '$189.99',
-        'rating' => '4.8',
-        'reviews' => '1,245',
-        'tag' => 'CERTIFICATION',
-        'image' => 'assets/images/course9.jpg',
-        'color' => 'bg-blue-100',
-        ]
-    ],
-    [
-        'id' => 4,
-        'title' => 'UX Complete Start to Finish',
-        'instructor' => 'Emma Brooks',
-        'price' => '$69.99',
-        'original_price' => '$119.99',
-        'rating' => '4.6',
-        'reviews' => '1,062',
-        'tag' => 'NEW',
-        'image' => '../assets/images/6893cf238804d5855aef507b3b2569be.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-                'comment' => 'Amazing course! Sarah explains complex concepts in an easy-to-understand way. I was able to build my first Flutter app in just a few days following her guidance.'
-            ],
-            [
-                'name' => 'Lisa Martinez',
-                'rating' => 5,
-                'date' => '5 April 2025',
-                'comment' => 'I\'ve tried many Flutter courses but this one is by far the best. The projects are practical and the instructor is very responsive to questions.'
-            ],
-            [
-                'name' => 'James Wilson',
-                'rating' => 4,
-                'date' => '22 March 2025',
-                'comment' => 'Great content and pacing. The only reason I\'m giving 4 stars instead of 5 is that I would have liked more advanced topics covered at the end.'
-            ]
-        ]
-    ],
-    [
-        'id' => 5,
-        'title' => 'Graghic design Fundamentals',
-        'instructor' => 'Alex Martinez',
-        'price' => '$59.99',
-        'original_price' => '$99.99',
-        'rating' => '4.5',
-        'reviews' => '756',
-        'tag' => 'NEW',
-        'image' => '../assets/images/69591b7242604c6866f1293ed7701b1c.jpg',
-        'description' => 'Master Flutter and Dart to build beautiful, fast, and responsive cross-platform mobile applications for iOS and Android. Learn from scratch and build real-world apps with clean architecture. By the end of this course, you\'ll be able to develop your own mobile applications with confidence.',
-        'what_you_learn' => [
-            'Build beautiful, fast native-quality apps with Flutter',
-            'Develop cross-platform apps for iOS and Android',
-            'Understand Dart programming language',
-            'Create responsive UIs with Flutter widgets',
-            'Implement state management in Flutter apps',
-            'Connect your app to backend services and APIs'
-        ],
-        'reviews_list' => [
-            [
-                'name' => 'David Chen',
-                'rating' => 5,
-                'date' => '10 April 2025',
-
-// Tambah ke cart dari link ?action=add&id=...
-if (isset($_GET['action']) && $_GET['action'] == 'add' && isset($_GET['id'])) {
-    $course_id = $_GET['id'];
-    
-    // Load data kursus
-    if (file_exists('tbkelas.php')) {
-        include_once('tbkelas.php'); // file ini harus berisi $allCourses
-        
-        foreach ($allCourses as $course) {
-            if ($course['id'] == $course_id) {
-                $_SESSION['cart'][$course_id] = [
-                    'id' => $course['id'],
-                    'title' => $course['title'],
-                    'instructor' => $course['instructor'],
-                    'price' => $course['price'],
-                    'image' => $course['image'] ?? '',
-                ];
-                break;
-            }
+// Process cart actions
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Remove item from cart
+    if (isset($_POST['remove_item']) && isset($_POST['item_index'])) {
+        $index = intval($_POST['item_index']);
+        if (isset($_SESSION['cart'][$index])) {
+            array_splice($_SESSION['cart'], $index, 1);
+            $_SESSION['message'] = "Item berhasil dihapus dari keranjang!";
+            $_SESSION['message_type'] = "success";
         }
-    } else {
-        // Fallback jika file tidak ada
-        $_SESSION['error_message'] = "Error: tbkelas.php tidak ditemukan";
     }
-
-    header('Location: cart.php');
-    exit;
+    
+    // Update item quantity
+    if (isset($_POST['update_quantity']) && isset($_POST['item_index']) && isset($_POST['quantity'])) {
+        $index = intval($_POST['item_index']);
+        $quantity = intval($_POST['quantity']);
+        
+        if (isset($_SESSION['cart'][$index]) && $quantity > 0) {
+            $_SESSION['cart'][$index]['quantity'] = $quantity;
+            $_SESSION['message'] = "Quantity berhasil diupdate!";
+            $_SESSION['message_type'] = "success";
+        }
+    }
+    
+    // Clear cart
+    if (isset($_POST['clear_cart'])) {
+        $_SESSION['cart'] = array();
+        $_SESSION['message'] = "Keranjang berhasil dikosongkan!";
+        $_SESSION['message_type'] = "success";
+    }
+    
+    // Checkout (this would typically redirect to a checkout page)
+    if (isset($_POST['checkout'])) {
+        if (!empty($_SESSION['cart'])) {
+            // Redirect to checkout page
+            header("Location: checkout.php");
+            exit();
+        } else {
+            $_SESSION['message'] = "Keranjang belanja kosong!";
+            $_SESSION['message_type'] = "warning";
+        }
+    }
+    
+    // Prevent form resubmission
+    header("Location: shopping-cart.php");
+    exit();
 }
 
-// Hapus dari cart
-if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
-    $course_id = $_GET['id'];
-    if (isset($_SESSION['cart'][$course_id])) {
-        unset($_SESSION['cart'][$course_id]);
+// Function to get course details by ID
+function getCourseById($id) {
+    global $conn;
+    
+    $stmt = mysqli_prepare($conn, "SELECT * FROM courses WHERE id = ?");
+    mysqli_stmt_bind_param($stmt, "i", $id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
+    if ($row = mysqli_fetch_assoc($result)) {
+        return $row;
     }
     
-    // Redirect kembali ke halaman keranjang
-    header('Location: cart.php');
-    exit;
-}
-
-// Handler untuk menyimpan kursus untuk nanti
-if (isset($_GET['action']) && $_GET['action'] == 'save_for_later' && isset($_GET['id'])) {
-    $course_id = $_GET['id'];
-    
-    if (!isset($_SESSION['saved_for_later'])) {
-        $_SESSION['saved_for_later'] = [];
-    }
-    
-    if (isset($_SESSION['cart'][$course_id])) {
-        $_SESSION['saved_for_later'][$course_id] = $_SESSION['cart'][$course_id];
-        unset($_SESSION['cart'][$course_id]);
-    }
-    
-    // Redirect kembali ke halaman keranjang
-    header('Location: cart.php');
-    exit;
-}
-
-// Handler untuk memindahkan ke wishlist
-if (isset($_GET['action']) && $_GET['action'] == 'move_to_wishlist' && isset($_GET['id'])) {
-    $course_id = $_GET['id'];
-    
-    if (!isset($_SESSION['wishlist'])) {
-        $_SESSION['wishlist'] = [];
-    }
-    
-    if (isset($_SESSION['cart'][$course_id])) {
-        $_SESSION['wishlist'][$course_id] = $_SESSION['cart'][$course_id];
-        unset($_SESSION['cart'][$course_id]);
-    }
-    
-    // Redirect kembali ke halaman keranjang
-    header('Location: cart.php');
-    exit;
-}
-
-// Handler untuk memindahkan dari saved_for_later ke cart
-if (isset($_GET['action']) && $_GET['action'] == 'move_to_cart' && isset($_GET['id'])) {
-    $course_id = $_GET['id'];
-
-    if (!isset($_SESSION['saved_for_later'])) {
-        $_SESSION['saved_for_later'] = [];
-    }
-
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-
-    if (isset($_SESSION['saved_for_later'][$course_id])) {
-        $_SESSION['cart'][$course_id] = $_SESSION['saved_for_later'][$course_id];
-        unset($_SESSION['saved_for_later'][$course_id]);
-    }
-
-    // Redirect kembali ke halaman keranjang
-    header('Location: cart.php');
-    exit;
-}
-
-// Hitung total belanja
-$total = 0;
-$discounted_total = 0;
-$applied_coupon = null;
-$discount_amount = 0;
-
-// Handler untuk promo code
-$promo_message = '';
-$promo_code = '';
-
-// List kode promo yang valid
-$valid_promo_codes = [
-    'KEEPLEARNING' => 15, // 15% discount
-    'WELCOME10' => 10,    // 10% discount
-    'FLASH25' => 25,      // 25% discount
-    'NEWYEAR20' => 20     // 20% discount
-];
-
-// Handle apply promo code
-if (isset($_POST['apply_promo']) && isset($_POST['promo_code'])) {
-    $promo_code = strtoupper(trim($_POST['promo_code']));
-
-    if (isset($valid_promo_codes[$promo_code])) {
-        $applied_coupon = [
-            'code' => $promo_code,
-            'discount' => $valid_promo_codes[$promo_code]
-        ];
-        $_SESSION['applied_coupon'] = $applied_coupon;
-        $promo_message = "Coupon applied! {$applied_coupon['discount']}% discount.";
-    } else {
-        $promo_message = "Invalid promo code. Please try again.";
-    }
-}
-
-// Check for existing applied coupon
-if (isset($_SESSION['applied_coupon'])) {
-    $applied_coupon = $_SESSION['applied_coupon'];
+    return null;
 }
 
 // Calculate cart total
+$total = 0;
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
-        if (isset($item['price']) && !empty($item['price'])) {
-            // Remove currency symbol and convert to numeric
-            $price = str_replace(['$', 'Rp', ','], '', $item['price']);
-            $total += (float)$price;
-        }
+        $total += $item['price'] * $item['quantity'];
     }
 }
-
-// Calculate discount if coupon applied
-if ($applied_coupon) {
-    $discount_amount = $total * ($applied_coupon['discount'] / 100);
-    $discounted_total = $total - $discount_amount;
-} else {
-    $discounted_total = $total;
-}
-
-// Format numbers for display
-$total_formatted = number_format($total, 0, ',', '.');
-$discounted_total_formatted = number_format($discounted_total, 0, ',', '.');
-$discount_amount_formatted = number_format($discount_amount, 0, ',', '.');
-
-// Remove existing coupon
-if (isset($_GET['action']) && $_GET['action'] == 'remove_coupon') {
-    unset($_SESSION['applied_coupon']);
-    $applied_coupon = null;
-    $discounted_total = $total;
-    $discount_amount = 0;
-    $discounted_total_formatted = $total_formatted;
-    $discount_amount_formatted = '0';
-    
-    // Redirect to clean URL
-    header('Location: cart.php');
-    exit;
-}
-
-// Tampilkan halaman keranjang belanja
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keranjang Belanja | Kelas Kita - </title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Keranjang Belanja - KelasKita</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .cart-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cart-item-img {
+            width: 100px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .footer-section {
+            background-color: #fff;
+            border-top: 1px solid #dee2e6;
+            margin-top: auto;
+        }
+        
+        .social-icon {
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .quantity-input {
+            width: 70px;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 50px 0;
+        }
+        
+        .empty-cart i {
+            font-size: 3rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
         }
     </style>
 </head>
-<pre><?php print_r($_SESSION['cart']); ?></pre>
-<body class="bg-gray-50">
-    <!-- Navigation Bar -->
-    <nav class="bg-white py-4 px-6 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <a href="index.php" class="text-blue-600 font-bold text-2xl">Kelas Kita</a>
-                <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="index.php" class="text-gray-500 hover:text-gray-900">Beranda</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Kontak</a>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-                <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
-            </div>
-        </div>
-    </nav>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand" href="#">KelasKita</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <!-- Cart Section -->
-    <div class="container mx-auto px-4 py-10">
-        <h1 class="text-3xl font-bold mb-10">Keranjang Belanja</h1>
-        
-        <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Cart Items -->
-            <div class="w-full lg:w-2/3">
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                    <h2 class="text-xl font-semibold mb-4"><?php echo count($_SESSION['cart']); ?> Kursus di Keranjang</h2>
-                    <?php if (empty($_SESSION['cart'])) { ?>
-    <div class="py-8 text-center">
-        <p class="text-gray-500 mb-4">Keranjang Anda Kosong</p>
-        <a href="index.php" class="text-blue-600 font-medium hover:text-blue-800">Telusuri Kursus</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="index.php">Beranda</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kursus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kategori</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Blog</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Kontak</a>
+        </li>
+        <li class="nav-item">
+          <a href="shopping-cart.php" class="nav-link active">
+            <i class="fas fa-shopping-cart"></i>
+            <?php if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+              <span class="badge bg-primary rounded-pill"><?php echo count($_SESSION['cart']); ?></span>
+            <?php endif; ?>
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex">
+      </div>
     </div>
-<?php } else { ?>
-    <?php foreach ($_SESSION['cart'] as $course_id => $item) { ?>
-        <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-            <div class="md:w-1/4 mb-4 md:mb-0">
-                <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-            </div>
-            <div class="md:w-3/4 md:pl-6">
-                <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
+  </div>
+</nav>
 
-                <div class="flex items-center mb-4">
-                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                    <div class="flex items-center text-amber-500 ml-3">
-                        <span class="text-sm">4.7</span>
-                        <div class="mx-1">★★★★★</div>
-                        <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between mt-4 border-b pb-4">
-                    <div>
-                        <div class="mt-2 space-x-3">
-                            <a href="cart.php?action=remove&id=<?= $course_id ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
-                            <a href="cart.php?action=save_for_later&id=<?= $course_id ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Save for Later</a>
-                            <a href="cart.php?action=move_to_wishlist&id=<?= $course_id ?>" class="text-purple-600 hover:text-purple-800 text-sm font-medium">Move to Wishlist</a>
-                        </div>
-                    </div>
-                    <div class="font-bold">
-                        Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['price'])), 0, ',', '.'); ?>
-                        <?php if (!empty($item['original_price'])) { ?>
-                            <span class="text-gray-500 text-sm line-through ml-1">
-                                Rp<?php echo number_format(floatval(str_replace(['Rp', ',', '$'], '', $item['original_price'])), 0, ',', '.'); ?>
-                            </span>
-                        <?php } ?>
-                    </div>
-                </div>
-            </div>
+    <!-- Display message if any -->
+    <?php if(isset($_SESSION['message'])): ?>
+    <div class="container mt-3">
+        <div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show">
+            <?php echo $_SESSION['message']; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    <?php } ?>
-<?php } ?>
-             
-                <!-- Saved For Later (Optional Section) -->
-                <?php if (!empty($_SESSION['saved_for_later'])): ?>
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h2 class="text-xl font-semibold mb-4">Saved for later (<?php echo count($_SESSION['saved_for_later']); ?>)</h2>
-        
-        <?php foreach ($_SESSION['saved_for_later'] as $item): ?>
-            <div class="flex flex-col md:flex-row border-b border-gray-200 py-6 last:border-b-0 last:pb-0">
-                <div class="md:w-1/4 mb-4 md:mb-0">
-                    <img src="<?php echo isset($item['image']) ? $item['image'] : ''; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : ''; ?>" class="w-full rounded-md">
-                </div>
-                <div class="md:w-3/4 md:pl-6">
-                    <h3 class="text-lg font-semibold mb-2"><?php echo isset($item['title']) ? $item['title'] : 'No Title'; ?></h3>
-                    <p class="text-gray-600 mb-2">By <?php echo isset($item['instructor']) ? $item['instructor'] : 'Unknown'; ?></p>
-                    <p class="text-gray-700 mb-2"><?php echo isset($item['description']) ? $item['description'] : ''; ?></p>
-                    
-                    <div class="flex items-center mb-4">
-                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Bestseller</span>
-                        <div class="flex items-center text-amber-500 ml-3">
-                            <span class="text-sm">4.7</span>
-                            <div class="mx-1">★★★★★</div>
-                            <span class="text-xs text-gray-500">(366,616 ratings)</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="space-x-2">
-                            <a href="cart.php?action=remove&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</a>
-                            <a href="cart.php?action=move_to_cart&id=<?php echo isset($item['id']) ? $item['id'] : ''; ?>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Move to Cart</a>
-                        </div>
-                        <div class="font-bold">
-                            Rp<?php echo isset($item['price']) ? number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['price'])), 0, ',', '.') : '0'; ?>
-                            <?php if (isset($item['original_price']) && $item['original_price']): ?>
-                                <span class="text-gray-500 text-sm line-through ml-1">
-                                    Rp<?php echo number_format(floatval(str_replace(['$', 'Rp', ','], '', $item['original_price'])), 0, ',', '.'); ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
     </div>
-<?php endif; ?>
-</div>
+    <?php 
+        unset($_SESSION['message']);
+        unset($_SESSION['message_type']);
+    endif; 
+    ?>
+
+    <!-- Main Content -->
+    <div class="main-content py-5">
+        <div class="container">
+            <h2 class="mb-4">Keranjang Belanja</h2>
             
-            <!-- Order Summary -->
-            <?php if ($applied_coupon): ?>
-    <div class="flex justify-between mb-2 text-green-600">
-        <span>Diskon (<?= htmlspecialchars($applied_coupon['code']) ?>):</span>
-        <span>- Rp<?= $discount_amount_formatted; ?></span>
-    </div>
-<?php endif; ?>
-
-<div class="flex justify-between font-bold text-lg mb-4">
-    <span>Total Akhir:</span>
-    <span>Rp<?= $discounted_total_formatted; ?></span>
-</div>
-
-<?php if ($promo_message): ?>
-    <div class="mb-4 text-sm <?= $applied_coupon ? 'text-green-600' : 'text-red-600' ?>">
-        <?= $promo_message ?>
-    </div>
-<?php endif; ?>
-
-<?php if (!$applied_coupon): ?>
-<form method="POST" class="flex items-center space-x-2 mb-4">
-    <input type="text" name="promo_code" placeholder="Kode Promo" class="border px-3 py-2 rounded w-full">
-    <button type="submit" name="apply_promo" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Terapkan</button>
-</form>
-<?php else: ?>
-    <a href="cart.php?action=remove_coupon" class="text-red-600 text-sm hover:underline">Hapus Kupon</a>
-<?php endif; ?>
-
-<a href="checkout.php" class="block w-full text-center mt-6 bg-green-600 text-white py-3 rounded hover:bg-green-700">Lanjutkan Pembayaran</a>
-
-            <div class="w-full lg:w-1/3">
-                <div class="bg-white p-6 rounded-lg shadow-sm sticky top-6">
-                    <h2 class="text-xl font-semibold mb-4">Total:</h2>
-                    
-                    <div class="mb-6">
-                        <div class="flex justify-between mb-2">
-                            <span>Harga Asli:</span>
-                            <span>Rp<?php echo $total_formatted; ?></span>
+            <div class="row">
+                <!-- Cart Items -->
+                <div class="col-lg-8">
+                    <div class="cart-container p-4 mb-4">
+                        <?php if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col" colspan="2">Kursu</th>
+                                    <th scope="col">Harga</th>
+                                    <th scope="col">Kuantitas</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($_SESSION['cart'] as $index => $item): ?>
+                                <tr>
+                                    <td width="100">
+                                        <?php if(isset($item['image']) && !empty($item['image'])): ?>
+                                        <img src="<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" class="cart-item-img">
+                                        <?php else: ?>
+                                        <div class="bg-light d-flex justify-content-center align-items-center cart-item-img">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-1"><?php echo htmlspecialchars($item['name']); ?></h6>
+                                        <small class="text-muted"><?php echo htmlspecialchars($item['category']); ?></small>
+                                    </td>
+                                    <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
+                                    <td>
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="item_index" value="<?php echo $index; ?>">
+                                            <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1" class="form-control form-control-sm quantity-input" onchange="this.form.submit()">
+                                            <input type="hidden" name="update_quantity" value="1">
+                                        </form>
+                                    </td>
+                                    <td>Rp <?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?></td>
+                                    <td>
+                                        <form method="post">
+                                            <input type="hidden" name="item_index" value="<?php echo $index; ?>">
+                                            <button type="submit" name="remove_item" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between mt-4">
+                            <form method="post">
+                                <button type="submit" name="clear_cart" class="btn btn-outline-secondary">
+                                    <i class="fas fa-trash me-2"></i> Hapus Keranjang
+                                </button>
+                            </form>
+                            <a href="index.php" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i> lanjutkan Berbelanja
+                            </a>
                         </div>
-                        
-                        <?php if ($applied_coupon): ?>
-                        <div class="flex justify-between mb-2 text-green-600">
-                            <span>Discount (<?php echo $applied_coupon['discount']; ?>% off):</span>
-                            <span>-Rp<?php echo $discount_amount_formatted; ?></span>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <div class="flex justify-between font-bold text-2xl mt-4">
-                            <span>Total:</span>
-                            <span>Rp<?php echo $discounted_total_formatted; ?></span>
-                        </div>
-                        <p class="text-sm text-gray-500 mt-2">Anda belum akan dikenai biaya</p>
-                    </div>
-                    
-                    <!-- Promotions Section -->
-                    <div class="mb-6">
-                        <h3 class="font-semibold mb-3">Promosi</h3>
-                        
-                        <?php if ($applied_coupon): ?>
-                        <div class="flex justify-between items-center bg-gray-100 p-3 rounded-md mb-3">
-                            <div>
-                                <span class="font-medium"><?php echo $applied_coupon['code']; ?></span>
-                                <span class="text-sm text-gray-600 block">is applied</span>
-                            </div>
-                            <a href="cart.php?action=remove_coupon" class="text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-times"></i>
+                        <?php else: ?>
+                        <div class="empty-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h4>Keranjang Anda kosong</h4>
+                            <p class="text-muted">Sepertinya Anda belum menambahkan kursus apa pun ke keranjang belanja Anda.</p>
+                            <a href="index.php" class="btn btn-primary mt-3">
+                            Telusuri Kursus
                             </a>
                         </div>
                         <?php endif; ?>
-
-                        <form action="cart.php" method="post" class="flex gap-2">
-                            <input type="text" name="promo_code" placeholder="Enter Coupon" class="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <button type="submit" name="apply_promo" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Apply</button>
-                        </form>
-                        
-                        <?php if ($promo_message): ?>
-                        <p class="text-sm mt-2 <?php echo strpos($promo_message, 'Invalid') !== false ? 'text-red-600' : 'text-green-600'; ?>">
-                            <?php echo $promo_message; ?>
-                        </p>
-                        <?php endif; ?>
                     </div>
-                    
-                    <!-- Checkout Button -->
-                    <a href="checkout.php" class="block w-full bg-purple-600 text-white text-center py-3 px-4 rounded-md font-medium hover:bg-purple-700 transition">
-                        Lanjutkan ke Pembayaran <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                    
-                    <!-- Payment Methods -->
-                    <div class="mt-6">
-                        <p class="text-sm text-gray-500 mb-2">metode pembayaran Aman</p>
-                        <div class="flex gap-2">
-                            <div class="border border-gray-200 rounded p-2">
-                                <i class="fab fa-cc-visa text-blue-700"></i>
-                            </div>
-                            <div class="border border-gray-200 rounded p-2">
-                                <i class="fab fa-cc-mastercard text-red-600"></i>
-                            </div>
-                            <div class="border border-gray-200 rounded p-2">
-                                <i class="fab fa-cc-paypal text-blue-800"></i>
-                            </div>
-                            <div class="border border-gray-200 rounded p-2">
-                                <i class="fab fa-cc-amex text-blue-500"></i>
-                            </div>
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="col-lg-4">
+                    <div class="cart-container p-4">
+                        <h4 class="mb-4">ringkasan pesanan</h4>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <span>Rp <?php echo number_format($total, 0, ',', '.'); ?></span>
                         </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span>pajak</span>
+                            <span>Rp 0</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total</strong>
+                            <strong>Rp <?php echo number_format($total, 0, ',', '.'); ?></strong>
+                        </div>
+                        <?php if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
+                        <form method="post">
+                            <button type="submit" name="checkout" class="btn btn-primary w-100">
+                            Lanjutkan ke Pembayaran
+                            </button>
+                        </form>
+                        <?php else: ?>
+                        <button type="button" class="btn btn-primary w-100" disabled>
+                        Lanjutkan ke Pembayaran
+                        </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <a href="index.php" class="text-blue-400 font-bold text-2xl mb-4 block">upskill</a>
-                    <p class="text-gray-400 mb-4">Transform your life through education with our online learning platform. Learn from industry experts and advance your career.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Explore</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Our Courses</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Instructors</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Career</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Become an Instructor</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms & Conditions</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Support</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Subscribe</h3>
-                    <p class="text-gray-400 mb-4">Subscribe to our newsletter to receive the latest updates and offers.</p>
-                    <form class="flex">
-                        <input type="email" placeholder="Your email" class="px-4 py-2 w-full rounded-l-md focus:outline-none">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400">© 2025 Upskill. All rights reserved.</p>
-                <div class="mt-4 md:mt-0">
-                    <img src="../assets/images/e3c90883212a5d017dbbb0fb0fe67ac0.jpg" alt="Payment Methods" class="h-12">
-                </div>
-            </div>
+    <footer class="bg-white pt-5 pb-4 border-top">
+  <div class="container px-4">
+    <div class="row row-cols-1 row-cols-md-5 g-4 mb-5">
+      <!-- Kelas Kita -->
+      <div class="col-md">
+        <h4 class="text-primary fw-bold mb-3">Kelas Kita</h4>
+        <p class="text-muted mb-3">Platform terbaik untuk mempelajari keterampilan baru dan memajukan karier Anda.</p>
+        <div class="d-flex gap-3 mb-3">
+          <a href="#" class="text-muted"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-muted"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-muted"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="text-muted"><i class="fab fa-linkedin"></i></a>
         </div>
-    </footer>
-    </body>
-    </html>
+      </div>
+
+      <!-- Kursus -->
+      <div class="col-md">
+        <h5 class="fw-semibold mb-3">Kursus</h5>
+        <ul class="list-unstyled text-muted">
+          <li><a href="#" class="text-decoration-none text-muted">Pengembang Web</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Ilmu Data</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Pengembang Seluler</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Bisnis</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Pemasaran</a></li>
+        </ul>
+      </div>
+
+      <!-- Perusahaan -->
+      <div class="col-md">
+        <h5 class="fw-semibold mb-3">Perusahaan</h5>
+        <ul class="list-unstyled text-muted">
+          <li><a href="#" class="text-decoration-none text-muted">Tentang Kami</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Karier</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Tekan</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Blog</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Kontak</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="col-md">
+        <h5 class="fw-semibold mb-3">Support</h5>
+        <ul class="list-unstyled text-muted">
+          <li><a href="#" class="text-decoration-none text-muted">Pusat Bantuan</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Ketentuan Layanan</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Legal</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Kebijakan Privasi</a></li>
+          <li><a href="#" class="text-decoration-none text-muted">Status</a></li>
+        </ul>
+      </div>
+
+      <!-- Unduh Aplikasi -->
+      <div class="col-md">
+        <h5 class="fw-semibold mb-3">Unduh Aplikasi</h5>
+        <div class="d-flex flex-column gap-2">
+          <a href="#"><img src="../assets/images/6acf4c84f55a52f6ccbdaa71ad2701ee.jpg" alt="App Store" class="img-fluid" style="max-height: 40px;"></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="border-top pt-3 text-center text-muted small">
+      <p class="mb-0">© 2025 Upskill. All rights reserved. | www.DownloadRealProjectSource.com</p>
+    </div>
+  </div>
+</footer>
+
+    <!-- Bootstrap JS bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
