@@ -191,8 +191,11 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
         </li>
       </ul>
 
-      <div class="d-flex">
-      </div>
+      <!-- Login dan Sign Up -->
+<div class="d-flex align-items-center gap-2">
+  <a href="login.php" class="btn btn-outline-primary btn-sm">Login</a>
+  <a href="signup.php" class="btn btn-primary btn-sm">Sign Up</a>
+</div>
     </div>
   </div>
 </nav>
