@@ -26,7 +26,7 @@ if (isset($_SESSION['username'])) {
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kursus</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Kategori</a>
                     <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">kontak</a>
+                    <a href="contackUs.php" class="text-gray-500 hover:text-gray-900">Kontak</a>
                 </div>
                 <div class="flex items-center space-x-4">
                 <a href="cart.php" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">
