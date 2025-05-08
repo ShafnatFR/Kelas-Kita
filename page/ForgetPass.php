@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <button type="submit" class="btn btn-primary btn-block rounded-pill">Kirim</button>
 </form>
-        <a href="HalamanSignIn.html" id="backToLogin">Kembali ke Halaman Utama</a>
+        <a href="HalamanSignIn.php" id="backToLogin">Kembali</a>
     </div>
 
 <script>

@@ -10,29 +10,29 @@ if (!$username) {
 }
 
 // Ambil data user dari database
-$stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil, bahasa, zona_waktu, balasan_ke_komentar FROM tbuser WHERE username = ?");
+$stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil, bahasa, zona_waktu, balasan_ke_komentar, komentar_baru, notifikasi_postingan_baru FROM tbuser WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
-// Ambil enum dari kolom bahasa
-$resultBahasa = $conn->query("SHOW COLUMNS FROM tbuser LIKE 'bahasa'");
-$rowBahasa = $resultBahasa->fetch_assoc();
-preg_match("/^enum\((.*)\)$/", $rowBahasa['Type'], $matchesBahasa);
-$bahasaOptions = array_map(fn($val) => trim($val, "'"), explode(',', $matchesBahasa[1]));
+// // Ambil enum dari kolom bahasa
+// $resultBahasa = $conn->query("SHOW COLUMNS FROM tbuser LIKE 'bahasa'");
+// $rowBahasa = $resultBahasa->fetch_assoc();
+// preg_match("/^enum\((.*)\)$/", $rowBahasa['Type'], $matchesBahasa);
+// $bahasaOptions = array_map(fn($val) => trim($val, "'"), explode(',', $matchesBahasa[1]));
 
-// Ambil enum dari kolom zona_waktu
-$resultZona = $conn->query("SHOW COLUMNS FROM tbuser LIKE 'zona_waktu'");
-$rowZona = $resultZona->fetch_assoc();
-preg_match("/^enum\((.*)\)$/", $rowZona['Type'], $matchesZona);
-$zonaOptions = array_map(fn($val) => trim($val, "'"), explode(',', $matchesZona[1]));
+// // Ambil enum dari kolom zona_waktu
+// $resultZona = $conn->query("SHOW COLUMNS FROM tbuser LIKE 'zona_waktu'");
+// $rowZona = $resultZona->fetch_assoc();
+// preg_match("/^enum\((.*)\)$/", $rowZona['Type'], $matchesZona);
+// $zonaOptions = array_map(fn($val) => trim($val, "'"), explode(',', $matchesZona[1]));
 
-// Ambil data user dari database
-$stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil, bahasa, zona_waktu, balasan_ke_komentar FROM tbuser WHERE username = ?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
-?>
+// // Ambil data user dari database
+// $stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil, bahasa, zona_waktu, balasan_ke_komentar FROM tbuser WHERE username = ?");
+// $stmt->bind_param("s", $username);
+// $stmt->execute();
+// $user = $stmt->get_result()->fetch_assoc();
+// ?>
 
 <!DOCTYPE html>
 <html lang="id">
@@ -77,7 +77,7 @@ $user = $stmt->get_result()->fetch_assoc();
                         <div class="card-title text-center">
                             <h4 class="mb-4"><strong>Notifikasi</strong></h4>
                         </div>
-                        <form method="POST" action="update-preferensi.php">
+                        <form method="POST" action="update-notifikasi.php">
                                 <div class="form-check form-switch form-check-reverse d-flex">
                                     <div class="col-12 col-md-9 text-start mt-0">
                                         <label class="form-check-label" for="balasan_ke_komentar">
@@ -93,40 +93,25 @@ $user = $stmt->get_result()->fetch_assoc();
 
                                 <div class="form-check form-switch form-check-reverse d-flex">
                                     <div class="col-12 col-md-9 text-start mt-0">
-                                        <label class="form-check-label" for="balasan_ke_komentar">
-                                            <strong>Aktifkan notifikasi balasan ke komentar</strong>
+                                        <label class="form-check-label" for="komentar_baru">
+                                            <strong>Aktifkan notifikasi komentar baru</strong>
                                         </label>
-                                        <p>Menampilkan notifikasi jika ada komentar baru
-                                        pada postingan yang diikuti atau diposting oleh pengguna.</p>
+                                        <p>Menampilkan notifikasi jika ada komentar baru pada postingan yang diikuti atau diposting oleh pengguna.</p>
                                     </div>
                                     <div class="col-md-3">
-                                        <input class="form-check-input mt-4" type="checkbox" name="balasan_ke_komentar" id="balasan_ke_komentar" value="1" <?= $user['balasan_ke_komentar'] ? 'checked' : '' ?>>
+                                        <input class="form-check-input mt-4" type="checkbox" name="komentar_baru" id="komentar_baru" value="1" <?= $user['komentar_baru'] ? 'checked' : '' ?>>
                                     </div>
                                 </div>
 
                                 <div class="form-check form-switch form-check-reverse d-flex">
                                     <div class="col-12 col-md-9 text-start mt-0">
-                                        <label class="form-check-label" for="balasan_ke_komentar">
-                                            <strong>Aktifkan notifikasi balasan ke komentar</strong>
+                                        <label class="form-check-label" for="notifikasi_postingan_baru">
+                                            <strong>Aktifkan notifikasi postingan baru</strong>
                                         </label>
-                                        <p>Menampilkan notifikasi jika ada komentar baru
-                                        pada postingan yang diikuti atau diposting oleh pengguna.</p>
+                                        <p>Menampilkan notifikasi ketika ada postingan baru di forum atau kelas yang diikuti.</p>
                                     </div>
                                     <div class="col-md-3">
-                                        <input class="form-check-input mt-4" type="checkbox" name="balasan_ke_komentar" id="balasan_ke_komentar" value="1" <?= $user['balasan_ke_komentar'] ? 'checked' : '' ?>>
-                                    </div>
-                                </div>
-
-                                <div class="form-check form-switch form-check-reverse d-flex">
-                                    <div class="col-12 col-md-9 text-start mt-0">
-                                        <label class="form-check-label" for="balasan_ke_komentar">
-                                            <strong>Aktifkan notifikasi balasan ke komentar</strong>
-                                        </label>
-                                        <p>Menampilkan notifikasi jika ada komentar baru
-                                        pada postingan yang diikuti atau diposting oleh pengguna.</p>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input class="form-check-input mt-4" type="checkbox" name="balasan_ke_komentar" id="balasan_ke_komentar" value="1" <?= $user['balasan_ke_komentar'] ? 'checked' : '' ?>>
+                                        <input class="form-check-input mt-4" type="checkbox" name="notifikasi_postingan_baru" id="notifikasi_postingan_baru" value="1" <?= $user['notifikasi_postingan_baru'] ? 'checked' : '' ?>>
                                     </div>
                                 </div>
                             <div class="text-end">
