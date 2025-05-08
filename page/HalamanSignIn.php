@@ -4,11 +4,6 @@ include "db.php";
 
 $message = "";
 
-if (isset($_SESSION['success_message'])) {
-    echo "<div class='alert alert-success'>" . $_SESSION['success_message'] . "</div>";
-    unset($_SESSION['success_message']);
-}
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -20,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Cek apakah user ditemukan
+    // Cek apakah user ditexmukan
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 

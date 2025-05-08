@@ -10,7 +10,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $pesan = "Silakan isi password terlebih dahulu.";
     } else {
         $password = $_POST["password"];
-
         if (
             strlen($password) < 8 ||
             !preg_match('/[A-Z]/', $password) ||
@@ -26,7 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt->execute()) {
                 echo "Password berhasil diubah!";
-                header("Location: HalamanSignIn.php?reset=success");
+                header("Location: H3
+                alamanSignIn.php?reset=success");
                 exit;
             } else {
                 $pesan = "Gagal mengubah password.";

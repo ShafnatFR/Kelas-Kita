@@ -2,103 +2,125 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Contact Us</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Serif+Text&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .banner {
+      background: url('gambar/banner.png') no-repeat center center/cover;
+      height: 250px;
+    }
+  </style>
 </head>
 
-<body class="font-poppins">
-  <!-- Navbar --> 
+<body>
+
+  <!-- Navbar -->
   <header>
-    <?php include "../Views/navbar.php"; ?>
+    <?php include "../Views/navbarbootstrap.php"; ?>
   </header>
 
-  <!-- Header Section -->
-  <section class="flex justify-center items-center bg-cover bg-center h-64" style="background-image: url('gambar/banner.png');">
-    <div class="text-center text-white">
-      <h3 class="text-4xl font-bold">Kontak Kami</h3>
-      <p class="text-gray-200">
-        <a href="index.php" class="underline">Beranda</a> / Kontak Kami
+  <!-- Banner -->
+  <section class="d-flex justify-content-center align-items-center banner text-white text-center">
+    <div>
+      <h3 class="fw-bold display-5">Kontak Kami</h3>
+      <p class="text-light">
+        <a href="index.php" class="text-white text-decoration-underline">Beranda</a> / Kontak Kami
       </p>
     </div>
   </section>
 
   <!-- Info Kontak -->
-  <div class="max-w-6xl mx-auto text-center py-12">
-    <h3 class="text-3xl font-bold mb-8">Kontak</h3>
-    <div class="flex flex-wrap justify-center gap-8">
-      <div class="w-full md:w-1/3 p-4 bg-white shadow rounded">
-        <i class="fas fa-map-marker-alt text-3xl mb-2 text-red-500"></i>
-        <h4 class="text-xl font-semibold">Alamat</h4>
-        <p>Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+  <div class="container text-center py-5">
+    <h3 class="fw-bold mb-4">Kontak</h3>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-4 bg-white shadow rounded">
+          <i class="fas fa-map-marker-alt fa-2x mb-2 text-danger"></i>
+          <h4 class="fw-semibold">Alamat</h4>
+          <p>Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bojongsoang, Jawa Barat, Bandung.</p>
+        </div>
       </div>
-      <div class="w-full md:w-1/3 p-4 bg-white shadow rounded">
-        <i class="fas fa-phone-alt text-3xl mb-2 text-blue-500"></i>
-        <h4 class="text-xl font-semibold">Telepon</h4>
-        <p>0812-3456-7890</p>
+      <div class="col-md-4">
+        <div class="p-4 bg-white shadow rounded">
+          <i class="fas fa-phone-alt fa-2x mb-2 text-primary"></i>
+          <h4 class="fw-semibold">Telepon</h4>
+          <p>0812-3456-7890</p>
+        </div>
       </div>
-      <div class="w-full md:w-1/3 p-4 bg-white shadow rounded">
-        <i class="fas fa-envelope text-3xl mb-2 text-green-500"></i>
-        <h4 class="text-xl font-semibold">Email</h4>
-        <p>kelaskita@gmail.com</p>
+      <div class="col-md-4">
+        <div class="p-4 bg-white shadow rounded">
+          <i class="fas fa-envelope fa-2x mb-2 text-success"></i>
+          <h4 class="fw-semibold">Email</h4>
+          <p>kelaskita@gmail.com</p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Formulir Kontak -->
-  <div class="max-w-4xl mx-auto px-4 py-10">
-    <div class="bg-white p-6 shadow rounded">
-      <h3 class="text-2xl font-bold mb-2">Hubungi Kami</h3>
-      <p class="mb-6">Silahkan isi form di bawah ini untuk menghubungi kami.</p>
-      <form id="contactForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label for="inputName4" class="block mb-1">Nama Lengkap</label>
-          <input type="text" id="inputName4" class="w-full p-2 border border-gray-300 rounded" required>
+  <div class="container py-5">
+    <div class="bg-white p-4 shadow rounded">
+      <h3 class="fw-bold mb-2">Hubungi Kami</h3>
+      <p class="mb-4">Silahkan isi form di bawah ini untuk menghubungi kami.</p>
+      <form id="contactForm" class="row g-3">
+        <div class="col-md-6">
+          <label for="inputName4" class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-control" id="inputName4" required>
         </div>
-        <div>
-          <label for="inputEmail4" class="block mb-1">Email</label>
-          <input type="email" id="inputEmail4" placeholder="emailanda@gmail.com" class="w-full p-2 border border-gray-300 rounded" required>
+        <div class="col-md-6">
+          <label for="inputEmail4" class="form-label">Email</label>
+          <input type="email" class="form-control" id="inputEmail4" placeholder="emailanda@gmail.com" required>
         </div>
-        <div class="md:col-span-2">
-          <label for="inputPhone4" class="block mb-1">Nomor HP</label>
-          <input type="text" id="inputPhone4" placeholder="081234567891" class="w-full p-2 border border-gray-300 rounded" required>
+        <div class="col-12">
+          <label for="inputPhone4" class="form-label">Nomor HP</label>
+          <input type="text" class="form-control" id="inputPhone4" placeholder="081234567891" required>
         </div>
-        <div class="md:col-span-2">
-          <label for="exampleFormControlTextarea1" class="block mb-1">Pesan</label>
-          <textarea id="exampleFormControlTextarea1" rows="3" class="w-full p-2 border border-gray-300 rounded" required></textarea>
+        <div class="col-12">
+          <label for="exampleFormControlTextarea1" class="form-label">Pesan</label>
+          <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" required></textarea>
         </div>
-        <div class="md:col-span-2">
-          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Kirim</button>
+        <div class="col-12">
+          <button type="submit" class="btn btn-danger">Kirim</button>
         </div>
       </form>
 
-      <!-- Modal Konfirmasi -->
-      <div id="myModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
-        <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
-          <h2 class="text-lg font-bold mb-4">Konfirmasi Pengiriman</h2>
-          <p class="mb-4">Apakah Anda yakin ingin mengirim pesan ini?</p>
-          <div class="flex justify-end gap-2">
-            <button onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Kembali</button>
-            <button onclick="sendMessage()" class="bg-blue-600 text-white px-4 py-2 rounded">Kirim</button>
+      <!-- Modal -->
+      <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Pengiriman</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+              Apakah Anda yakin ingin mengirim pesan ini?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+              <button type="button" class="btn btn-primary" onclick="sendMessage()">Kirim</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Alert Sukses -->
-      <div id="successAlert" class="hidden bg-green-100 text-green-800 p-4 mt-4 rounded">
+      <!-- Alert -->
+      <div id="successAlert" class="alert alert-success mt-4 d-none" role="alert">
         Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.
       </div>
     </div>
   </div>
 
   <!-- Google Maps -->
-  <section class="mt-10">
+  <section class="mt-4">
     <iframe
       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63340.09002456192!2d107.6348359!3d-6.9716449!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e9adf177bf8d%3A0x437398556f9fa03!2sUniversitas%20Telkom!5e0!3m2!1sen!2sid!4v1687575022237!5m2!1sen!2sid"
       width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy">
@@ -106,26 +128,24 @@
   </section>
 
   <!-- Footer -->
-  <?php include "../Views/footer.php"; ?>
+  <?php include "../Views/footerbootsrap.php"; ?>
 
   <!-- Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const modal = document.getElementById('myModal');
+    const contactForm = document.getElementById('contactForm');
     const successAlert = document.getElementById('successAlert');
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
 
-    document.getElementById('contactForm').addEventListener('submit', function (e) {
+    contactForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      modal.classList.remove('hidden');
+      confirmModal.show();
     });
 
-    function closeModal() {
-      modal.classList.add('hidden');
-    }
-
     function sendMessage() {
-      closeModal();
-      successAlert.classList.remove('hidden');
-      document.getElementById('contactForm').reset();
+      confirmModal.hide();
+      successAlert.classList.remove('d-none');
+      contactForm.reset();
     }
   </script>
 </body>
