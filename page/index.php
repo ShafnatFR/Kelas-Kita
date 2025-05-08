@@ -11,13 +11,8 @@ $featuredCourses = [
         'id' => 1,
         'title' => 'Digital Marketing Masterclass',
         'instructor' => 'John Smith',
-<<<<<<< HEAD
-        'price' => 'Rp. 80.000',
-        'original_price' => 'Rp. 100.000',
-=======
         'price' => 'Rp,900.000',
         'original_price' => 'Rp,1.500.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.8',
         'reviews' => '1,275',
         'tag' => 'BEST SELLER',
@@ -28,13 +23,8 @@ $featuredCourses = [
         'id' => 2,
         'title' => 'Mobile Flutter Development',
         'instructor' => 'Sarah Johnson',
-<<<<<<< HEAD
-        'price' => 'Rp. 100.000',
-        'original_price' => 'Rp. 130.000',
-=======
         'price' => 'Rp,1.400.000',
         'original_price' => 'Rp,1.800.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.9',
         'reviews' => '852',
         'tag' => 'NEW',
@@ -44,13 +34,8 @@ $featuredCourses = [
         'id' => 3,
         'title' => 'Advanced Python for Data Science',
         'instructor' => 'Michael Wang',
-<<<<<<< HEAD
-        'price' => 'Rp. 130.000',
-        'original_price' => 'Rp. 150.000',
-=======
         'price' => 'Rp,900.000',
         'original_price' => 'Rp,1,600,000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.7',
         'reviews' => '2,342',
         'tag' => 'POPULAR',
@@ -60,13 +45,8 @@ $featuredCourses = [
         'id' => 4,
         'title' => 'UX Complete Start-to-Finish',
         'instructor' => 'Emma Brooks',
-<<<<<<< HEAD
-        'price' => 'Rp. 110.000',
-        'original_price' => 'Rp. 120.000',
-=======
         'price' => 'Rp,600.000',
         'original_price' => 'Rp,1.100.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.6',
         'reviews' => '1,064',
         'tag' => 'TRENDING',
@@ -76,13 +56,8 @@ $featuredCourses = [
         'id' => 5,
         'title' => 'Graphic Design Fundamentals',
         'instructor' => 'Alex Martinez',
-<<<<<<< HEAD
-        'price' => 'Rp. 60.000',
-        'original_price' => 'Rp. 80.000',
-=======
         'price' => 'Rp,500,000',
         'original_price' => 'Rp,900.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.5',
         'reviews' => '756',
         'tag' => 'BEGINNER',
@@ -92,13 +67,8 @@ $featuredCourses = [
         'id' => 6,
         'title' => 'Business Leadership Mastery',
         'instructor' => 'Jessica Lee',
-<<<<<<< HEAD
-        'price' => 'Rp. 150.000',
-        'original_price' => 'Rp. 180.000',
-=======
         'price' => 'Rp,1.100.000',
         'original_price' => 'Rp,1.900.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.9',
         'reviews' => '1,536',
         'tag' => 'ADVANCED',
@@ -108,13 +78,8 @@ $featuredCourses = [
         'id' => 7,
         'title' => 'Web Development Bootcamp',
         'instructor' => 'David Chen',
-<<<<<<< HEAD
-        'price' => 'Rp. 175.000',
-        'original_price' => 'Rp. 200.000',
-=======
         'price' => 'Rp,900.000',
         'original_price' => 'Rp,1.600.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.8',
         'reviews' => '3,128',
         'tag' => 'BEST SELLER',
@@ -124,13 +89,8 @@ $featuredCourses = [
         'id' => 8,
         'title' => 'Social Media Marketing',
         'instructor' => 'Olivia Wilson',
-<<<<<<< HEAD
-        'price' => 'Rp. 110.000',
-        'original_price' => 'Rp. 130.000',
-=======
         'price' => 'Rp,600.000',
         'original_price' => 'Rp,1.100.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.7',
         'reviews' => '942',
         'tag' => 'POPULAR',
@@ -143,13 +103,8 @@ $popularCourses = [
         'id' => 9,
         'title' => 'Project Management Professional',
         'instructor' => 'Robert Johnson',
-<<<<<<< HEAD
-        'price' => 'Rp. 199.000',
-        'original_price' => 'Rp. 230.000',
-=======
         'price' => 'Rp,1.200.000',
         'original_price' => 'Rp,1.600.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.9',
         'reviews' => '2,156',
         'tag' => 'CERTIFICATION',
@@ -160,13 +115,8 @@ $popularCourses = [
         'id' => 10,
         'title' => 'Financial Analysis Masterclass',
         'instructor' => 'Linda Thompson',
-<<<<<<< HEAD
-        'price' => 'Rp. 150.000',
-        'original_price' => 'Rp.199.000',
-=======
         'price' => 'Rp,1000.000',
         'original_price' => 'Rp,1.800.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.8',
         'reviews' => '1,245',
         'tag' => 'PROFESSIONAL',
@@ -177,13 +127,8 @@ $popularCourses = [
         'id' => 11,
         'title' => 'Machine Learning A-Z',
         'instructor' => 'James Wilson',
-<<<<<<< HEAD
-        'price' => 'Rp. 140.000',
-        'original_price' => 'Rp. 160.000',
-=======
         'price' => 'Rp,1.100.000',
         'original_price' => 'Rp,1.900.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.9',
         'reviews' => '3,542',
         'tag' => 'ADVANCED',
@@ -194,13 +139,8 @@ $popularCourses = [
         'id' => 12,
         'title' => 'Content Creation Masterclass',
         'instructor' => 'Sophia Lee',
-<<<<<<< HEAD
-        'price' => 'Rp. 140.000',
-        'original_price' => 'Rp. 150.000',
-=======
         'price' => 'Rp,800.000',
         'original_price' => 'Rp,1.400.000',
->>>>>>> c3796a35fd4aa28ea4b013d4f79476c9a0ec68d6
         'rating' => '4.7',
         'reviews' => '1,832',
         'tag' => 'CREATIVE',
