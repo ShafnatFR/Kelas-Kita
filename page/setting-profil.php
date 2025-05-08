@@ -1,5 +1,6 @@
 <?php
 session_start();
+// untuk hindari bug menggunakan once karena hanya sekali
 include_once('db.php'); // Pastikan path ke db.php sesuai
 
 // Ambil username dari session
@@ -12,7 +13,9 @@ if (!$username) {
 // Ambil data user dari database
 $stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil FROM tbuser WHERE username = ?");
 $stmt->bind_param("s", $username);
+// eksekusi
 $stmt->execute();
+// get untuk mengambil data dari SQL dan fetch untuk mengubahnya menjadi array asosiatif
 $user = $stmt->get_result()->fetch_assoc();
 ?>
 <!DOCTYPE html>
@@ -42,6 +45,10 @@ $user = $stmt->get_result()->fetch_assoc();
                             style="aspect-ratio: 1/1; object-fit: cover;"
                             alt="Profile Picture">
                         <h4 class="fw-bold mb-3"><?= htmlspecialchars($username) ?></4>
+                        <!-- pakai urlencode
+                        https://ui-avatars.com/api/?name=John+Doe+%26+Sons -->
+                        <!-- tanpa urlencode
+                        https://ui-avatars.com/api/?name=John Doe & Sons -->
                     </div>
                     <div class="d-grid gap-2 w-75 mb-4">
                         <a href="setting-profil.php" class="btn btn-outline-primary active">Profil</a>
