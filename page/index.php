@@ -249,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </div>
         </div>
     </section>
-    <!-- Featured Courses Section -->
+<!-- Featured Courses Section -->
 <section class="py-5 bg-white">
     <div class="container">
         <h2 class="text-center section-heading">Featured Courses</h2>
@@ -262,18 +262,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm">
                         <?php if (!empty($course['image'])): ?>
-                            <img src="<?= escape($course['image']) ?>" class="card-img-top" alt="<?= escape($course['title']) ?>">
+                            <a href="course-detail.php?id=<?= $course['id'] ?>">
+                                <img src="<?= htmlspecialchars($course['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>">
+                            </a>
                         <?php else: ?>
-                            <img src="../assets/images/course-placeholder.jpg" class="card-img-top" alt="Course Image">
+                            <a href="course-detail.php?id=<?= $course['id'] ?>">
+                                <img src="../assets/images/course-placeholder.jpg" class="card-img-top" alt="Course Image">
+                            </a>
                         <?php endif; ?>
                         
                         <div class="card-body">
-                            <?php if (!empty($course['tag'])): ?>
-                                <span class="badge bg-primary mb-2"><?= escape($course['tag']) ?></span>
-                            <?php endif; ?>
-                            
-                            <h5 class="card-title"><?= escape($course['title']) ?></h5>
-                            <p class="card-text text-muted"><?= escape($course['instructor'] ?? 'Expert Instructor') ?></p>
+                            <h5 class="card-title">
+                                <a href="course-detail.php?id=<?= $course['id'] ?>" class="text-decoration-none text-dark">
+                                    <?= htmlspecialchars($course['title']) ?>
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted"><?= htmlspecialchars($course['instructor'] ?? 'Expert Instructor') ?></p>
                             
                             <div class="d-flex align-items-center mb-3">
                                 <div class="me-2 rating">
@@ -327,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             else: 
             ?>
                 <div class="col-12 text-center">
-                    <p>No featured courses available at the moment. Please check back later!</p>
+                    <p><strong>No featured courses available at the moment. Please check back later!</strong></p>
                 </div>
             <?php endif; ?>
         </div>
@@ -376,101 +380,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </div>
     </section>
 
-    <!-- Popular Classes Section -->
-    <section class="py-5 bg-white">
-        <div class="container">
-            <h2 class="mb-4">Popular classes</h2>
-            <div class="row g-4">
-                <!-- Project Management Card -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #EBF5FF;">
-                        <div class="card-body">
-                            <span class="badge bg-primary bg-opacity-25 text-primary mb-2">CERTIFICATION</span>
-                            <h5 class="card-title fw-bold">Project Management Professional</h5>
-                            <p class="card-text text-muted mb-2">Robert Johnson</p>
-                            <div class="d-flex align-items-center">
-                                <div class="me-2 text-warning">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
+                <!-- Popular Classes Section -->
+                <section class="py-5 bg-white">
+                    <div class="container">
+                        <h2 class="mb-4">Popular classes</h2>
+                        <div class="row g-4">
+                            <?php 
+                            if (!empty($popularCourses)): 
+                                foreach ($popularCourses as $course): 
+                            ?>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card h-100 shadow-sm rounded-3" style="background-color: #EBF5FF;">
+                                    <?php if (!empty($course['image'])): ?>
+                                        <a href="course-detail.php?id=<?= $course['id'] ?>">
+                                            <img src="<?= htmlspecialchars($course['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>">
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="course-detail.php?id=<?= $course['id'] ?>">
+                                            <img src="../assets/images/course-placeholder.jpg" class="card-img-top" alt="Course Image">
+                                        </a>
+                                    <?php endif; ?>
+                                    <div class="card-body">
+                                        <span class="badge bg-primary bg-opacity-25 text-primary mb-2"><?= htmlspecialchars($course['badge'] ?? 'POPULAR') ?></span>
+                                        <h5 class="card-title fw-bold">
+                                            <a href="course-detail.php?id=<?= $course['id'] ?>" class="text-decoration-none text-dark">
+                                                <?= htmlspecialchars($course['title']) ?>
+                                            </a>
+                                        </h5>
+                                        <p class="card-text text-muted mb-2"><?= htmlspecialchars($course['instructor'] ?? 'Expert Instructor') ?></p>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2 text-warning">
+                                                <?php 
+                                                $rating = !empty($course['rating']) ? (float)$course['rating'] : 0;
+                                                $fullStars = floor($rating);
+                                                $halfStar = ($rating - $fullStars) >= 0.5;
+                                                for ($i = 1; $i <= 5; $i++) {
+                                                    if ($i <= $fullStars) {
+                                                        echo '<i class="fas fa-star"></i>';
+                                                    } elseif ($i == $fullStars + 1 && $halfStar) {
+                                                        echo '<i class="fas fa-star-half-alt"></i>';
+                                                    } else {
+                                                        echo '<i class="far fa-star"></i>';
+                                                    }
+                                                }
+                                                ?>
+                                            </div>
+                                            <span class="fw-bold"><?= number_format($course['rating'] ?? 0, 1) ?></span>
+                                            <span class="text-muted ms-1">(<?= number_format($course['reviews_count'] ?? 0) ?>)</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="fw-bold">4.9</span>
-                                <span class="text-muted ms-1">(2,156)</span>
                             </div>
+                            <?php 
+                                endforeach; 
+                            else: 
+                            ?>
+                            <div class="col-12 text-center">
+                                <p><strong>No popular courses available at the moment. Please check back later!</strong></p>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Financial Analysis Card -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #FFF8EB;">
-                        <div class="card-body">
-                            <span class="badge bg-warning bg-opacity-25 text-warning mb-2">PROFESSIONAL</span>
-                            <h5 class="card-title fw-bold">Financial Analysis Masterclass</h5>
-                            <p class="card-text text-muted mb-2">Linda Thompson</p>
-                            <div class="d-flex align-items-center">
-                                <div class="me-2 text-warning">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <span class="fw-bold">4.8</span>
-                                <span class="text-muted ms-1">(1,245)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Machine Learning Card -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #EBFFF3;">
-                        <div class="card-body">
-                            <span class="badge bg-success bg-opacity-25 text-success mb-2">ADVANCED</span>
-                            <h5 class="card-title fw-bold">Machine Learning A-Z</h5>
-                            <p class="card-text text-muted mb-2">James Wilson</p>
-                            <div class="d-flex align-items-center">
-                                <div class="me-2 text-warning">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <span class="fw-bold">4.9</span>
-                                <span class="text-muted ms-1">(3,542)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Content Creation Card -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 shadow-sm rounded-3" style="background-color: #F8EBFF;">
-                        <div class="card-body">
-                            <span class="badge bg-purple bg-opacity-25 text-purple mb-2">CREATIVE</span>
-                            <h5 class="card-title fw-bold">Content Creation Masterclass</h5>
-                            <p class="card-text text-muted mb-2">Sophia Lee</p>
-                            <div class="d-flex align-items-center">
-                                <div class="me-2 text-warning">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <span class="fw-bold">4.7</span>
-                                <span class="text-muted ms-1">(1,832)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                </section>
     
     <!-- Stats Section -->
     <section class="py-5 bg-white">
