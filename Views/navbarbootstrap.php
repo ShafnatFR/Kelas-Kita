@@ -78,6 +78,7 @@ if (isset($_SESSION['username'])) {
                                 </div>
                             </li>
                             <li><a class="dropdown-item" href="setting-profil.php">KelasKu</a></li>
+                            <li><a class="dropdown-item" href="changeRole.php">Instructor</a></li>
                             <li><a class="dropdown-item" href="keranjang.php">Keranjang</a></li>
                             <li><a class="dropdown-item" href="setting-profil.php">Pengaturan Profil</a></li>
                             <li><hr class="dropdown-divider"></li>
@@ -95,3 +96,4 @@ if (isset($_SESSION['username'])) {
 
 <!-- Tambahkan link ke Bootstrap JS jika belum ada -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>

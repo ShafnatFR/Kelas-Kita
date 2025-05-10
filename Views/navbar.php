@@ -69,6 +69,7 @@ if (isset($_SESSION['username'])) {
                 <ul class="space-y-2 text-sm">
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">KelasKu</a></li>
                     <li><a href="keranjang.php" class="block text-gray-700 hover:text-blue-600 transition">Keranjang</a></li>
+                    <li><a href="changeRole.php" class="block text-gray-700 hover:text-blue-600 transition">Instructor</a></li>
                     <li><a href="setting-profil.php" class="block text-gray-700 hover:text-blue-600 transition">Pengaturan Profil</a></li>
                     <li><a href="logout.php" class="block text-red-600 hover:text-red-800 transition">Logout</a></li>
                 </ul>
