@@ -1,68 +1,76 @@
-/* Styling umum */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+/* Sidebar */
+.sidebar {
+    background-color: #343a40;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    overflow-y: auto;
+    z-index: 100;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+.sidebar h4 {
+    color: white;
+    margin-bottom: 30px;
 }
 
-/* Profil Mentor */
-.mentor-photo {
-    border-radius: 50%;
-    margin-bottom: 15px;
-}
-
-.card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
+/* Main Content */
+.main-content {
+    margin-left: 250px;
     padding: 20px;
 }
 
-.card-body {
-    padding: 15px;
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: -100%;
+        transition: left 0.3s ease-in-out;
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: block;
+        background-color: #343a40;
+        color: white;
+        padding: 10px;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 110;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+    }
 }
 
-/* Button Styling */
-.btn {
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    color: #fff;
+/* Button Style */
+.btn-spacing {
+    margin-bottom: 10px; /* Menambahkan jarak antara tombol */
 }
 
-.btn-primary {
-    background-color: #007bff;
+/* Profil Card */
+.card-profile {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-}
-
-.btn-success {
-    background-color: #28a745;
-}
-
-.btn-warning {
-    background-color: #ffc107;
-}
-
-/* Form */
-.form-control {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 10px;
-}
-
-.form-select {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 10px;
+/* Kursus Card */
+.card-course {
+    margin-bottom: 20px;
 }

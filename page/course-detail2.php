@@ -11,10 +11,22 @@ if ($course_id <= 0) {
     exit;
 }
 
+// Cek apakah pengunjung sudah dihitung selama sesi ini
+if (!isset($_SESSION['visitor_added'])) {
+    // Jika belum dihitung, tambahkan 1 ke jumlah pengunjung
+    $query = "UPDATE tbkelas SET visitor_count = visitor_count + 1 WHERE id = ?";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, "i", $course_id);
+    mysqli_stmt_execute($stmt);
+
+    // Tandai bahwa pengunjung telah dihitung dalam sesi ini
+    $_SESSION['visitor_added'] = true;
+}
+
 // Ambil data kursus dari database
 $query = "SELECT * FROM tbkelas WHERE id = ?";
 $stmt = mysqli_prepare($conn, $query);
-mysqli_stmt_bind_param($stmt, "i", $course_id);  // Menyiapkan query dengan parameter
+mysqli_stmt_bind_param($stmt, "i", $course_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
@@ -63,13 +75,16 @@ if (!$course) {
                 <h5>Materi Kursus:</h5>
                 <ul>
                     <?php
-                    // Menampilkan materi kursus jika ada
-                    $materials = explode(",", $course['materials']); // Misal, materi disimpan sebagai string yang dipisahkan koma
+                    $materials = explode(",", $course['materials']);  // Misal, materi disimpan sebagai string yang dipisahkan koma
                     foreach ($materials as $material) {
                         echo "<li><a href='" . htmlspecialchars($material) . "' target='_blank'>" . htmlspecialchars(basename($material)) . "</a></li>";
                     }
                     ?>
                 </ul>
+
+                <!-- Menampilkan Jumlah Pengunjung dan Peserta -->
+                <p><strong>Jumlah Pengunjung:</strong> <?= $course['visitor_count'] ?></p>
+                <p><strong>Jumlah Peserta:</strong> <?= $course['participant_count'] ?></p>
 
                 <!-- Edit dan Hapus Kursus (Jika Mentor yang Mengajar) -->
                 <?php if ($_SESSION['username'] == $course['instructor']): ?>
