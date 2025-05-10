@@ -3,7 +3,7 @@ session_start();
 include_once('db.php'); // Pastikan path ke db.php sesuai
 
 // Ambil username dari session
-$username = $_SESSION['username'] ?? null;
+$username = $_SESSION['username'];
 if (!$username) {
     header('Location: HalamanSignIn.php');
     exit();
