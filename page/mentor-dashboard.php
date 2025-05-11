@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <div class="card-body">
                                                 <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
                                                 <p class="card-text"><?= substr(htmlspecialchars($course['description']), 0, 100) . '...' ?></p>
-                                                <a href="course-detail.php?id=<?= $course['id'] ?>" class="btn btn-primary btn-sm">Lihat Kursus</a>
+                                                <a href="course-detail2.php?id=<?= $course['id'] ?>" class="btn btn-primary btn-sm">Lihat Kursus</a>
                                                 <a href="edit-course.php?id=<?= $course['id'] ?>" class="btn btn-secondary btn-sm btn-spacing">Edit Kursus</a>
                                                 <a href="delete-course.php?id=<?= $course['id'] ?>" class="btn btn-danger btn-sm btn-spacing" onclick="return confirm('Apakah Anda yakin ingin menghapus kursus ini?')">Hapus Kursus</a>
                                             </div>
