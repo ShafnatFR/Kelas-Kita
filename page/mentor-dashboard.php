@@ -2,7 +2,7 @@
 session_start();
 include "db.php";
 
-// Cek jika pengguna sudah login dan sudah berrole mentor
+// Pastikan pengguna sudah login dan memiliki role sebagai mentor
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'mentor') {
     header("Location: signIn.php");
     exit();
@@ -15,6 +15,12 @@ $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
 $mentor = $result->fetch_assoc();
+
+// Verifikasi jika data mentor ditemukan
+if (!$mentor) {
+    echo "Data mentor tidak ditemukan.";
+    exit();
+}
 
 // Ambil kursus yang diajarkan oleh mentor berdasarkan username
 $courses = [];
@@ -51,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Mentor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css//mentor.css">
+    <link rel="stylesheet" href="../assets/css/mentor.css">
 </head>
 <body class="bg-light">
     <div class="container-fluid">

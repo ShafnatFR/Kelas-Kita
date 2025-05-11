@@ -1,39 +1,45 @@
+/* Sidebar */
 .sidebar {
-            background-color: #343a40;
-            padding-top: 20px;
-            height: 100vh;
-        }
+    background-color: #343a40;
+    padding-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 100vh; /* Membuat sidebar memanjang */
+    position: fixed;
+    width: 250px; /* Lebar sidebar pada layar besar */
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    bottom: 0;
+}
 
-        .sidebar ul {
-            padding-left: 0;
-            list-style-type: none;
-        }
+/* Main Content */
+.main-content {
+    margin-left: 250px; /* Memberikan margin untuk sidebar */
+    padding: 20px;
+    min-height: 100vh; /* Membuat konten utama memiliki tinggi penuh */
+}
 
-        .sidebar ul li {
-            padding: 10px 15px;
-        }
+/* Responsif: Mengatur tampilan pada layar lebih kecil (Tablet, Mobile) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px; /* Lebar sidebar pada layar kecil */
+    }
 
-        .sidebar ul li a {
-            color: #fff;
-            text-decoration: none;
-        }
+    .main-content {
+        margin-left: 0; /* Menghilangkan margin ketika layar kecil */
+        padding: 10px;
+    }
+}
 
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%; /* Sidebar mengambil seluruh lebar layar pada mobile */
+        position: static; /* Sidebar menjadi statis di bawah konten utama */
+    }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                width: 200px;
-                top: 0;
-                left: 0;
-                z-index: 1000;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 10px;
-            }
-        }
+    .main-content {
+        margin-left: 0;
+        padding: 10px;
+    }
+}
