@@ -1,7 +1,7 @@
 <?php
 // Pastikan ada session yang sudah login
 if (!isset($_SESSION['username'])) {
-    header("Location: signIn.php");
+    header("Location: HalamanSignIn.php");
     exit();
 }
 
