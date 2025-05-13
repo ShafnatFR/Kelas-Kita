@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Cek apakah user ditexmukan
+    // Cek apakah user ditemukan
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $row['username'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];
-            $_SESSION['role'] = $row['role'];
+            $_SESSION['role'] = $row['role']; // Menyimpan role di session
             $_SESSION['email'] = $row['email'];
             $_SESSION['fotoProfil'] = $row['fotoProfil'];
             $_SESSION['bahasa'] = $row['bahasa'];
@@ -40,7 +40,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['linkdin'] = $row['linkdin'];
             $_SESSION['github'] = $row['github'];
 
-            header("Location: index.php"); // Ganti dengan halaman setelah login
+            // Redirect ke halaman sesuai role
+            if ($row['role'] == 'mentor') {
+                // Jika role mentor, redirect ke dashboard mentor
+                header("Location: mentor-dashboard.php");
+            } else {
+                // Jika role peserta, redirect ke halaman utama
+                header("Location: index.php");
+            }
             exit();
         } else {
             $message = "Password salah!";
@@ -73,7 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Kanan -->
             <div class="col-md-7 d-flex flex-column justify-content-center align-items-center right-section">
                 <h2 class="font-weight-bold text-primary">Masuk ke KelasKita</h2>
-                <!-- <img src="Google1.png" alt="Google Logo" width="50" class="my-3"> -->
 
                 <?php if (!empty($message)) : ?>
                     <div class="alert alert-warning w-75"><?php echo $message; ?></div>

@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 include "db.php";
 
@@ -15,9 +14,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (!preg_match('/[^a-zA-Z0-9]/', $password)) {
         $messege = "Password harus mengandung setidaknya 1 karakter khusus.";
     } else {
+        // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Cek username
+        // Set role menjadi 'peserta' secara default
+        $role = 'peserta';
+
+        // Cek apakah username sudah ada di database
         $sql = "SELECT * FROM tbuser WHERE username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $username);
@@ -27,13 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
-            // Simpan ke DB
-            $sql = "INSERT INTO tbuser (username, password) VALUES (?, ?)";
+            // Simpan data pengguna baru ke dalam database dengan role 'peserta'
+            $sql = "INSERT INTO tbuser (username, password, role) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $username, $hashedPassword);
+            $stmt->bind_param("sss", $username, $hashedPassword, $role);
 
             if ($stmt->execute()) {
-                $_SESSION['success_messege'] = "Berhasil register. Silahkan login.";
+                // Set session untuk username dan role
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $role;
+
+                // Redirect ke halaman login setelah berhasil registrasi
+                $_SESSION['success_message'] = "Berhasil register. Silahkan login.";
                 header("Location: HalamanSignIn.php");
                 exit();
             } else {
@@ -116,11 +124,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!-- Script: Tutup modal lalu submit -->
 <script>
     document.getElementById('acceptTermsBtn').addEventListener('click', function () {
-        $('#termsModal').modal('hide');
-        setTimeout(function () {
-            document.getElementById('signupForm').submit();
-        }, 300); // Jeda agar modal benar-benar tertutup
-    });
+    $('#termsModal').modal('hide');
+    setTimeout(function () {
+        document.getElementById('signupForm').submit();
+    }, 300); // Jeda agar modal benar-benar tertutup
+});
 </script>
 
 
