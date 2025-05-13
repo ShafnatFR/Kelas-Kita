@@ -65,7 +65,7 @@ if ($tableExists) {
 }
 
 // Fetch reviews for the course
-$reviewQuery = "SELECT * FROM reviews WHERE course_id = ? ORDER BY created_at DESC";
+$reviewQuery = "SELECT * FROM reviews WHERE course_id = ? ORDER BY date DESC";
 $reviewStmt = mysqli_prepare($conn, $reviewQuery);
 mysqli_stmt_bind_param($reviewStmt, "i", $course_id);
 mysqli_stmt_execute($reviewStmt);
@@ -196,7 +196,7 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
 </head>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
-    <?php include "navbar.php"; ?>
+    <?php include "../Views/navbarbootstrap.php"; ?>
 
     <!-- Course Header Section -->
     <div class="bg-gray-900 text-white py-12">
@@ -503,9 +503,9 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
                                 </div>
                                 <span class="text-gray-500 text-sm">
                                     <?php 
-                                    echo isset($review['created_at']) 
-                                        ? date('d M Y', strtotime($review['created_at'])) 
-                                        : htmlspecialchars($review['date'] ?? 'Recent');
+                                    echo isset($review['date']) 
+                                    ? date('d M Y', strtotime($review['date'])) 
+                                    : 'Recent';
                                     ?>
                                 </span>
                             </div>
@@ -682,7 +682,7 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
         </div>
         
         <!-- Footer -->
-        <?php include "footer.php"; ?>
+        <?php include "../Views/footerbootsrap.php"; ?>
         
         <script>
         // Simple script to handle rating selection
