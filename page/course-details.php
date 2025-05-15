@@ -39,7 +39,7 @@ $what_you_learn = [
     "Mengembangkan keterampilan yang dibutuhkan industri"
 ];
 
-// Check if the course_content table exists before querying it
+// Check if the course_content table exists
 $tableExistsQuery = "SHOW TABLES LIKE 'course_content'";
 $tableExistsResult = mysqli_query($conn, $tableExistsQuery);
 $tableExists = mysqli_num_rows($tableExistsResult) > 0;
@@ -207,6 +207,18 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
             background-color: #3f37c9;
             border-color: #3f37c9;
         }
+        .course-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        .related-course-img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -215,23 +227,29 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
     <div class="container py-5">
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                <li class="breadcrumb-item"><a href="courses.php?category=<?php echo urlencode($courseCategory); ?>"><?php echo htmlspecialchars($courseCategory); ?></a></li>
+                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="courses.php?category=<?php echo urlencode($courseCategory); ?>" class="text-decoration-none"><?php echo htmlspecialchars($courseCategory); ?></a></li>
                 <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($course['title']); ?></li>
             </ol>
         </nav>
 
         <div class="row">
+            <!-- Main Content -->
             <div class="col-lg-8">
+                <!-- Course Details Card -->
                 <div class="card p-4">
-                    <img src="<?php echo htmlspecialchars($course['image']); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" class="card-img-top mb-3" style="object-fit: cover; height: 300px;">
-                    <div class="card-body">
+                    <div class="position-relative">
+                        <?php if (!empty($course['badge'])): ?>
+                        <div class="course-tag">
+                            <span class="badge bg-danger badge-custom"><?php echo htmlspecialchars($course['badge']); ?></span>
+                        </div>
+                        <?php endif; ?>
+                        <img src="<?php echo htmlspecialchars($course['image']); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" class="card-img-top rounded" style="object-fit: cover; height: 300px;">
+                    </div>
+                    <div class="card-body px-0 pb-0">
                         <h3 class="card-title"><?php echo htmlspecialchars($course['title']); ?></h3>
                         <div class="mb-2">
                             <span class="badge bg-primary badge-custom"><?php echo htmlspecialchars($courseCategory); ?></span>
-                            <?php if (!empty($course['badge'])): ?>
-                            <span class="badge bg-danger badge-custom"><?php echo htmlspecialchars($course['badge']); ?></span>
-                            <?php endif; ?>
                         </div>
                         <p class="card-text"><?php echo htmlspecialchars($course['description']); ?></p>
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -241,26 +259,18 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
                                     echo ($i <= $averageRating) ? '★' : '☆';
                                 }
                                 ?>
+                                <span class="text-dark ms-1"><?php echo $averageRating; ?>/5</span>
                             </div>
                             <div>
-                                <span class="fw-bold"><?php echo $averageRating; ?></span> / 5 (<?php echo $reviewCount; ?> ulasan)
+                                <span class="text-muted">(<?php echo $reviewCount; ?> ulasan)</span>
                             </div>
                         </div>
                         <div class="mb-3">
                             <strong>Instruktur:</strong> <?php echo !empty($instructor) ? htmlspecialchars($instructor['name']) : 'Instructor'; ?>
                         </div>
                         <div class="mb-3">
-                            <strong>Harga:</strong> <span class="price">Rp <?php echo number_format($course['price'], 0, ',', '.'); ?></span>
-                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
-                            <span class="text-muted text-decoration-line-through ms-2">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
-                            <?php endif; ?>
+                            <strong>Jumlah Peserta:</strong> <span class="text-primary"><?php echo htmlspecialchars($course['students'] ?? '1,000'); ?> peserta</span>
                         </div>
-                        <form method="post" action="">
-                            <input type="hidden" name="add_to_cart" value="1">
-                            <button type="submit" class="btn btn-primary btn-primary-custom w-100 mb-3">
-                                <i class="fas fa-shopping-cart me-2"></i> Tambahkan ke Keranjang
-                            </button>
-                        </form>
                         <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
                         <div class="alert alert-success" role="alert">
                             Kursus berhasil ditambahkan ke keranjang! <a href="cart.php" class="alert-link">Lihat Keranjang</a>
@@ -271,343 +281,279 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
 
                 <!-- What You'll Learn Section -->
                 <div class="card p-4 mt-4">
-                    <h4>Apa yang akan Anda pelajari</h4>
-                    <ul class="list-unstyled mt-3">
+                    <h4 class="mb-3">Apa yang akan Anda pelajari</h4>
+                    <div class="row">
                         <?php foreach ($what_you_learn as $item): ?>
-                        <li><i class="fas fa-check text-success me-2"></i><?php echo htmlspecialchars($item); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-
-                <!-- Reviews Section -->
-                <div class="card p-4 mt-4">
-                    <h4>Ulasan Pelajar</h4>
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="rating-stars me-3">
-                            <?php 
-                            for ($i = 1; $i <= 5; $i++) {
-                                echo ($i <= $averageRating) ? '★' : '☆';
-                            }
-                            ?>
-                        </div>
-                        <div>
-                            <strong><?php echo $averageRating; ?></strong> / 5 (<?php echo $reviewCount; ?> ulasan)
-                        </div>
-                    </div>
-                    <?php if (!empty($reviews)): ?>
-                        <?php foreach ($reviews as $review): ?>
-                        <div class="mb-3 border-bottom pb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                    <?php echo strtoupper(substr($review['name'] ?? 'U', 0, 1)); ?>
-                                </div>
-                                <div>
-                                    <strong><?php echo htmlspecialchars($review['name'] ?? 'Anonymous'); ?></strong>
-                                    <div class="text-muted small">
-                                        <?php echo isset($review['date']) ? date('d M Y', strtotime($review['date'])) : 'Recent'; ?>
-                                    </div>
-                                </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex">
+                                <i class="fas fa-check text-success me-2 mt-1"></i>
+                                <p class="mb-2"><?php echo htmlspecialchars($item); ?></p>
                             </div>
-                            <div class="rating-stars mb-2">
-                                <?php 
-                                for ($i = 1; $i <= 5; $i++) {
-                                    echo ($i <= $review['rating']) ? '★' : '☆';
-                                }
-                                ?>
-                            </div>
-                            <p><?php echo htmlspecialchars($review['comment']); ?></p>
                         </div>
                         <?php endforeach; ?>
-                    <?php else: ?>
-                        <p>Belum ada ulasan untuk kursus ini.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <!-- Related Courses -->
-                <div class="card p-4 mb-4">
-                    <h4>Kursus Terkait</h4>
-                    <?php
-                    $relatedQuery = "SELECT c.* FROM courses c 
-                                    JOIN course_categories cc ON c.id = cc.course_id 
-                                    JOIN categories cat ON cc.category_id = cat.id 
-                                    WHERE cat.name = ? AND c.id != ? 
-                                    LIMIT 3";
-                    $relatedStmt = mysqli_prepare($conn, $relatedQuery);
-                    mysqli_stmt_bind_param($relatedStmt, "si", $courseCategory, $course_id);
-                    mysqli_stmt_execute($relatedStmt);
-                    $relatedResult = mysqli_stmt_get_result($relatedStmt);
-                    ?>
-                    <?php if ($relatedResult && mysqli_num_rows($relatedResult) > 0): ?>
-                        <?php while ($relatedCourse = mysqli_fetch_assoc($relatedResult)): ?>
-                        <div class="d-flex mb-3">
-                            <img src="<?php echo htmlspecialchars($relatedCourse['image']); ?>" alt="<?php echo htmlspecialchars($relatedCourse['title']); ?>" class="me-3" style="width: 80px; height: 60px; object-fit: cover;">
-                            <div>
-                                <a href="course_detail.php?id=<?php echo $relatedCourse['id']; ?>" class="fw-bold text-decoration-none"><?php echo htmlspecialchars($relatedCourse['title']); ?></a>
-                                <div class="rating-stars text-warning">
-                                    <?php 
-                                    $relatedRating = $relatedCourse['rating'] ?? rand(3, 5);
-                                    for ($i = 1; $i <= 5; $i++) {
-                                        echo ($i <= $relatedRating) ? '★' : '☆';
-                                    }
-                                    ?>
-                                </div>
-                                <div class="text-muted">Rp <?php echo number_format($relatedCourse['price'], 0, ',', '.'); ?></div>
-                            </div>
-                        </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p>Tidak ada kursus terkait yang ditemukan.</p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Enrollment Box -->
-                <div class="card p-4">
-                    <h4>Daftar Sekarang</h4>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span>Harga Asli</span>
-                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
-                            <span class="text-decoration-line-through">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
-                            <?php else: ?>
-                            <span class="text-decoration-line-through">Rp <?php echo number_format($course['price'] * 1.5, 0, ',', '.'); ?></span>
-                            <?php endif; ?>
-                        </div>
-
-    <!-- Course Content Section -->
-    <div class="container mx-auto px-6 py-12">
-        <div class="flex flex-col md:flex-row">
-            <div class="md:w-8/12 md:pr-8">
-                <!-- What You'll Learn Section -->
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <h2 class="text-2xl font-bold mb-6">Apa yang akan Anda pelajari</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <?php if (!empty($what_you_learn)): ?>
-                            <?php foreach ($what_you_learn as $item): ?>
-                            <div class="flex">
-                                <div class="mr-3 mt-1">
-                                    <i class="fas fa-check text-green-500"></i>
-                                </div>
-                                <p><?php echo htmlspecialchars($item); ?></p>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
                     </div>
                 </div>
-                
+
                 <!-- Course Content Preview -->
-                <div id="course-content" class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <h2 class="text-2xl font-bold mb-6">Materi Kursus</h2>
-                    
-                    <div class="mb-4">
-                        <p class="text-gray-700">Kursus ini terdiri dari <?php echo htmlspecialchars($course['lectures'] ?? '120'); ?> pelajaran dengan total durasi <?php echo htmlspecialchars($course['duration'] ?? '10 jam'); ?>.</p>
-                    </div>
+                <div class="card p-4 mt-4">
+                    <h4 class="mb-3">Materi Kursus</h4>
+                    <p class="text-muted">Kursus ini terdiri dari <?php echo htmlspecialchars($course['lectures'] ?? '120'); ?> pelajaran dengan total durasi <?php echo htmlspecialchars($course['duration'] ?? '10 jam'); ?>.</p>
                     
                     <!-- Sample Course Content -->
-                    <div class="border rounded-lg overflow-hidden">
-                        <div class="bg-gray-100 p-4 font-medium">
+                    <div class="border rounded">
+                        <div class="bg-light p-3 fw-medium">
                             Modul 1: Pengenalan
                         </div>
-                        <div class="p-4 border-b">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-play-circle text-primary me-3"></i>
                                     <span>Pendahuluan dan Persiapan</span>
                                 </div>
-                                <span class="text-gray-500 text-sm">10:15</span>
+                                <span class="text-muted small">10:15</span>
                             </div>
                         </div>
-                        <div class="p-4 border-b">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <i class="fas fa-play-circle text-blue-600 mr-3"></i>
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-play-circle text-primary me-3"></i>
                                     <span>Instalasi dan Setup</span>
                                 </div>
-                                <span class="text-gray-500 text-sm">15:32</span>
+                                <span class="text-muted small">15:32</span>
                             </div>
                         </div>
-                        <div class="p-4">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center">
-                                    <i class="fas fa-lock text-gray-400 mr-3"></i>
-                                    <span class="text-gray-500">Konsep Dasar (Premium)</span>
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-lock text-muted me-3"></i>
+                                    <span class="text-muted">Konsep Dasar (Premium)</span>
                                 </div>
-                                <span class="text-gray-500 text-sm">20:45</span>
+                                <span class="text-muted small">20:45</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-4 text-center">
-                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Lihat Semua Materi</a>
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-decoration-none">Lihat Semua Materi</a>
                     </div>
                 </div>
-                
+
                 <!-- Instructor Section -->
-                <div id="instructor" class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <h2 class="text-2xl font-bold mb-6">Instruktur</h2>
-                    
-                    <div class="flex flex-col md:flex-row items-start">
-                        <div class="mb-4 md:mb-0 md:mr-6">
-                            <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div class="card p-4 mt-4">
+                    <h4 class="mb-3">Instruktur</h4>
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 24px;">
                                 <?php echo !empty($instructor) ? substr($instructor['name'], 0, 1) : 'I'; ?>
                             </div>
                         </div>
-                        
                         <div>
-                            <h3 class="text-xl font-bold mb-2">
-                                <?php echo !empty($instructor) ? htmlspecialchars($instructor['name']) : 'Instructor Name'; ?>
-                            </h3>
-                            <p class="text-gray-500 mb-4">
-                                <?php echo !empty($instructor) ? htmlspecialchars($instructor['title'] ?? 'Professional Instructor') : 'Professional Instructor'; ?>
-                            </p>
+                            <h5 class="mb-1"><?php echo !empty($instructor) ? htmlspecialchars($instructor['name']) : 'Instructor Name'; ?></h5>
+                            <p class="text-muted mb-2"><?php echo !empty($instructor) ? htmlspecialchars($instructor['title'] ?? 'Professional Instructor') : 'Professional Instructor'; ?></p>
                             
-                            <div class="flex items-center mb-4">
-                                <div class="flex items-center mr-4">
-                                    <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    <i class="fas fa-star text-warning"></i>
                                     <span><?php echo $averageRating; ?> Rating</span>
                                 </div>
-                                <div class="flex items-center mr-4">
-                                    <i class="fas fa-comment text-blue-600 mr-1"></i>
+                                <div class="me-3">
+                                    <i class="fas fa-comment text-primary"></i>
                                     <span><?php echo $reviewCount; ?> Ulasan</span>
                                 </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-user-graduate text-green-600 mr-1"></i>
+                                <div>
+                                    <i class="fas fa-user-graduate text-success"></i>
                                     <span><?php echo htmlspecialchars($course['students'] ?? '1,000'); ?> Pelajar</span>
                                 </div>
                             </div>
                             
-                            <p class="text-gray-700 mb-4">
+                            <p class="text-muted">
                                 <?php echo !empty($instructor) ? htmlspecialchars($instructor['bio'] ?? 'Instructor biography not available.') : 'Instructor biography not available.'; ?>
                             </p>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Reviews Section -->
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <div class="flex flex-col md:flex-row justify-between mb-6">
-                        <h3 class="text-2xl font-semibold">Ulasan Pelajar</h3>
-                        <div class="flex items-center">
-                            <div class="rating-stars text-2xl mr-2">
+                <div class="card p-4 mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">Ulasan Pelajar</h4>
+                        <div class="d-flex align-items-center">
+                            <div class="rating-stars me-2">
                                 <?php 
                                 for ($i = 1; $i <= 5; $i++) {
-                                    if ($i <= $averageRating) {
-                                        echo '★';
-                                    } else {
-                                        echo '☆';
-                                    }
+                                    echo ($i <= $averageRating) ? '★' : '☆';
                                 }
                                 ?>
                             </div>
                             <div>
-                                <span class="font-bold text-lg"><?php echo $averageRating; ?></span>
-                                <span class="text-gray-500">/5</span>
-                                <p class="text-gray-500"><?php echo $reviewCount; ?> ulasan</p>
+                                <span class="fw-bold"><?php echo $averageRating; ?></span>/5 
+                                <span class="text-muted">(<?php echo $reviewCount; ?> ulasan)</span>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Rating Breakdown -->
-                    <div class="mb-8">
+                    <div class="mb-4">
                         <?php for ($i = 5; $i >= 1; $i--): ?>
-                        <div class="flex items-center mb-2">
-                            <span class="w-8 text-right mr-2"><?php echo $i; ?></span>
-                            <div class="rating-stars mr-2">★</div>
-                            <div class="flex-grow">
-                                <div class="bg-gray-200 rounded-full h-2 w-full">
-                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: <?php echo $ratingPercentages[$i]; ?>%"></div>
-                                </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="me-2"><?php echo $i; ?></span>
+                            <span class="rating-stars me-2">★</span>
+                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: <?php echo $ratingPercentages[$i]; ?>%" aria-valuenow="<?php echo $ratingPercentages[$i]; ?>" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
-                            <span class="w-12 text-right ml-2"><?php echo $ratingDistribution[$i]; ?></span>
+                            <span class="text-muted"><?php echo $ratingDistribution[$i]; ?></span>
                         </div>
                         <?php endfor; ?>
                     </div>
                     
                     <?php if (!empty($reviews)): ?>
                         <?php foreach ($reviews as $review): ?>
-                        <div class="border-t border-gray-200 pt-6 pb-6">
-                            <div class="flex items-center mb-3">
-                        <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center mr-3">
-                            <?php echo substr($review['name'] ?? 'User', 0, 1); ?>
-                        </div>
-                        <div>
-                            <h4 class="font-medium"><?php echo htmlspecialchars($review['name'] ?? 'Anonymous User'); ?></h4>
-                            <div class="flex items-center">
-                                <div class="rating-stars mr-2">
-                                    <?php 
-                                    for ($i = 1; $i <= 5; $i++) {
-                                        if ($i <= $review['rating']) {
-                                            echo '★';
-                                        } else {
-                                            echo '☆';
-                                        }
-                                    }
-                                    ?>
+                        <div class="border-top pt-3 pb-3">
+                            <div class="d-flex mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <?php echo substr($review['name'] ?? 'U', 0, 1); ?>
                                 </div>
-                                <span class="text-gray-500 text-sm">
-                                    <?php 
-                                    echo isset($review['date']) 
-                                    ? date('d M Y', strtotime($review['date'])) 
-                                    : 'Recent';
-                                    ?>
-                                </span>
+                                <div>
+                                    <h6 class="mb-0"><?php echo htmlspecialchars($review['name'] ?? 'Anonymous User'); ?></h6>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rating-stars me-2">
+                                            <?php 
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo ($i <= $review['rating']) ? '★' : '☆';
+                                            }
+                                            ?>
+                                        </div>
+                                        <small class="text-muted">
+                                            <?php 
+                                            echo isset($review['date']) 
+                                            ? date('d M Y', strtotime($review['date'])) 
+                                            : 'Recent';
+                                            ?>
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                            </div>
-                            <p class="text-gray-700"><?php echo htmlspecialchars($review['comment']); ?></p>
+                            <p class="mb-0"><?php echo htmlspecialchars($review['comment']); ?></p>
                         </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <div class="text-center py-8">
-                            <p class="text-gray-500">Belum ada ulasan untuk kursus ini.</p>
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">Belum ada ulasan untuk kursus ini.</p>
                         </div>
                     <?php endif; ?>
                     
                     <!-- Write a Review -->
                     <?php if (isset($_SESSION['user_id'])): ?>
-                    <div class="border-t border-gray-200 pt-6 mt-6">
-                        <h4 class="font-bold text-lg mb-4">Tulis Ulasan</h4>
+                    <div class="border-top pt-4 mt-3">
+                        <h5 class="mb-3">Tulis Ulasan</h5>
                         <form action="submit_review.php" method="post">
                             <input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
                             
-                            <div class="mb-4">
-                                <label class="block text-gray-700 mb-2">Rating</label>
-                                <div class="flex">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="d-flex">
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <div class="mr-2">
-                                        <input type="radio" name="rating" id="rating-<?php echo $i; ?>" value="<?php echo $i; ?>" class="hidden peer">
-                                        <label for="rating-<?php echo $i; ?>" class="rating-stars text-2xl peer-checked:text-yellow-500 cursor-pointer">★</label>
+                                    <div class="me-2">
+                                        <input type="radio" name="rating" id="rating-<?php echo $i; ?>" value="<?php echo $i; ?>" class="d-none">
+                                        <label for="rating-<?php echo $i; ?>" class="rating-stars" style="cursor: pointer;">★</label>
                                     </div>
                                     <?php endfor; ?>
                                 </div>
                             </div>
                             
-                            <div class="mb-4">
-                                <label for="comment" class="block text-gray-700 mb-2">Komentar</label>
-                                <textarea name="comment" id="comment" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"></textarea>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Komentar</label>
+                                <textarea name="comment" id="comment" rows="4" class="form-control"></textarea>
                             </div>
                             
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Kirim Ulasan</button>
+                            <button type="submit" class="btn btn-primary">Kirim Ulasan</button>
                         </form>
                     </div>
                     <?php else: ?>
-                    <div class="border-t border-gray-200 pt-6 mt-6 text-center">
-                        <p class="mb-2">Silakan <a href="login.php" class="text-blue-600 hover:text-blue-800">login</a> untuk menulis ulasan.</p>
+                    <div class="border-top pt-4 mt-3 text-center">
+                        <p class="mb-0">Silakan <a href="login.php" class="text-decoration-none">login</a> untuk menulis ulasan.</p>
                     </div>
                     <?php endif; ?>
                 </div>
             </div>
             
             <!-- Sidebar -->
-            <div class="md:w-4/12">
+            <div class="col-lg-4">
+                <!-- Enrollment Box -->
+                <div class="card p-4 mb-4 sticky-top" style="top: 20px;">
+                    <h4 class="mb-4">Daftar Sekarang</h4>
+                    
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Harga Asli</span>
+                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
+                                <span class="text-decoration-line-through">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
+                            <?php else: ?>
+                                <span class="text-decoration-line-through">Rp <?php echo number_format($course['price'] * 1.5, 0, ',', '.'); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Diskon</span>
+                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
+                                <span class="text-success">-<?php echo round((($course['original_price'] - $course['price']) / $course['original_price']) * 100); ?>%</span>
+                            <?php else: ?>
+                                <span class="text-success">-33%</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Harga Akhir</span>
+                            <span class="price">Rp <?php echo number_format($course['price'], 0, ',', '.'); ?></span>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="" class="mb-3">
+                        <input type="hidden" name="add_to_cart" value="1">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-shopping-cart me-2"></i>Tambahkan ke Keranjang
+                        </button>
+                    </form>
+                    
+                    <a href="checkout.php?course_id=<?php echo $course_id; ?>" class="btn btn-success w-100 mb-3">
+                        <i class="fas fa-credit-card me-2"></i>Beli Sekarang
+                    </a>
+                    
+                    <div class="text-center text-muted mb-4">
+                        <small>Garansi Uang Kembali 30 Hari</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Kursus ini mencakup:</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-video text-muted me-2"></i>
+                            <span><?php echo htmlspecialchars($course['lectures'] ?? '120'); ?> video pelajaran</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-file-alt text-muted me-2"></i>
+                            <span>20 sumber belajar yang dapat diunduh</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-mobile-alt text-muted me-2"></i>
+                            <span>Akses di perangkat mobile dan TV</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-infinity text-muted me-2"></i>
+                            <span>Akses seumur hidup</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-certificate text-muted me-2"></i>
+                            <span>Sertifikat penyelesaian</span>
+                        </li>
+                    </ul>
+                </div>
+
                 <!-- Related Courses -->
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <h3 class="text-xl font-bold mb-4">Kursus Terkait</h3>
+                <div class="card p-4">
+                    <h4 class="mb-3">Kursus Terkait</h4>
                     
                     <?php
-                    // Fetch related courses (same category, different course)
+                    // Fetch related courses
                     $relatedQuery = "SELECT c.* FROM courses c 
                                     JOIN course_categories cc ON c.id = cc.course_id 
                                     JOIN categories cat ON cc.category_id = cat.id 
@@ -621,128 +567,95 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
                     
                     <?php if ($relatedResult && mysqli_num_rows($relatedResult) > 0): ?>
                         <?php while ($relatedCourse = mysqli_fetch_assoc($relatedResult)): ?>
-                        <div class="flex mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
-                            <div class="w-20 h-16 flex-shrink-0 mr-4">
-                                <img src="<?php echo htmlspecialchars($relatedCourse['image']); ?>" alt="<?php echo htmlspecialchars($relatedCourse['title']); ?>" class="w-full h-full object-cover rounded">
-                            </div>
+                        <div class="d-flex mb-3 pb-3 border-bottom">
+                            <img src="<?php echo htmlspecialchars($relatedCourse['image']); ?>" alt="<?php echo htmlspecialchars($relatedCourse['title']); ?>" class="related-course-img me-3">
                             <div>
-<h4 class="font-medium mb-1">
-    <a href="course_detail.php?id=<?php echo $relatedCourse['id']; ?>"><?php echo htmlspecialchars($relatedCourse['title']); ?></a>
-</h4>
-                                    <div class="flex items-center">
-                                        <div class="rating-stars text-xs mr-1">
-                                            <?php 
-                                            // Calculate average rating for related course (simplified)
-                                            $relatedRating = $relatedCourse['rating'] ?? rand(3, 5);
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                if ($i <= $relatedRating) {
-                                                    echo '★';
-                                                } else {
-                                                    echo '☆';
-                                                }
-                                            }
-                                            ?>
-                                        </div>
-                                        <span class="text-sm text-gray-500">(<?php echo $relatedCourse['students'] ?? rand(10, 500); ?>)</span>
-                                    </div>
-                                    <p class="text-blue-600 font-medium">Rp <?php echo number_format($relatedCourse['price'], 0, ',', '.'); ?></p>
+                                <a href="course_detail.php?id=<?php echo $relatedCourse['id']; ?>" class="text-decoration-none fw-medium"><?php echo htmlspecialchars($relatedCourse['title']); ?></a>
+                                <div class="rating-stars" style="font-size: 0.8rem;">
+                                    <?php 
+                                    $relatedRating = $relatedCourse['rating'] ?? rand(3, 5);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo ($i <= $relatedRating) ? '★' : '☆';
+                                    }
+                                    ?>
+                                    <small class="text-muted ms-1">(<?php echo $relatedCourse['students'] ?? rand(10, 500); ?>)</small>
                                 </div>
-                            </div>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <p class="text-gray-500">Tidak ada kursus terkait yang ditemukan.</p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <!-- Student Enrollment Box -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm mb-8 sticky top-24">
-                        <h3 class="text-xl font-bold mb-4">Daftar Sekarang</h3>
-                        
-                        <div class="bg-gray-100 p-4 rounded-lg mb-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <span>Harga Asli</span>
-                                <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
-                                    <span class="line-through">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
-                                <?php else: ?>
-                                    <span class="line-through">Rp <?php echo number_format($course['price'] * 1.5, 0, ',', '.'); ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span>Diskon</span>
-                                <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
-                                    <span class="text-green-600">-<?php echo round((($course['original_price'] - $course['price']) / $course['original_price']) * 100); ?>%</span>
-                                <?php else: ?>
-                                    <span class="text-green-600">-33%</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex items-center justify-between font-bold">
-                                <span>Harga Akhir</span>
-                                <span>Rp <?php echo number_format($course['price'], 0, ',', '.'); ?></span>
+                                <div class="price" style="font-size: 0.9rem;">Rp <?php echo number_format($relatedCourse['price'], 0, ',', '.'); ?></div>
                             </div>
                         </div>
-                        
-                        <form method="post" action="">
-                            <input type="hidden" name="add_to_cart" value="1">
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 transition mb-4">
-                                <i class="fas fa-shopping-cart mr-2"></i>Tambahkan ke Keranjang
-                            </button>
-                        </form>
-                        
-                        <a href="checkout.php?course_id=<?php echo $course_id; ?>" class="block w-full bg-green-600 text-white text-center py-3 rounded-md font-medium hover:bg-green-700 transition mb-4">
-                            <i class="fas fa-credit-card mr-2"></i>Beli Sekarang
-                        </a>
-                        
-                        <div class="text-center text-sm text-gray-500 mb-4">
-                            <p>Garansi Uang Kembali 30 Hari</p>
-                        </div>
-                        
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="font-medium mb-2">Kursus ini mencakup:</h4>
-                            <ul class="space-y-2">
-                                <li class="flex items-center">
-                                    <i class="fas fa-video text-gray-600 mr-2"></i>
-                                    <span><?php echo htmlspecialchars($course['lectures'] ?? '120'); ?> video pelajaran</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-file-alt text-gray-600 mr-2"></i>
-                                    <span>20 sumber belajar yang dapat diunduh</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-mobile-alt text-gray-600 mr-2"></i>
-                                    <span>Akses di perangkat mobile dan TV</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-infinity text-gray-600 mr-2"></i>
-                                    <span>Akses seumur hidup</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-certificate text-gray-600 mr-2"></i>
-                                    <span>Sertifikat penyelesaian</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="text-muted">Tidak ada kursus terkait yang ditemukan.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        
-        <!-- Footer -->
-        <?php include "../Views/footerbootsrap.php"; ?>
-        
-        <script>
-        // Simple script to handle rating selection
-        document.addEventListener('DOMContentLoaded', function() {
-            const ratingLabels = document.querySelectorAll('.rating-stars');
-            
-            ratingLabels.forEach(function(label, index) {
-                label.addEventListener('click', function() {
-                    const radioId = this.getAttribute('for');
-                    if (radioId) {
-                        document.getElementById(radioId).checked = true;
-                    }
+    </div>
+
+    <?php include "../Views/footerbootsrap.php"; ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Rating selection script
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingLabels = document.querySelectorAll('label.rating-stars');
+    
+    ratingLabels.forEach(function(label) {
+        label.addEventListener('click', function() {
+            const radioId = this.getAttribute('for');
+            if (radioId) {
+                document.getElementById(radioId).checked = true;
+                
+                // Reset all labels to default style
+                ratingLabels.forEach(lbl => {
+                    lbl.style.color = '#ccc';
                 });
-            });
+                
+                // Highlight selected rating and all ratings below it
+                const selectedRating = parseInt(radioId.split('-')[1]);
+                for (let i = 1; i <= selectedRating; i++) {
+                    document.querySelector(label[for="rating-${i}"]).style.color = '#FFD700';
+                }
+            }
         });
-        </script>
-    </body>
-    </html>
+    });
+    
+    // Initialize with default colors
+    for (let i = 1; i <= 5; i++) {
+        document.querySelector(label[for="rating-${i}"]).style.color = '#ccc';
+    }
+});
+
+// Add to cart notification
+const addedToCartAlert = document.querySelector('.alert-success');
+if (addedToCartAlert) {
+    // Auto hide the alert after 5 seconds
+    setTimeout(() => {
+        addedToCartAlert.style.opacity = '0';
+        addedToCartAlert.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+            addedToCartAlert.remove();
+        }, 500);
+    }, 5000);
+}
+
+// Sticky sidebar adjustment for better mobile experience
+window.addEventListener('resize', function() {
+    const sidebarCard = document.querySelector('.sticky-top');
+    if (window.innerWidth < 992) {
+        sidebarCard.classList.remove('sticky-top');
+    } else {
+        if (!sidebarCard.classList.contains('sticky-top')) {
+            sidebarCard.classList.add('sticky-top');
+        }
+    }
+});
+
+// Initialize tooltip
+const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+</script>
+</body>
+</html>
