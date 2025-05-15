@@ -3,7 +3,7 @@
         <div class="row">
             <!-- Tentang & Kontak -->
             <div class="col-lg-3 col-md-6 mb-4">
-                <img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="40" class="mb-4">
+                <img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="8"  width="80" class="mb-4">
                 <p>Platform pembelajaran online terkemuka yang menyediakan kursus berkualitas tinggi untuk membantu Anda mengembangkan keterampilan dan memajukan karier.</p>
                 <div class="mt-3">
                     <p><i class="fas fa-envelope me-2"></i> info@KelasKita.co.id</p>
@@ -64,7 +64,7 @@
                 <p>Belajar dari mana saja dengan aplikasi mobile kami</p>
                 <div class="mb-3">
                     <a href="#" class="d-inline-block mb-2">
-                        <img src="../assets/images/6acf4c84f55a52f6ccbdaa71ad2701ee.jpg" alt="App Store" height="40" class="img-fluid">
+                        <img src="../assets/images/6acf4c84f55a52f6ccbdaa71ad2701ee.jpg" alt="App Store" height="100" width="100" class="img-fluid">
                     </a>
                 </div>
             </div>

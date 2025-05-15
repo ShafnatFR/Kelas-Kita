@@ -169,166 +169,211 @@ if ($instructorResult && mysqli_num_rows($instructorResult) > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($course['title']); ?> | Kelas Kita - Online Learning Platform</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-        /* Custom Styles */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
         }
-        .hero-gradient {
-            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
+        .card {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .badge-custom {
+            font-size: 0.75rem;
+            padding: 0.25em 0.5em;
+            border-radius: 0.25rem;
         }
         .rating-stars {
             color: #FFD700;
+            font-size: 1.25rem;
         }
-        .progress-bar {
-            height: 8px;
-            border-radius: 4px;
+        .price {
+            font-weight: 700;
+            color: #4361ee;
+            font-size: 1.5rem;
         }
-        .add-to-cart-btn:hover {
-            background-color: #0056b3 !important;
+        .btn-primary-custom {
+            background-color: #4361ee;
+            border-color: #4361ee;
+        }
+        .btn-primary-custom:hover {
+            background-color: #3f37c9;
+            border-color: #3f37c9;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation Bar -->
+<body>
     <?php include "../Views/navbarbootstrap.php"; ?>
 
-    <!-- Course Header Section -->
-    <div class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6">
-            <div class="flex flex-col md:flex-row">
-                <div class="md:w-2/3 mb-8 md:mb-0 md:pr-8">
-                    <nav class="flex mb-4" aria-label="Breadcrumb">
-                        <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                            <li class="inline-flex items-center">
-                                <a href="index.php" class="text-gray-400 hover:text-white">
-                                    Beranda
-                                </a>
-                            </li>
-                            <li>
-                                <div class="flex items-center">
-                                    <span class="mx-2 text-gray-400">/</span>
-                                    <a href="courses.php?category=<?php echo htmlspecialchars($courseCategory); ?>" class="text-gray-400 hover:text-white">
-                                        <?php echo htmlspecialchars($courseCategory); ?>
-                                    </a>
-                                </div>
-                            </li>
-                            <li aria-current="page">
-                                <div class="flex items-center">
-                                    <span class="mx-2 text-gray-400">/</span>
-                                    <span class="text-gray-200"><?php echo htmlspecialchars($course['title']); ?></span>
-                                </div>
-                            </li>
-                        </ol>
-                    </nav>
-                    
-                    <div class="flex items-center mb-4">
-                        <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded mr-2"><?php echo htmlspecialchars($courseCategory); ?></span>
-                        <?php if (isset($course['badge']) && !empty($course['badge'])): ?>
-                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded"><?php echo htmlspecialchars($course['badge']); ?></span>
+    <div class="container py-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="courses.php?category=<?php echo urlencode($courseCategory); ?>"><?php echo htmlspecialchars($courseCategory); ?></a></li>
+                <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($course['title']); ?></li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <img src="<?php echo htmlspecialchars($course['image']); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" class="card-img-top mb-3" style="object-fit: cover; height: 300px;">
+                    <div class="card-body">
+                        <h3 class="card-title"><?php echo htmlspecialchars($course['title']); ?></h3>
+                        <div class="mb-2">
+                            <span class="badge bg-primary badge-custom"><?php echo htmlspecialchars($courseCategory); ?></span>
+                            <?php if (!empty($course['badge'])): ?>
+                            <span class="badge bg-danger badge-custom"><?php echo htmlspecialchars($course['badge']); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="card-text"><?php echo htmlspecialchars($course['description']); ?></p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="rating-stars">
+                                <?php 
+                                for ($i = 1; $i <= 5; $i++) {
+                                    echo ($i <= $averageRating) ? '★' : '☆';
+                                }
+                                ?>
+                            </div>
+                            <div>
+                                <span class="fw-bold"><?php echo $averageRating; ?></span> / 5 (<?php echo $reviewCount; ?> ulasan)
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Instruktur:</strong> <?php echo !empty($instructor) ? htmlspecialchars($instructor['name']) : 'Instructor'; ?>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Harga:</strong> <span class="price">Rp <?php echo number_format($course['price'], 0, ',', '.'); ?></span>
+                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
+                            <span class="text-muted text-decoration-line-through ms-2">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <form method="post" action="">
+                            <input type="hidden" name="add_to_cart" value="1">
+                            <button type="submit" class="btn btn-primary btn-primary-custom w-100 mb-3">
+                                <i class="fas fa-shopping-cart me-2"></i> Tambahkan ke Keranjang
+                            </button>
+                        </form>
+                        <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
+                        <div class="alert alert-success" role="alert">
+                            Kursus berhasil ditambahkan ke keranjang! <a href="cart.php" class="alert-link">Lihat Keranjang</a>
+                        </div>
                         <?php endif; ?>
                     </div>
-                    
-                    <h1 class="text-3xl md:text-4xl font-bold mb-4"><?php echo htmlspecialchars($course['title']); ?></h1>
-                    
-                    <p class="text-gray-300 mb-6"><?php echo htmlspecialchars($course['description']); ?></p>
-                    
-                    <div class="flex items-center mb-6">
-                        <div class="rating-stars mr-2">
+                </div>
+
+                <!-- What You'll Learn Section -->
+                <div class="card p-4 mt-4">
+                    <h4>Apa yang akan Anda pelajari</h4>
+                    <ul class="list-unstyled mt-3">
+                        <?php foreach ($what_you_learn as $item): ?>
+                        <li><i class="fas fa-check text-success me-2"></i><?php echo htmlspecialchars($item); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+
+                <!-- Reviews Section -->
+                <div class="card p-4 mt-4">
+                    <h4>Ulasan Pelajar</h4>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rating-stars me-3">
                             <?php 
                             for ($i = 1; $i <= 5; $i++) {
-                                if ($i <= $averageRating) {
-                                    echo '★';
-                                } else {
-                                    echo '☆';
-                                }
+                                echo ($i <= $averageRating) ? '★' : '☆';
                             }
                             ?>
                         </div>
-                        <span class="font-medium mr-1"><?php echo $averageRating; ?></span>
-                        <span class="text-gray-400">(<?php echo $reviewCount; ?> Peringkat)</span>
-                        <span class="mx-2">•</span>
-                        <span><?php echo $reviewCount; ?> ulasan</span>
-                        <span class="mx-2">•</span>
-                        <span>Dibuat oleh <a href="#instructor" class="text-blue-400 hover:text-blue-300">
-                            <?php echo !empty($instructor) ? htmlspecialchars($instructor['name']) : 'Instructor'; ?>
-                        </a></span>
-                    </div>
-                    
-                    <div class="flex flex-wrap items-center">
-                        <form method="post" action="">
-                            <input type="hidden" name="add_to_cart" value="1">
-                            <button type="submit" class="add-to-cart-btn bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition mr-4 mb-4 md:mb-0">
-                                <i class="fas fa-shopping-cart mr-2"></i>Tambahkan ke Keranjang
-                            </button>
-                        </form>
-                        <div class="flex items-center">
-                            <span class="font-bold text-2xl">Rp <?php echo number_format($course['price'], 0, ',', '.'); ?></span>
-                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
-                            <span class="text-gray-400 line-through ml-2">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
-                            <?php endif; ?>
+                        <div>
+                            <strong><?php echo $averageRating; ?></strong> / 5 (<?php echo $reviewCount; ?> ulasan)
                         </div>
                     </div>
-                    
-                    <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
-                    <div class="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                        <p>Kursus berhasil ditambahkan ke keranjang! <a href="cart.php" class="font-bold underline">Lihat Keranjang</a></p>
-                    </div>
+                    <?php if (!empty($reviews)): ?>
+                        <?php foreach ($reviews as $review): ?>
+                        <div class="mb-3 border-bottom pb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <?php echo strtoupper(substr($review['name'] ?? 'U', 0, 1)); ?>
+                                </div>
+                                <div>
+                                    <strong><?php echo htmlspecialchars($review['name'] ?? 'Anonymous'); ?></strong>
+                                    <div class="text-muted small">
+                                        <?php echo isset($review['date']) ? date('d M Y', strtotime($review['date'])) : 'Recent'; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rating-stars mb-2">
+                                <?php 
+                                for ($i = 1; $i <= 5; $i++) {
+                                    echo ($i <= $review['rating']) ? '★' : '☆';
+                                }
+                                ?>
+                            </div>
+                            <p><?php echo htmlspecialchars($review['comment']); ?></p>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>Belum ada ulasan untuk kursus ini.</p>
                     <?php endif; ?>
                 </div>
-                
-                <div class="md:w-1/3">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-lg">
-                        <div class="relative aspect-video">
-                            <img src="<?php echo htmlspecialchars($course['image']); ?>" alt="<?php echo htmlspecialchars($course['title']); ?>" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                                <button class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                                    <i class="fas fa-play text-blue-600 text-2xl"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6">
-                            <div class="mb-4">
-                                <h3 class="font-bold text-lg mb-2">Informasi Kursus</h3>
-                                <ul class="space-y-3">
-                                    <li class="flex items-center">
-                                        <i class="fas fa-clock text-blue-600 mr-3"></i>
-                                        <span><?php echo htmlspecialchars($course['duration'] ?? '10 jam materi'); ?></span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-video text-blue-600 mr-3"></i>
-                                        <span><?php echo htmlspecialchars($course['lectures'] ?? '120 video'); ?></span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-infinity text-blue-600 mr-3"></i>
-                                        <span>Akses seumur hidup</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-mobile-alt text-blue-600 mr-3"></i>
-                                        <span>Akses di perangkat mana saja</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-certificate text-blue-600 mr-3"></i>
-                                        <span>Sertifikat penyelesaian</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            
-                            <a href="#course-content" class="block text-center bg-gray-200 text-gray-800 hover:bg-gray-300 transition px-4 py-2 rounded-md font-medium">
-                                Lihat Materi Kursus
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </div>
-    </div>
+
+            <div class="col-lg-4">
+                <!-- Related Courses -->
+                <div class="card p-4 mb-4">
+                    <h4>Kursus Terkait</h4>
+                    <?php
+                    $relatedQuery = "SELECT c.* FROM courses c 
+                                    JOIN course_categories cc ON c.id = cc.course_id 
+                                    JOIN categories cat ON cc.category_id = cat.id 
+                                    WHERE cat.name = ? AND c.id != ? 
+                                    LIMIT 3";
+                    $relatedStmt = mysqli_prepare($conn, $relatedQuery);
+                    mysqli_stmt_bind_param($relatedStmt, "si", $courseCategory, $course_id);
+                    mysqli_stmt_execute($relatedStmt);
+                    $relatedResult = mysqli_stmt_get_result($relatedStmt);
+                    ?>
+                    <?php if ($relatedResult && mysqli_num_rows($relatedResult) > 0): ?>
+                        <?php while ($relatedCourse = mysqli_fetch_assoc($relatedResult)): ?>
+                        <div class="d-flex mb-3">
+                            <img src="<?php echo htmlspecialchars($relatedCourse['image']); ?>" alt="<?php echo htmlspecialchars($relatedCourse['title']); ?>" class="me-3" style="width: 80px; height: 60px; object-fit: cover;">
+                            <div>
+                                <a href="course_detail.php?id=<?php echo $relatedCourse['id']; ?>" class="fw-bold text-decoration-none"><?php echo htmlspecialchars($relatedCourse['title']); ?></a>
+                                <div class="rating-stars text-warning">
+                                    <?php 
+                                    $relatedRating = $relatedCourse['rating'] ?? rand(3, 5);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo ($i <= $relatedRating) ? '★' : '☆';
+                                    }
+                                    ?>
+                                </div>
+                                <div class="text-muted">Rp <?php echo number_format($relatedCourse['price'], 0, ',', '.'); ?></div>
+                            </div>
+                        </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>Tidak ada kursus terkait yang ditemukan.</p>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Enrollment Box -->
+                <div class="card p-4">
+                    <h4>Daftar Sekarang</h4>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Harga Asli</span>
+                            <?php if (isset($course['original_price']) && $course['original_price'] > $course['price']): ?>
+                            <span class="text-decoration-line-through">Rp <?php echo number_format($course['original_price'], 0, ',', '.'); ?></span>
+                            <?php else: ?>
+                            <span class="text-decoration-line-through">Rp <?php echo number_format($course['price'] * 1.5, 0, ',', '.'); ?></span>
+                            <?php endif; ?>
+                        </div>
 
     <!-- Course Content Section -->
     <div class="container mx-auto px-6 py-12">

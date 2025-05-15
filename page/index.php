@@ -133,8 +133,8 @@ if ($conn->connect_error) {
                     <a href="register.php" class="btn btn-outline-light btn-lg">Berlangganan</a>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <!-- Gambar tambahan atau konten hero di sisi kanan jika diperlukan -->
+            <div class="col-lg-4">
+                <img src="../assets/images/1683125533-img1.avif" alt="Gambar tambahan" class="img-fluid mb-10">
             </div>
         </div>
     </div>
@@ -188,32 +188,44 @@ if ($conn->connect_error) {
         <div class="row">
             <?php
             // Query untuk mengambil kursus unggulan dari database
-$sql_featured_courses = "SELECT k.id, k.gambar, k.badge_type, k.badge_text, k.judul, k.jumlah_peserta, 
-                k.rating, k.deskripsi, k.harga 
-          FROM kursus k 
-          WHERE k.featured = 1 
-          ORDER BY k.jumlah_peserta DESC 
-          LIMIT 3";
+            $sql_featured_courses = "
+                SELECT 
+                    k.id, 
+                    k.gambar, 
+                    k.badge_type, 
+                    k.badge_text, 
+                    k.judul, 
+                    k.jumlah_peserta, 
+                    k.rating, 
+                    k.deskripsi, 
+                    k.harga 
+                FROM kursus k 
+                WHERE k.featured = 1 
+                ORDER BY k.jumlah_peserta DESC 
+                LIMIT 3
+            ";
             $result_featured = $conn->query($sql_featured_courses);
-            
+
             if ($result_featured->num_rows > 0) {
-                while($course = $result_featured->fetch_assoc()) {
-                    echo '<div class="col-lg-4 col-md-6 mb-4">
+                while ($course = $result_featured->fetch_assoc()) {
+                    echo '
+                    <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100">
-                            <img src="' . $course['gambar'] . '" class="card-img-top" alt="' . $course['judul'] . '">
+                            <!-- Gambar Kursus -->
+                            <img src="' . htmlspecialchars($course['gambar']) . '" class="card-img-top" alt="' . htmlspecialchars($course['judul']) . '">
                             <div class="card-body">
-                                <span class="badge bg-' . $course['badge_type'] . ' mb-2">' . $course['badge_text'] . '</span>
-                                <h5 class="card-title">' . $course['judul'] . '</h5>
+                                <span class="badge bg-' . htmlspecialchars($course['badge_type']) . ' mb-2">' . htmlspecialchars($course['badge_text']) . '</span>
+                                <h5 class="card-title">' . htmlspecialchars($course['judul']) . '</h5>
                                 <div class="d-flex justify-content-between mb-3">
-                                    <span><i class="fas fa-user-graduate"></i> ' . $course['jumlah_peserta'] . '+ peserta</span>
-                                    <span><i class="fas fa-star text-warning"></i> ' . $course['rating'] . '</span>
+                                    <span><i class="fas fa-user-graduate"></i> ' . intval($course['jumlah_peserta']) . '+ peserta</span>
+                                    <span><i class="fas fa-star text-warning"></i> ' . floatval($course['rating']) . '</span>
                                 </div>
-                                <p class="card-text">' . $course['deskripsi'] . '</p>
+                                <p class="card-text">' . htmlspecialchars($course['deskripsi']) . '</p>
                             </div>
                             <div class="card-footer bg-white">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-primary">' . $course['harga'] . '</span>
-<a href="course-details.php?id=' . $course['id'] . '" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                                    <span class="fw-bold text-primary">' . htmlspecialchars($course['harga']) . '</span>
+                                    <a href="course-details.php?id=' . intval($course['id']) . '" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
                                 </div>
                             </div>
                         </div>
@@ -283,7 +295,6 @@ $sql_featured_courses = "SELECT k.id, k.gambar, k.badge_type, k.badge_text, k.ju
                     // Query untuk fitur bootcamp
                     $sql_features = "SELECT fitur FROM bootcamp_fitur WHERE bootcamp_id = " . $bootcamp['id'] . " LIMIT 3";
                     $result_features = $conn->query($sql_features);
-                    
                     echo '<div class="col-lg-8 mb-4">
                         <div class="card h-100">
                             <div class="row g-2">
