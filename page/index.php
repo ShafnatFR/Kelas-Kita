@@ -151,24 +151,21 @@ if ($conn->connect_error) {
         <div class="row">
             <?php
             // Query untuk mengambil kategori kursus dari database
-            $sql_categories = "SELECT icon, nama_kategori, jumlah_kursus FROM kategori_kursus ORDER BY jumlah_kursus DESC LIMIT 4";
-            $result_categories = $conn->query($sql_categories);
-            
-            if ($result_categories->num_rows > 0) {
-                while($row = $result_categories->fetch_assoc()) {
+             $sql_Kategori_links = "SELECT id,  nama_kategori FROM kategori_kursus ORDER BY nama_kategori ASC LIMIT 4";
+             $result_Kategori_links = mysqli_query($conn, $sql_Kategori_links);
+             
+             if ($result_Kategori_links && $result_Kategori_links->num_rows > 0) {
+                while ($category = $result_Kategori_links->fetch_assoc()) {
                     echo '<div class="col-md-3 col-6 mb-4">
-                        <div class="card text-center p-4">
-                            <div class="feature-icon">
-                                <i class="' . $row['icon'] . '"></i>
-                            </div>
-                            <h5>' . $row['nama_kategori'] . '</h5>
-                            <p class="small">' . $row['jumlah_kursus'] . '+ Kursus</p>
-                        </div>
+                    <div class="card text-center p-4">
+                    <h5>' . htmlspecialchars($category['nama_kategori']) . '</h5>
+                    </div>
                     </div>';
                 }
             } else {
-                echo '<div class="col-12 text-center">Tidak ada kategori kursus ditemukan</div>';
+                echo '<div class="col-12 text-center">Tidak ada kategori ditemukan</div>';
             }
+            
             ?>
         </div>
         <div class="text-center mt-4">
@@ -177,7 +174,7 @@ if ($conn->connect_error) {
     </div>
 </section>
 
-<!-- Kelas Unggulan & Populer -->
+<!-- Kursus Unggulan & Terpopuler -->
 <section class="section-padding">
     <div class="container">
         <div class="section-title">
@@ -187,60 +184,107 @@ if ($conn->connect_error) {
         
         <div class="row">
             <?php
-            // Query untuk mengambil kursus unggulan dari database
+            // Base URL configuration - adjust this to match your project structure
+            $base_url = ""; // Empty for relative URLs or set to your domain, e.g. "http://localhost/Kelas-Kita/"
+            
+            // Modified SQL query to use kursus table instead of courses table
+            // SQL query to fetch the featured courses
             $sql_featured_courses = "
-                SELECT 
-                    k.id, 
-                    k.gambar, 
-                    k.badge_type, 
-                    k.badge_text, 
-                    k.judul, 
-                    k.jumlah_peserta, 
-                    k.rating, 
-                    k.deskripsi, 
-                    k.harga 
-                FROM kursus k 
-                WHERE k.featured = 1 
-                ORDER BY k.jumlah_peserta DESC 
-                LIMIT 3
-            ";
+    SELECT 
+        k.id, 
+        k.gambar AS image, 
+        k.badge_type AS badge, 
+        k.badge_text AS tag, 
+        k.judul AS title,  -- Use 'judul' for course name
+        COALESCE(k.jumlah_peserta, 0) AS participant_count, 
+        k.rating, 
+        k.harga AS price,
+        k.deskripsi AS description
+    FROM kursus k
+    ORDER BY k.jumlah_peserta DESC 
+    LIMIT 3
+";
+
+
+
+            // Execute the query and store the result in $result_featured
             $result_featured = $conn->query($sql_featured_courses);
 
-            if ($result_featured->num_rows > 0) {
-                while ($course = $result_featured->fetch_assoc()) {
-                    echo '
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <!-- Gambar Kursus -->
-                            <img src="' . htmlspecialchars($course['gambar']) . '" class="card-img-top" alt="' . htmlspecialchars($course['judul']) . '">
-                            <div class="card-body">
-                                <span class="badge bg-' . htmlspecialchars($course['badge_type']) . ' mb-2">' . htmlspecialchars($course['badge_text']) . '</span>
-                                <h5 class="card-title">' . htmlspecialchars($course['judul']) . '</h5>
-                                <div class="d-flex justify-content-between mb-3">
-                                    <span><i class="fas fa-user-graduate"></i> ' . intval($course['jumlah_peserta']) . '+ peserta</span>
-                                    <span><i class="fas fa-star text-warning"></i> ' . floatval($course['rating']) . '</span>
+            // Check for query errors
+            if (!$result_featured) {
+                echo "Query error: " . $conn->error;
+                // Fallback to show some default content
+                echo '<div class="col-12 text-center">Maaf, tidak dapat memuat kursus unggulan saat ini.</div>';
+            } else {
+                // Check if query returned any results
+                if ($result_featured->num_rows > 0) {
+                    while ($course = $result_featured->fetch_assoc()) {
+                        // Create the detail URL
+                        $detail_url = "course-details.php?id=" . intval($course['id']);
+                        ?>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100">
+                                <img src="<?php echo htmlspecialchars($course['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title']); ?>">
+                                <div class="card-body">
+                                    <span class="badge bg-primary mb-2"><?php echo htmlspecialchars($course['badge']); ?></span>
+                                    <span class="badge bg-secondary mb-2 ms-1"><?php echo htmlspecialchars($course['tag']); ?></span>
+                                    <h5 class="card-title"><?php echo htmlspecialchars($course['title']); ?></h5>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span><i class="fas fa-user-graduate"></i> <?php echo intval($course['participant_count']); ?>+ peserta</span>
+                                        <span><i class="fas fa-star text-warning"></i> <?php echo floatval($course['rating']); ?></span>
+                                    </div>
+                                    <p class="card-text"><?php echo htmlspecialchars($course['description']); ?></p>
                                 </div>
-                                <p class="card-text">' . htmlspecialchars($course['deskripsi']) . '</p>
-                            </div>
-                            <div class="card-footer bg-white">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-primary">' . htmlspecialchars($course['harga']) . '</span>
-                                    <a href="course-details.php?id=' . intval($course['id']) . '" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                                <div class="card-footer bg-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-primary">Rp <?php echo number_format((float)$course['price'], 0, ',', '.'); ?></span>
+                                        <a href="<?php echo $detail_url; ?>" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>';
+                        <?php
+                    }
+                } else {
+                    echo '<div class="col-12 text-center">Tidak ada kursus unggulan ditemukan</div>';
                 }
-            } else {
-                echo '<div class="col-12 text-center">Tidak ada kursus unggulan ditemukan</div>';
             }
             ?>
         </div>
-        <div class="text-center mt-4">
-            <a href="../course-listing.php" class="btn btn-primary">Lihat Semua Kursus</a>
-        </div>
     </div>
 </section>
+
+<!-- Add JavaScript function to handle course detail views -->
+<script>
+function viewCourseDetails(courseId) {
+    // You can add analytics tracking here if needed
+    console.log("Viewing course ID: " + courseId);
+    
+    // Optional: You can use AJAX to preload course details
+    /*
+    fetch('get-course-details.php?id=' + courseId)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Course data loaded:", data);
+            // You could show a loading spinner here
+        })
+        .catch(error => {
+            console.error("Error loading course details:", error);
+        });
+    */
+}
+
+// Check if any URL issues on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Page loaded, checking course detail links...");
+    const detailLinks = document.querySelectorAll('a[href*="course-details.php"]');
+    detailLinks.forEach(link => {
+        console.log("Found link:", link.href);
+    });
+});
+</script>
+
+
 
 <!-- Mengapa Memilih Kami -->
 <section class="section-padding bg-light">
@@ -256,7 +300,7 @@ if ($conn->connect_error) {
             $sql_features = "SELECT icon, judul, deskripsi FROM keunggulan ORDER BY id ASC LIMIT 4";
             $result_features = $conn->query($sql_features);
             
-            if ($result_features->num_rows > 0) {
+            if ($result_features && $result_features->num_rows > 0) {
                 while($feature = $result_features->fetch_assoc()) {
                     echo '<div class="col-lg-3 col-md-6 mb-4">
                         <div class="card text-center p-4 h-100">
@@ -290,7 +334,7 @@ if ($conn->connect_error) {
             $sql_bootcamps = "SELECT b.id, b.gambar, b.judul, b.deskripsi FROM bootcamp b ORDER BY b.id ASC LIMIT 2";
             $result_bootcamps = $conn->query($sql_bootcamps);
             
-            if ($result_bootcamps->num_rows > 0) {
+            if ($result_bootcamps && $result_bootcamps->num_rows > 0) {
                 while($bootcamp = $result_bootcamps->fetch_assoc()) {
                     // Query untuk fitur bootcamp
                     $sql_features = "SELECT fitur FROM bootcamp_fitur WHERE bootcamp_id = " . $bootcamp['id'] . " LIMIT 3";
@@ -308,7 +352,7 @@ if ($conn->connect_error) {
                                         <ul class="list-unstyled">';
                     
                     // Menampilkan fitur bootcamp
-                    if ($result_features->num_rows > 0) {
+                    if ($result_features && $result_features->num_rows > 0) {
                         while($feature = $result_features->fetch_assoc()) {
                             echo '<li><i class="fas fa-check-circle text-success me-2"></i>' . $feature['fitur'] . '</li>';
                         }
@@ -341,10 +385,13 @@ if ($conn->connect_error) {
         <div class="row">
             <?php
             // Query untuk mengambil program pengembangan profesional dari database
-            $sql_prof_dev = "SELECT icon, judul, deskripsi, link, button_text FROM pengembangan_profesional ORDER BY id ASC LIMIT 3";
+            $sql_prof_dev = "SELECT icon, judul, deskripsi, link, button_text 
+                 FROM pengembangan_profesional 
+                 ORDER BY id ASC 
+                 LIMIT 3";
             $result_prof_dev = $conn->query($sql_prof_dev);
             
-            if ($result_prof_dev->num_rows > 0) {
+            if ($result_prof_dev && $result_prof_dev->num_rows > 0) {
                 while($item = $result_prof_dev->fetch_assoc()) {
                     echo '<div class="col-md-4 mb-4">
                         <div class="card h-100">
@@ -381,7 +428,7 @@ if ($conn->connect_error) {
             $sql_partners = "SELECT gambar, nama FROM partner ORDER BY id ASC LIMIT 6";
             $result_partners = $conn->query($sql_partners);
             
-            if ($result_partners->num_rows > 0) {
+            if ($result_partners && $result_partners->num_rows > 0) {
                 while($partner = $result_partners->fetch_assoc()) {
                     echo '<div class="col-md-2 col-6 mb-4 text-center">
                         <img src="' . $partner['gambar'] . '" alt="' . $partner['nama'] . '" class="partner-logo">
@@ -409,7 +456,7 @@ if ($conn->connect_error) {
             $sql_testimonials = "SELECT quote, avatar, nama, posisi FROM testimoni ORDER BY id ASC LIMIT 3";
             $result_testimonials = $conn->query($sql_testimonials);
             
-            if ($result_testimonials->num_rows > 0) {
+            if ($result_testimonials && $result_testimonials->num_rows > 0) {
                 while($testimonial = $result_testimonials->fetch_assoc()) {
                     echo '<div class="col-lg-4 col-md-6 mb-4">
                         <div class="card testimonial-card h-100">
@@ -481,7 +528,7 @@ if ($conn->connect_error) {
                 $sql_site_info = "SELECT logo, tentang, email, telepon, alamat FROM site_info LIMIT 1";
                 $result_site_info = $conn->query($sql_site_info);
                 
-                if ($result_site_info->num_rows > 0) {
+                if ($result_site_info && $result_site_info->num_rows > 0) {
                     $site_info = $result_site_info->fetch_assoc();
                     echo '<img src="' . $site_info['logo'] . '" alt="KelasKita Logo" height="40" class="mb-4">
                     <p>' . $site_info['tentang'] . '</p>
@@ -518,7 +565,7 @@ if ($conn->connect_error) {
                     $sql_quick_links = "SELECT url, text FROM quick_links ORDER BY urutan ASC LIMIT 6";
                     $result_quick_links = $conn->query($sql_quick_links);
                     
-                    if ($result_quick_links->num_rows > 0) {
+                    if ($result_quick_links && $result_quick_links->num_rows > 0) {
                         while($link = $result_quick_links->fetch_assoc()) {
                             echo '<li class="mb-2"><a href="' . $link['url'] . '" class="text-white text-decoration-none">' . $link['text'] . '</a></li>';
                         }
@@ -540,17 +587,19 @@ if ($conn->connect_error) {
                     ?>
                 </ul>
             </div>
-
             <!-- Kategori -->
             <div class="col-lg-2 col-md-3 col-6 mb-4">
                 <h5 class="mb-4">Kategori</h5>
                 <ul class="list-unstyled">
                     <?php
                     // Query untuk mengambil kategori untuk footer
-                    $sql_category_links = "SELECT nama_kategori FROM kategori_kursus ORDER BY jumlah_kursus DESC LIMIT 6";
+                    $sql_category_links = "SELECT nama_kategori 
+                       FROM kategori_kursus 
+                       ORDER BY jumlah_kursus DESC 
+                       LIMIT 6";
                     $result_category_links = $conn->query($sql_category_links);
                     
-                    if ($result_category_links->num_rows > 0) {
+                    if ($result_category_links && $result_category_links->num_rows > 0) {
                         while($category = $result_category_links->fetch_assoc()) {
                             echo '<li class="mb-2"><a href="category.php?cat=' . urlencode($category['nama_kategori']) . '" class="text-white text-decoration-none">' . $category['nama_kategori'] . '</a></li>';
                         }
@@ -670,11 +719,11 @@ if ($conn->connect_error) {
         };
         
         const displayScrollElement = (element) => {
-            element.classList.add('animate__animated', 'animate__fadeInUp');
+            element.classList.add('animate_animated', 'animate_fadeInUp');
         };
         
         const hideScrollElement = (element) => {
-            element.classList.remove('animate__animated', 'animate__fadeInUp');
+            element.classList.remove('animate_animated', 'animate_fadeInUp');
         };
         
         const handleScrollAnimation = () => {
