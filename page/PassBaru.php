@@ -25,8 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt->execute()) {
                 echo "Password berhasil diubah!";
-                header("Location: H3
-                alamanSignIn.php?reset=success");
+                header("Location: HalamanSignIn.php?reset=success");
                 exit;
             } else {
                 $pesan = "Gagal mengubah password.";
