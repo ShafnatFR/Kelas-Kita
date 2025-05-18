@@ -64,15 +64,27 @@ if ($conn->connect_error) {
             border-color: var(--secondary);
         }
         
+        .card-icon {
+            font-size: 2rem;
+            color: #4a6cf7;
+            height: 60px;
+            width: 60px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .card {
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+            height: 100%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .testimonial-card {
@@ -140,7 +152,6 @@ if ($conn->connect_error) {
     </div>
 </section>
 
-<!-- Kursus Berdasarkan Kategori -->
 <section class="section-padding bg-light">
     <div class="container">
         <div class="section-title">
@@ -151,21 +162,25 @@ if ($conn->connect_error) {
         <div class="row">
             <?php
             // Query untuk mengambil kategori kursus dari database
-             $sql_Kategori_links = "SELECT id,  nama_kategori FROM kategori_kursus ORDER BY nama_kategori ASC LIMIT 4";
-             $result_Kategori_links = mysqli_query($conn, $sql_Kategori_links);
+            $sql_Kategori_links = "SELECT id, nama_kategori, icon, jumlah_kursus FROM kategori_kursus ORDER BY nama_kategori ASC LIMIT 4";
+            $result_Kategori_links = mysqli_query($conn, $sql_Kategori_links);
              
-             if ($result_Kategori_links && $result_Kategori_links->num_rows > 0) {
+            if ($result_Kategori_links && $result_Kategori_links->num_rows > 0) {
                 while ($category = $result_Kategori_links->fetch_assoc()) {
+                    // Gunakan ikon dari database
+                    $icon = '<i class="' . htmlspecialchars($category['icon']) . '"></i>';
+                    
                     echo '<div class="col-md-3 col-6 mb-4">
-                    <div class="card text-center p-4">
-                    <h5>' . htmlspecialchars($category['nama_kategori']) . '</h5>
-                    </div>
+                        <div class="card text-center p-4">
+                            <div class="card-icon mb-3">' . $icon . '</div>
+                            <h5>' . htmlspecialchars($category['nama_kategori']) . '</h5>
+                            <p class="text-muted">' . $category['jumlah_kursus'] . '+ Kursus</p>
+                        </div>
                     </div>';
                 }
             } else {
                 echo '<div class="col-12 text-center">Tidak ada kategori ditemukan</div>';
             }
-            
             ?>
         </div>
         <div class="text-center mt-4">
@@ -174,7 +189,6 @@ if ($conn->connect_error) {
     </div>
 </section>
 
-<!-- Kursus Unggulan & Terpopuler -->
 <section class="section-padding">
     <div class="container">
         <div class="section-title">
@@ -184,11 +198,8 @@ if ($conn->connect_error) {
         
         <div class="row">
             <?php
-            // Base URL configuration - adjust this to match your project structure
-            $base_url = ""; // Empty for relative URLs or set to your domain, e.g. "http://localhost/Kelas-Kita/"
+            $base_url = ""; 
             
-            // Modified SQL query to use kursus table instead of courses table
-            // SQL query to fetch the featured courses
             $sql_featured_courses = "
     SELECT 
         k.id, 
@@ -204,9 +215,6 @@ if ($conn->connect_error) {
     ORDER BY k.jumlah_peserta DESC 
     LIMIT 3
 ";
-
-
-
             // Execute the query and store the result in $result_featured
             $result_featured = $conn->query($sql_featured_courses);
 
@@ -220,25 +228,41 @@ if ($conn->connect_error) {
                 if ($result_featured->num_rows > 0) {
                     while ($course = $result_featured->fetch_assoc()) {
                         // Create the detail URL
-                        $detail_url = "course-details.php?id=" . intval($course['id']);
+$detail_url = "Coursedetail.php?id=" . intval($course['id']);
+                        
+                        // Badge class determination
+                        $badge_class = "bg-primary";
+                        if ($course['badge'] == "Hot") {
+                            $badge_class = "bg-warning text-dark";
+                        } elseif ($course['badge'] == "New") {
+                            $badge_class = "bg-success";
+                        }
                         ?>
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100">
                                 <img src="<?php echo htmlspecialchars($course['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title']); ?>">
-                                <div class="card-body">
-                                    <span class="badge bg-primary mb-2"><?php echo htmlspecialchars($course['badge']); ?></span>
-                                    <span class="badge bg-secondary mb-2 ms-1"><?php echo htmlspecialchars($course['tag']); ?></span>
-                                    <h5 class="card-title"><?php echo htmlspecialchars($course['title']); ?></h5>
-                                    <div class="d-flex justify-content-between mb-3">
+                                <div class="p-3">
+                                    <?php if (!empty($course['badge'])) : ?>
+                                    <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($course['badge']); ?></span>
+                                    <?php endif; ?>
+                                    <h5 class="mt-2"><?php echo htmlspecialchars($course['title']); ?></h5>
+                                    <div class="d-flex justify-content-between mb-2">
                                         <span><i class="fas fa-user-graduate"></i> <?php echo intval($course['participant_count']); ?>+ peserta</span>
                                         <span><i class="fas fa-star text-warning"></i> <?php echo floatval($course['rating']); ?></span>
                                     </div>
-                                    <p class="card-text"><?php echo htmlspecialchars($course['description']); ?></p>
-                                </div>
-                                <div class="card-footer bg-white">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="fw-bold text-primary">Rp <?php echo number_format((float)$course['price'], 0, ',', '.'); ?></span>
-                                        <a href="<?php echo $detail_url; ?>" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                                    <p class="small mb-4"><?php echo htmlspecialchars(substr($course['description'], 0, 120)); ?>...</p>
+                                    
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <h5 class="fw-bold text-primary mb-0"><?php 
+                                        // Periksa apakah harga sudah dalam format 'Rp X.XXX.XXX'
+                                        if (strpos($course['price'], 'Rp') !== false) {
+                                            echo $course['price']; // Tampilkan apa adanya jika sudah berformat
+                                        } else {
+                                            // Jika belum berformat, konversi ke format yang diinginkan
+                                            echo 'Rp ' . number_format((float)$course['price'], 0, ',', '.');
+                                        }
+                                        ?></h5>
+                                        <a href="<?php echo $detail_url; ?>" class="btn btn-outline-primary btn-sm">Lihat Detail</a>
                                     </div>
                                 </div>
                             </div>
@@ -251,6 +275,10 @@ if ($conn->connect_error) {
             }
             ?>
         </div>
+        
+        <div class="text-center mt-4">
+            <a href="courses.php" class="btn btn-primary">Lihat Semua Kursus</a>
+        </div>
     </div>
 </section>
 
@@ -259,19 +287,6 @@ if ($conn->connect_error) {
 function viewCourseDetails(courseId) {
     // You can add analytics tracking here if needed
     console.log("Viewing course ID: " + courseId);
-    
-    // Optional: You can use AJAX to preload course details
-    /*
-    fetch('get-course-details.php?id=' + courseId)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Course data loaded:", data);
-            // You could show a loading spinner here
-        })
-        .catch(error => {
-            console.error("Error loading course details:", error);
-        });
-    */
 }
 
 // Check if any URL issues on page load
@@ -283,7 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
 
 
 <!-- Mengapa Memilih Kami -->

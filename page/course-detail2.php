@@ -11,18 +11,6 @@ if ($course_id <= 0) {
     exit;
 }
 
-// Cek apakah pengunjung sudah dihitung selama sesi ini
-if (!isset($_SESSION['visitor_added'])) {
-    // Jika belum dihitung, tambahkan 1 ke jumlah pengunjung
-    $query = "UPDATE tbkelas SET visitor_count = visitor_count + 1 WHERE id = ?";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $course_id);
-    mysqli_stmt_execute($stmt);
-
-    // Tandai bahwa pengunjung telah dihitung dalam sesi ini
-    $_SESSION['visitor_added'] = true;
-}
-
 // Ambil data kursus dari database
 $query = "SELECT * FROM tbkelas WHERE id = ?";
 $stmt = mysqli_prepare($conn, $query);
@@ -37,6 +25,9 @@ if (!$course) {
     echo "Kursus tidak ditemukan.";
     exit();
 }
+
+// Menangani sub-bab materi yang disertakan oleh mentor
+$sub_babs = json_decode($course['sub_babs'], true); // Memastikan materi disimpan sebagai JSON
 ?>
 
 <!DOCTYPE html>
@@ -46,15 +37,31 @@ if (!$course) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Kursus - <?= htmlspecialchars($course['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sub-bab-container {
+            margin-top: 20px;
+        }
+        .sub-bab-item {
+            margin-bottom: 10px;
+        }
+        .sub-bab-item button {
+            margin-top: 10px;
+        }
+        .sub-bab-content {
+            margin-top: 15px;
+        }
+        .card-body p {
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-5">
-        <!-- Detail Kursus -->
         <div class="card shadow-sm">
             <div class="card-body">
                 <h1 class="card-title"><?= htmlspecialchars($course['title']) ?></h1>
                 <h4 class="card-subtitle mb-3 text-muted"><?= htmlspecialchars($course['kategori']) ?></h4>
-                
+
                 <!-- Deskripsi Kursus -->
                 <p class="card-text"><strong>Deskripsi:</strong> <?= htmlspecialchars($course['description']) ?></p>
 
@@ -64,37 +71,41 @@ if (!$course) {
                 <!-- Instructor -->
                 <p class="card-text"><strong>Instructor:</strong> <?= htmlspecialchars($course['instructor']) ?></p>
 
-                <!-- Tanggal Kursus -->
-                <?php if ($course['start_date'] && $course['end_date']): ?>
-                    <p><strong>Jadwal Kursus:</strong> <?= htmlspecialchars($course['start_date']) ?> - <?= htmlspecialchars($course['end_date']) ?></p>
-                <?php else: ?>
-                    <p><strong>Jenis Kursus:</strong> Kursus Fleksibel (Dapat Diakses Kapan Saja)</p>
-                <?php endif; ?>
+                <!-- Sub-Bab Materi -->
+                <div class="sub-bab-container">
+                    <h5>Materi Kursus:</h5>
 
-                <!-- Materi Kursus -->
-                <h5>Materi Kursus:</h5>
-                <ul>
-                    <?php
-                    $materials = explode(",", $course['materials']);  // Misal, materi disimpan sebagai string yang dipisahkan koma
-                    foreach ($materials as $material) {
-                        echo "<li><a href='" . htmlspecialchars($material) . "' target='_blank'>" . htmlspecialchars(basename($material)) . "</a></li>";
-                    }
-                    ?>
-                </ul>
+                    <?php if (!empty($sub_babs)): ?>
+                        <?php foreach ($sub_babs as $index => $sub_bab): ?>
+                            <div class="sub-bab-item">
+                                <button class="btn btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#sub_bab_<?= $index ?>" aria-expanded="false" aria-controls="sub_bab_<?= $index ?>">
+                                    <?= htmlspecialchars($sub_bab['title']) ?>
+                                </button>
+                                <div id="sub_bab_<?= $index ?>" class="collapse sub-bab-content">
+                                    <p><strong>Materi:</strong></p>
+                                    <p><?= htmlspecialchars($sub_bab['content']) ?></p>
+                                    <p><strong>File Materi:</strong></p>
+                                    <?php if (isset($sub_bab['materials']) && !empty($sub_bab['materials'])): ?>
+                                        <ul>
+                                            <?php
+                                            $materials = explode(",", $sub_bab['materials']);
+                                            foreach ($materials as $material) {
+                                                echo "<li><a href='" . htmlspecialchars($material) . "' target='_blank'>" . htmlspecialchars(basename($material)) . "</a></li>";
+                                            }
+                                            ?>
+                                        </ul>
+                                    <?php else: ?>
+                                        <p>Materi tidak tersedia.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>Belum ada materi yang tersedia.</p>
+                    <?php endif; ?>
+                </div>
 
-                <!-- Menampilkan Jumlah Pengunjung dan Peserta -->
-                <p><strong>Jumlah Pengunjung:</strong> <?= $course['visitor_count'] ?></p>
-                <p><strong>Jumlah Peserta:</strong> <?= $course['participant_count'] ?></p>
-
-                <!-- Edit dan Hapus Kursus (Jika Mentor yang Mengajar) -->
-                <?php if ($_SESSION['username'] == $course['instructor']): ?>
-                    <a href="edit-course.php?id=<?= $course['id'] ?>" class="btn btn-warning btn-sm">Edit Kursus</a>
-                    <a href="delete-course.php?id=<?= $course['id'] ?>" class="btn btn-danger btn-sm">Hapus Kursus</a>
-                <?php else: ?>
-                    <!-- Daftar Kursus (Jika Peserta) -->
-                    <a href="enroll.php?id=<?= $course['id'] ?>" class="btn btn-success btn-sm">Daftar Kursus</a>
-                <?php endif; ?>
-
+                <!-- Kembali ke Dashboard Mentor -->
                 <a href="mentor-dashboard.php" class="btn btn-primary btn-sm mt-3">Kembali ke Dashboard</a>
             </div>
         </div>
