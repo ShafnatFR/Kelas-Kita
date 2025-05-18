@@ -43,7 +43,7 @@ if (isset($user['role'])) {
                     <a class="nav-link text-secondary" href="blog.php">Blog</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-secondary" href="kontak.php">Kontak</a>
+                    <a class="nav-link text-secondary" href="contackUs.php">Kontak</a>
                 </li>
                 <li class="nav-item">
                     <a href="cart.php" class="nav-link text-secondary position-relative">
