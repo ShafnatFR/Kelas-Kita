@@ -13,7 +13,7 @@ $username = $_SESSION['username'];
 // Jika pengguna memilih "Ya", ubah role menjadi mentor
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update role pengguna menjadi 'mentor'
-    $stmt = $conn->prepare("UPDATE tbuser SET role = 'mentor' WHERE username = ?");
+    $stmt = $conn->prepare("UPDATE tb_user SET role = 'mentor' WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
 

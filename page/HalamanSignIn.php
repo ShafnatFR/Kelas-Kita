@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Ambil data user dari database berdasarkan username
-    $sql = "SELECT * FROM tbuser WHERE username = ?";
+    $sql = "SELECT * FROM tb_user WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
     $stmt->execute();

@@ -10,10 +10,10 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'mentor') {
 
 // Proses pembuatan kelas baru
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $title = $_POST['title'];
+    $title = $_POST['nama_kelas'];
     $kategori = $_POST['kategori'];
     $description = $_POST['description'];
-    $price = $_POST['price'];
+    $price = $_POST['harga'];
     $instructor = $_SESSION['username'];
     $course_type = $_POST['course_type'];  // Tipe kursus: Terjadwal atau Fleksibel
     $start_date = $_POST['start_date'];  // Jika kursus terjadwal
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sub_babs_string = json_encode($sub_babs); 
 
     // Insert kelas baru ke database
-    $query = "INSERT INTO tbkelas (title, kategori, description, price, instructor, materials, course_type, start_date, end_date, sub_babs) 
+    $query = "INSERT INTO tb_kelas (title, kategori, description, price, instructor, materials, course_type, start_date, end_date, sub_babs) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("ssssssssss", $title, $kategori, $description, $price, $instructor, $materials_string, $course_type, $start_date, $end_date, $sub_babs_string);

@@ -6,7 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
 
     // Pastikan user ada
-    $stmt = $conn->prepare("SELECT * FROM tbuser WHERE username = ?");
+    $stmt = $conn->prepare("SELECT * FROM tb_user WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();

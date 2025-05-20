@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $pesan = "Password tidak memenuhi kriteria keamanan.";
         } else {
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("UPDATE tbuser SET password=? WHERE username=?");
+            $stmt = $conn->prepare("UPDATE tb_user SET password=? WHERE username=?");
             $stmt->bind_param("ss", $passwordHash, $username);
 
             if ($stmt->execute()) {
