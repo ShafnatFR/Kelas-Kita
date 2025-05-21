@@ -1,4 +1,5 @@
 <?php
+include "db.php";
 // Mulai session jika diperlukan
 session_start();
 
@@ -6,19 +7,6 @@ session_start();
 $site_name = "KelasKita";
 $site_tagline = "Platform Pembelajaran Online";
 
-// Koneksi ke database
-$host = "localhost";    // sesuaikan dengan host database Anda
-$username = "root";     // sesuaikan dengan username database Anda
-$password = "";         // sesuaikan dengan password database Anda
-$database = "kelaskita"; // sesuaikan dengan nama database Anda
-
-// Membuat koneksi
-$conn = new mysqli($host, $username, $password, $database);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
 ?>
 
 <!DOCTYPE html>

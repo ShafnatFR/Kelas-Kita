@@ -8,7 +8,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 // Pastikan role diambil dari database dan diset dengan benar
-$stmt = $conn->prepare("SELECT role FROM tbuser WHERE username = ?");
+$stmt = $conn->prepare("SELECT role FROM tb_user WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -85,7 +85,7 @@ if (isset($user['role'])) {
         <li><a class="dropdown-item" href="setting-profil.php">KelasKu</a></li>
         <?php if ($_SESSION['role'] !== 'mentor'): ?>
             <!-- Menampilkan opsi "Instruktur" hanya jika role pengguna adalah peserta -->
-            <li><a class="dropdown-item" href="confirm-become-mentor.php">Instruktur</a></li>
+            <li><a class="dropdown-item" href="become-mentor.php">Instruktur</a></li>
         <?php endif; ?>
         <li><a class="dropdown-item" href="keranjang.php">Keranjang</a></li>
         <li><a class="dropdown-item" href="setting-profil.php">Pengaturan Profil</a></li>
@@ -93,7 +93,6 @@ if (isset($user['role'])) {
         <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
     </ul>
 </div>
-
                 <?php else: ?>
                     <a href="HalamanSignIn.php" class="btn btn-outline-secondary d-none d-md-inline-block">Masuk</a>
                     <a href="HalamanSignUp.php" class="btn btn-primary">Register</a>
@@ -101,6 +100,24 @@ if (isset($user['role'])) {
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="confirmBecomeMentorModal" tabindex="-1" aria-labelledby="confirmBecomeMentorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmBecomeMentorModalLabel">Konfirmasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Apakah Anda yakin ingin menjadi Instruktur? Perubahan ini akan mengubah role Anda dari **Murid** menjadi **Mentor**.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <a href="become-mentor.php" class="btn btn-primary">Ya, Saya Yakin</a>
+            </div>
+        </div>
+    </div>
+</div>
 </nav>
 
 

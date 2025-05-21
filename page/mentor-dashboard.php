@@ -1,57 +1,60 @@
 <?php
 session_start();
-include "db.php";
+require 'db.php'; // Pastikan sudah menghubungkan ke database
 
 // Pastikan pengguna sudah login dan memiliki role sebagai mentor
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'mentor') {
-    header("Location: HalamanSignIn.php");
+    header("Location: HalamanSignIn.php"); // Jika bukan mentor, alihkan ke halaman login
     exit();
 }
 
-$username = $_SESSION['username'];
-$stmt = $conn->prepare("SELECT * FROM tbuser WHERE username = ?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
-$mentor = $result->fetch_assoc();
+// Mengambil kelas yang dikelola oleh mentor berdasarkan id_user
+$stmt_classes = $conn->prepare("
+    SELECT k.id_kelas, k.nama_kelas, k.kategori, k.harga, k.description
+    FROM tb_kelas k
+    JOIN tb_transaksi t ON k.id_kelas = t.id_kelas
+    WHERE t.id_user = ?
+");
+$stmt_classes->bind_param("i", $_SESSION['user_id']); // Menggunakan user_id yang disimpan dalam session
+$stmt_classes->execute();
+$classes_result = $stmt_classes->get_result();
 
-// Verifikasi jika data mentor ditemukan
-if (!$mentor) {
-    echo "Data mentor tidak ditemukan.";
+
+$stmt_materials = $conn->prepare("
+    SELECT k.id_kelas, k.nama_kelas, k.kategori, k.harga, k.description
+    FROM tb_kelas k
+    JOIN tb_transaksi t ON k.id_kelas = t.id_kelas
+    WHERE t.id_user = ?
+");
+$stmt_materials->bind_param("i", $_SESSION['user_id']); // Menggunakan user_id yang disimpan dalam session
+$stmt_materials->execute();
+$materials_result = $stmt_materials->get_result(); // Ambil hasil dari query
+
+// Periksa apakah query berhasil
+if ($materials_result === false) {
+    echo "Error: " . $stmt_materials->error; // Menampilkan error jika query gagal
     exit();
 }
 
-// Ambil kursus yang diajarkan oleh mentor berdasarkan username
-$courses = [];
-$query = "SELECT k.id, k.title, k.description, COUNT(p.id) AS jumlah_peserta 
-          FROM tbkelas k 
-          LEFT JOIN tbuser p ON k.id = p.id
-          WHERE k.instructor = ?
-          GROUP BY k.id";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt_reviews = $conn->prepare("
+    SELECT r.bintang_review, r.isi_review, r.tgl_review, u.username AS murid, k.nama_kelas
+    FROM tb_review r
+    JOIN tb_user u ON r.id_user = u.id_user
+    JOIN tb_kelas k ON r.id_kelas = k.id_kelas
+    JOIN tb_transaksi t ON t.id_kelas = k.id_kelas
+    WHERE t.id_user = ?
+");
+$stmt_reviews->bind_param("i", $_SESSION['user_id']); // Menggunakan user_id yang disimpan dalam session
+$stmt_reviews->execute();
+$reviews_result = $stmt_reviews->get_result(); // Ambil hasil dari query
 
-while ($row = $result->fetch_assoc()) {
-    $courses[] = $row;
-}
-
-// Proses Switch ke Peserta
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ubah role kembali menjadi peserta
-    $stmt = $conn->prepare("UPDATE tbuser SET role = 'peserta' WHERE username = ?");
-    $stmt->bind_param("s", $_SESSION['username']);
-    $stmt->execute();
-
-    // Update session role
-    $_SESSION['role'] = 'peserta';
-
-    // Redirect kembali ke halaman utama
-    header("Location: index.php");
+// Periksa apakah query berhasil
+if ($reviews_result === false) {
+    echo "Error: " . $stmt_reviews->error; // Menampilkan error jika query gagal
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -63,62 +66,202 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/css/mentor.css">
 </head>
 <body class="bg-light">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-12 col-md-3 col-lg-2 sidebar bg-dark text-white p-4">
-                <h4 class="text-center mb-4">KelasKita</h4>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a href="mentor-dashboard.php" class="nav-link text-white">Dashboard</a></li>
-                    <li class="nav-item"><a href="create-course.php" class="nav-link text-white">Buat Kursus</a></li>
-                    <li class="nav-item"><a href="mentor-profil.php" class="nav-link text-white">Profil</a></li>
-                    <li class="nav-item"><a href="logout.php" class="nav-link text-white">Logout</a></li>
-                </ul>
+    <!-- Sidebar -->
+    <div class="sidebar position-fixed">
+        <div class="sidebar-header text-center p-4">
+            <img src="mentor-logo.png" alt="Logo" class="rounded-circle" width="50">
+            <h3>Mentor Dashboard</h3>
+        </div>
+        <ul class="nav flex-column p-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#manage-classes">Kelola Kelas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#manage-transactions">Kelola Transaksi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#manage-materials">Kelola Materi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#reviews-comments">Review & Komentar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#messages">Pesan</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <!-- Kelola Kelas -->
+        <div id="manage-classes" class="section">
+            <div class="header">
+                <h2>Kelola Kelas</h2>
+                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#createClassModal">Tambah Kelas</button>
             </div>
+            <!-- Menampilkan daftar kelas yang dikelola mentor -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama Kelas</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PHP untuk menampilkan kelas yang dikelola mentor -->
+                    <?php while ($row = $classes_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['nama_kelas']) ?></td>
+                            <td><?= htmlspecialchars($row['kategori']) ?></td>
+                            <td><?= htmlspecialchars($row['harga']) ?></td>
+                            <td>
+                                <a href="edit-class.php?id_kelas=<?= $row['id_kelas'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="delete-class.php?id_kelas=<?= $row['id_kelas'] ?>" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
 
-            <!-- Main Content -->
-            <div class="col-12 col-md-9 col-lg-10 main-content p-4">
-                <h2 class="my-4">Dashboard Mentor</h2>
+        <!-- Kelola Transaksi -->
+        <div id="manage-transactions" class="section mt-5">
+            <h2>Kelola Transaksi</h2>
+            <!-- Menampilkan transaksi -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Transaksi</th>
+                        <th>Nama Murid</th>
+                        <th>Kelas</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PHP untuk menampilkan transaksi -->
+                    <?php while ($row = $classes_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['id_transaksi']) ?></td>
+                            <td><?= htmlspecialchars($row['murid']) ?></td>
+                            <td><?= htmlspecialchars($row['nama_kelas']) ?></td>
+                            <td><?= htmlspecialchars($row['status']) ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
 
-                <div class="row">
-                    <!-- Daftar Kursus yang Diajarkan -->
-                    <div class="col-12">
-                        <h3 class="my-4">Kursus yang Diajarkan</h3>
-                        <div class="row">
-                            <?php if (count($courses) > 0): ?>
-                                <?php foreach ($courses as $course): ?>
-                                    <div class="col-md-6 col-lg-4 mb-4">
-                                        <div class="card shadow-sm">
-                                            <div class="card-body">
-                                                <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
-                                                <p class="card-text"><?= substr(htmlspecialchars($course['description']), 0, 100) . '...' ?></p>
-                                                <p><strong>Jumlah Peserta:</strong> <?= htmlspecialchars($course['jumlah_peserta']) ?></p>
-                                                <a href="course-detail2.php?id=<?= $course['id'] ?>" class="btn btn-primary btn-sm">Lihat Kursus</a>
-                                                <a href="edit-course.php?id=<?= $course['id'] ?>" class="btn btn-secondary btn-sm">Edit Kursus</a>
-                                                <a href="delete-course.php?id=<?= $course['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus kursus ini?')">Hapus Kursus</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <div class="col-12">
-                                    <p>Anda belum membuat kursus. <a href="create-course.php" class="btn btn-success btn-sm">Buat Kursus Baru</a></p>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+        <!-- Kelola Materi -->
+        <div id="manage-materials" class="section mt-5">
+            <h2>Kelola Materi</h2>
+            <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#createMaterialModal">Tambah Materi</button>
+            <!-- Menampilkan materi -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Judul Materi</th>
+                        <th>Kelas</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PHP untuk menampilkan materi -->
+                    <?php while ($row = $materials_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['judul_materi']) ?></td>
+                            <td><?= htmlspecialchars($row['nama_kelas']) ?></td>
+                            <td>
+                                <a href="edit-material.php?id_materi=<?= $row['id_materi'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="delete-material.php?id_materi=<?= $row['id_materi'] ?>" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
 
-                        <a href="create-course.php" class="btn btn-success btn-lg">Buat Kursus Baru</a>
+        <!-- Review & Komentar -->
+        <div id="reviews-comments" class="section mt-5">
+            <h2>Review & Komentar</h2>
+            <!-- Menampilkan review dan komentar -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama Murid</th>
+                        <th>Kelas</th>
+                        <th>Rating</th>
+                        <th>Komentar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PHP untuk menampilkan review dan komentar -->
+                    <?php while ($row = $reviews_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['murid']) ?></td>
+                            <td><?= htmlspecialchars($row['nama_kelas']) ?></td>
+                            <td><?= htmlspecialchars($row['rating']) ?></td>
+                            <td><?= htmlspecialchars($row['komentar']) ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pesan -->
+        <div id="messages" class="section mt-5">
+            <h2>Pesan</h2>
+            <!-- Menampilkan pesan -->
+            <ul>
+                <?php while ($row = $messages_result->fetch_assoc()): ?>
+                    <li><?= htmlspecialchars($row['message']) ?></li>
+                <?php endwhile; ?>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal untuk menambah kelas -->
+     <!-- Modal untuk menambah kelas -->
+<div class="modal fade" id="createClassModal" tabindex="-1" aria-labelledby="createClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createClassModalLabel">Tambah Kelas Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="create-class.php" method="POST">
+                    <div class="mb-3">
+                        <label for="class-name" class="form-label">Nama Kelas</label>
+                        <input type="text" class="form-control" id="class-name" name="class-name" required>
                     </div>
-                </div>
-
-                <!-- Tombol Switch ke Peserta -->
-                <form method="POST">
-                    <button type="submit" class="btn btn-warning btn-lg mt-4">Switch to Peserta</button>
+                    <div class="mb-3">
+                        <label for="class-category" class="form-label">Kategori</label>
+                        <input type="text" class="form-control" id="class-category" name="class-category" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="class-price" class="form-label">Harga</label>
+                        <input type="number" class="form-control" id="class-price" name="class-price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="class-description" class="form-label">Deskripsi</label>
+                        <textarea class="form-control" id="class-description" name="class-description" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah Kelas</button>
                 </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- (Sudah Anda buat sebelumnya) -->
+    
+    <!-- Modal untuk menambah materi -->
+    <!-- (Sudah Anda buat sebelumnya) -->
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
             // Simpan data pengguna baru ke dalam database dengan role 'peserta'
-            $sql = "INSERT INTO tb_ user (username, password, role) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO tb_user (username, password, role) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sss", $username, $hashedPassword, $role);
 
