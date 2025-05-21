@@ -3,7 +3,7 @@
         <div class="row">
             <!-- Tentang & Kontak -->
             <div class="col-lg-3 col-md-6 mb-4">
-                <img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="8"  width="80" class="mb-4">
+                <img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="40" width="40" class="mb-4">
                 <p>Platform pembelajaran online terkemuka yang menyediakan kursus berkualitas tinggi untuk membantu Anda mengembangkan keterampilan dan memajukan karier.</p>
                 <div class="mt-3">
                     <p><i class="fas fa-envelope me-2"></i> info@KelasKita.co.id</p>
@@ -23,15 +23,14 @@
             <div class="col-lg-2 col-md-3 col-6 mb-4">
                 <h5 class="mb-4">Tautan Cepat</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="index.html" class="text-white text-decoration-none">Beranda</a></li>
-                    <li class="mb-2"><a href="courses.html" class="text-white text-decoration-none">Kursus</a></li>
-                    <li class="mb-2"><a href="bootcamp.html" class="text-white text-decoration-none">Bootcamp</a></li>
-                    <li class="mb-2"><a href="about.html" class="text-white text-decoration-none">Tentang Kami</a></li>
-                    <li class="mb-2"><a href="contact.html" class="text-white text-decoration-none">Kontak</a></li>
-                    <li class="mb-2"><a href="faq.html" class="text-white text-decoration-none">FAQ</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Beranda</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Tentang Kami</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Kursus</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Blog</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Kontak</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">FAQ</a></li>
                 </ul>
             </div>
-
             <!-- Kategori -->
             <div class="col-lg-2 col-md-3 col-6 mb-4">
                 <h5 class="mb-4">Kategori</h5>
@@ -50,11 +49,11 @@
                 <h5 class="mb-4">Dukungan</h5>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="#" class="text-white text-decoration-none">Pusat Bantuan</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Kontak Dukungan</a></li>
                     <li class="mb-2"><a href="#" class="text-white text-decoration-none">Kebijakan Privasi</a></li>
                     <li class="mb-2"><a href="#" class="text-white text-decoration-none">Syarat & Ketentuan</a></li>
-                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Kebijakan Refund</a></li>
-                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Laporan Bug</a></li>
-                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Affiliate Program</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">Laporan Masalah</a></li>
+                    <li class="mb-2"><a href="#" class="text-white text-decoration-none">FAQ</a></li>
                 </ul>
             </div>
 
@@ -63,19 +62,24 @@
                 <h5 class="mb-4">Aplikasi Mobile</h5>
                 <p>Belajar dari mana saja dengan aplikasi mobile kami</p>
                 <div class="mb-3">
-                    <a href="#" class="d-inline-block mb-2">
-                        <img src="../assets/images/6acf4c84f55a52f6ccbdaa71ad2701ee.jpg" alt="App Store" height="100" width="100" class="img-fluid">
+                    <a href="#" class="d-block mb-2">
+                        <img src="../assets/images/c63de450df4c84bc4f7d1b0a762d8d56.jpg" alt="Google Play Store" height="50">
+                    </a>
+                    <a href="#" class="d-block">
+                        <img src="../assets/images/7b51ea487052d8996a3c232fa23500c6.jpg" alt="Apple App Store" width="100" height="60">
                     </a>
                 </div>
             </div>
         </div>
-
-        <hr class="my-4">
-
-        <!-- Copyright & Pembayaran -->
+        
+        <hr class="my-4 bg-secondary">
+        
         <div class="row align-items-center">
             <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="mb-0">&copy; 2025 KelasKita. Hak Cipta Dilindungi.</p>
+                <p class="mb-0">&copy; <?php echo date('Y'); ?> <?php echo $site_name; ?>. All rights reserved.</p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <p class="mb-0">Designed & Developed by KelasKita Dev Team</p>
             </div>
         </div>
     </div>

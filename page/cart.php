@@ -1,16 +1,16 @@
 <?php
-include "db.php";
 session_start();
 
 // Include cart database integration functions
 include "cart_db_integration.php";
 
-$site_name = "KelasKita"; // Define site name for footer usage
+$site_name = "db_KelasKita"; // Define site name for footer usage
 
 $db_host = "localhost";
 $db_user = "root";
 $db_pass = ""; 
-$db_name = "KelasKita";
+$db_name = "db_kelaskita";
+
 
 // Membuat koneksi
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
@@ -408,189 +408,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
         </div>
     </div>
 
-    <!-- Footer -->
-<footer class="bg-dark text-white pt-5 pb-4">
-    <div class="container">
-        <div class="row">
-            <!-- Tentang & Kontak -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <?php
-                // Query untuk mengambil info website
-                $sql_site_info = "SELECT logo, tentang, email, telepon, alamat FROM site_info LIMIT 1";
-                $result_site_info = $conn->query($sql_site_info);
-                
-                if ($result_site_info && $result_site_info->num_rows > 0) {
-                    $site_info = $result_site_info->fetch_assoc();
-                    echo '<img src="' . $site_info['logo'] . '" alt="KelasKita Logo" height="40" class="mb-4">
-                    <p>' . $site_info['tentang'] . '</p>
-                    <div class="mt-3">
-                        <p><i class="fas fa-envelope me-2"></i> ' . $site_info['email'] . '</p>
-                        <p><i class="fas fa-phone me-2"></i> ' . $site_info['telepon'] . '</p>
-                        <p><i class="fas fa-map-marker-alt me-2"></i>' . $site_info['alamat'] . '</p>
-                    </div>';
-                } else {
-                    echo '<img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="40" width="40" class="mb-4">
-                    <p>Platform pembelajaran online terkemuka yang menyediakan kursus berkualitas tinggi untuk membantu Anda mengembangkan keterampilan dan memajukan karier.</p>
-                    <div class="mt-3">
-                        <p><i class="fas fa-envelope me-2"></i> info@KelasKita.co.id</p>
-                        <p><i class="fas fa-phone me-2"></i> +62 21 12345678</p>
-                        <p><i class="fas fa-map-marker-alt me-2"></i>Jl. Telekomunikasi No. 1, Bandung Terusan Buahbatu - Bojongsoang, Sukapura, Kec. Dayeuhkolot, Kabupaten Bandung, Jawa Barat 40257</p>
-                    </div>';
-                }
-                ?>
-                <div class="mt-4">
-                    <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-linkedin-in fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-youtube fa-lg"></i></a>
-                </div>
-            </div>
-
-            <!-- Tautan Cepat -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Tautan Cepat</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil quick links dari database
-                    $sql_quick_links = "SELECT url, text FROM quick_links ORDER BY urutan ASC LIMIT 6";
-                    $result_quick_links = $conn->query($sql_quick_links);
-                    
-                    if ($result_quick_links && $result_quick_links->num_rows > 0) {
-                        while($link = $result_quick_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="' . $link['url'] . '" class="text-white text-decoration-none">' . $link['text'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_links = [
-                            ["url" => "index.php", "text" => "Beranda"],
-                            ["url" => "courses.php", "text" => "Kursus"],
-                            ["url" => "bootcamp.php", "text" => "Bootcamp"],
-                            ["url" => "about.php", "text" => "Tentang Kami"],
-                            ["url" => "contact.php", "text" => "Kontak"],
-                            ["url" => "faq.php", "text" => "FAQ"]
-                        ];
-                        
-                        foreach ($default_links as $link) {
-                            echo '<li class="mb-2"><a href="' . $link['url'] . '" class="text-white text-decoration-none">' . $link['text'] . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-            <!-- Kategori -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Kategori</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil kategori untuk footer
-                    $sql_category_links = "SELECT nama_kategori 
-                       FROM kategori_kursus 
-                       ORDER BY jumlah_kursus DESC 
-                       LIMIT 6";
-                    $result_category_links = $conn->query($sql_category_links);
-                    
-                    if ($result_category_links && $result_category_links->num_rows > 0) {
-                        while($category = $result_category_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="category.php?cat=' . urlencode($category['nama_kategori']) . '" class="text-white text-decoration-none">' . $category['nama_kategori'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_categories = [
-                            "Pengembangan Web",
-                            "Pengembangan Mobile",
-                            "Data Science",
-                            "UI/UX Design",
-                            "Digital Marketing",
-                            "Business & Leadership"
-                        ];
-                        
-                        foreach ($default_categories as $category) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $category . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-
-            <!-- Dukungan -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Dukungan</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil support links
-                    $sql_support_links = "SELECT judul FROM support_links ORDER BY id ASC LIMIT 6";
-                    $result_support_links = $conn->query($sql_support_links);
-                    
-                    if ($result_support_links->num_rows > 0) {
-                        while($support = $result_support_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $support['judul'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_support = [
-                            "Pusat Bantuan",
-                            "Kebijakan Privasi",
-                            "Syarat & Ketentuan",
-                            "Kebijakan Refund",
-                            "Laporan Bug",
-                            "Affiliate Program"
-                        ];
-                        
-                        foreach ($default_support as $support) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $support . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-
-            <!-- Download Aplikasi -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Aplikasi Mobile</h5>
-                <p>Belajar dari mana saja dengan aplikasi mobile kami</p>
-                <?php
-                // Query untuk mengambil app links
-                $sql_app_links = "SELECT playstore
-                , appstore FROM app_links LIMIT 1";
-                $result_app_links = $conn->query($sql_app_links);
-                
-                if ($result_app_links->num_rows > 0) {
-                    $app_links = $result_app_links->fetch_assoc();
-                    echo '<div class="mb-3">
-                        <a href="' . $app_links['playstore'] . '" class="d-block mb-2">
-                            <img src="../assets/images/c63de450df4c84bc4f7d1b0a762d8d56.jpg" alt="Google Play Store" height="50">
-                        </a>
-                        <a href="' . $app_links['appstore'] . '" class="d-block">
-                            <img src="../assets/images/7b51ea487052d8996a3c232fa23500c6.jpg" alt="Apple App Store" width="100" height="60">
-                        </a>
-                    </div>';
-                } else {
-                    echo '<div class="mb-3">
-                        <a href="#" class="d-block mb-2">
-                            <img src="../assets/images/c63de450df4c84bc4f7d1b0a762d8d56.jpg" alt="Google Play Store" height="50">
-                        </a>
-                        <a href="#" class="d-block">
-                            <img src="../assets/images/7b51ea487052d8996a3c232fa23500c6.jpg" alt="Apple App Store" width="100" height="60">
-                        </a>
-                    </div>';
-                }
-                ?>
-            </div>
-        </div>
-        
-        <hr class="my-4 bg-secondary">
-        
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="mb-0">&copy; <?php echo date('Y'); ?> <?php echo $site_name; ?>. All rights reserved.</p>
-            </div>
-            <div class="col-md-6 text-center text-md-end">
-                <p class="mb-0">Designed & Developed by KelasKita Dev Team</p>
-            </div>
-        </div>
-    </div>
-</footer>
+<?php include_once("../Views/footerbootsrap.php"); ?>
 
     <!-- Bootstrap JS bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,11 +1,28 @@
 <?php
-include "db.php";
+
 // Mulai session jika diperlukan
 session_start();
 
-// Konfigurasi situs
-$site_name = "KelasKita";
-$site_tagline = "Platform Pembelajaran Online";
+$servername = "localhost"; // Sesuaikan jika menggunakan host berbeda
+$username = "root";        // Sesuaikan dengan username MySQL Anda
+$password = "";            // Sesuaikan dengan password MySQL Anda
+$dbname = "db_kelaskita";     // Nama database
+
+// Membuat koneksi ke database
+$conn = new mysqli($servername, $username, $password, $dbname);
+// hgf
+// Memeriksa koneksi
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
+
+$site_name = "db_KelasKita";
+
+// Remove manual connection creation since db.php already creates $conn
+
+
+// Ambil ID kursus dari parameter URL
+$course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 ?>
 
@@ -105,6 +122,7 @@ $site_tagline = "Platform Pembelajaran Online";
     </style>
 </head>
 <body class="bg-gray-50">
+    
 <?php include_once("../Views/navbarbootstrap.php"); ?>
 
 <script>
@@ -150,8 +168,8 @@ $site_tagline = "Platform Pembelajaran Online";
         <div class="row">
             <?php
             // Query untuk mengambil kategori kursus dari database
-            $sql_Kategori_links = "SELECT id, nama_kategori, icon, jumlah_kursus FROM kategori_kursus ORDER BY nama_kategori ASC LIMIT 4";
-            $result_Kategori_links = mysqli_query($conn, $sql_Kategori_links);
+$sql_Kategori_links = "SELECT id_kategori AS id, nama_kategori, icon, jumlah_kursus FROM tb_kategori ORDER BY nama_kategori ASC LIMIT 4";
+$result_Kategori_links = $conn->query($sql_Kategori_links);
              
             if ($result_Kategori_links && $result_Kategori_links->num_rows > 0) {
                 while ($category = $result_Kategori_links->fetch_assoc()) {
@@ -188,19 +206,19 @@ $site_tagline = "Platform Pembelajaran Online";
             <?php
             $base_url = ""; 
             
-            $sql_featured_courses = "
+$sql_featured_courses = "
     SELECT 
-        k.id, 
-        k.gambar AS image, 
-        k.badge_type AS badge, 
-        k.badge_text AS tag, 
-        k.judul AS title,  -- Use 'judul' for course name
-        COALESCE(k.jumlah_peserta, 0) AS participant_count, 
-        k.rating, 
+        k.id_kelas AS id, 
+        k.profil_kelas AS image, 
+        k.badge AS badge, 
+        '' AS tag, 
+        k.nama_kelas AS title,  -- Use 'nama_kelas' for course name
+        0 AS participant_count, 
+        0 AS rating, 
         k.harga AS price,
-        k.deskripsi AS description
-    FROM kursus k
-    ORDER BY k.jumlah_peserta DESC 
+        k.description AS description
+    FROM tb_kelas k
+    ORDER BY k.id_kelas DESC 
     LIMIT 3
 ";
             // Execute the query and store the result in $result_featured
@@ -270,58 +288,6 @@ $detail_url = "Coursedetail.php?id=" . intval($course['id']);
     </div>
 </section>
 
-<!-- Add JavaScript function to handle course detail views -->
-<script>
-function viewCourseDetails(courseId) {
-    // You can add analytics tracking here if needed
-    console.log("Viewing course ID: " + courseId);
-}
-
-// Check if any URL issues on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Page loaded, checking course detail links...");
-    const detailLinks = document.querySelectorAll('a[href*="course-details.php"]');
-    detailLinks.forEach(link => {
-        console.log("Found link:", link.href);
-    });
-});
-</script>
-
-
-<!-- Mengapa Memilih Kami -->
-<section class="section-padding bg-light">
-    <div class="container">
-        <div class="section-title">
-            <h2>Mengapa Memilih Kami</h2>
-            <p>Keunggulan platform kami yang membedakan dari yang lain</p>
-        </div>
-        
-        <div class="row">
-            <?php
-            // Query untuk mengambil keunggulan dari database
-            $sql_features = "SELECT icon, judul, deskripsi FROM keunggulan ORDER BY id ASC LIMIT 4";
-            $result_features = $conn->query($sql_features);
-            
-            if ($result_features && $result_features->num_rows > 0) {
-                while($feature = $result_features->fetch_assoc()) {
-                    echo '<div class="col-lg-3 col-md-6 mb-4">
-                        <div class="card text-center p-4 h-100">
-                            <div class="feature-icon">
-                                <i class="' . $feature['icon'] . '"></i>
-                            </div>
-                            <h5>' . $feature['judul'] . '</h5>
-                            <p>' . $feature['deskripsi'] . '</p>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '<div class="col-12 text-center">Tidak ada data keunggulan ditemukan</div>';
-            }
-            ?>
-        </div>
-    </div>
-</section>
-
 <!-- Kamp Pelatihan & Program Pembelajaran -->
 <section class="section-padding">
     <div class="container">
@@ -333,14 +299,14 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="row">
             <?php
             // Query untuk mengambil bootcamp dari database
-            $sql_bootcamps = "SELECT b.id, b.gambar, b.judul, b.deskripsi FROM bootcamp b ORDER BY b.id ASC LIMIT 2";
-            $result_bootcamps = $conn->query($sql_bootcamps);
+$sql_bootcamps = "SELECT b.id, b.gambar, b.judul, b.deskripsi FROM tb_bootcamp b ORDER BY b.id ASC LIMIT 2";
+$result_bootcamps = $conn->query($sql_bootcamps);
             
             if ($result_bootcamps && $result_bootcamps->num_rows > 0) {
                 while($bootcamp = $result_bootcamps->fetch_assoc()) {
                     // Query untuk fitur bootcamp
-                    $sql_features = "SELECT fitur FROM bootcamp_fitur WHERE bootcamp_id = " . $bootcamp['id'] . " LIMIT 3";
-                    $result_features = $conn->query($sql_features);
+$sql_features = "SELECT fitur FROM tb_bootcamp_fitur WHERE bootcamp_id = " . $bootcamp['id'] . " LIMIT 3";
+$result_features = $conn->query($sql_features);
                     echo '<div class="col-lg-8 mb-4">
                         <div class="card h-100">
                             <div class="row g-2">
@@ -387,11 +353,11 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="row">
             <?php
             // Query untuk mengambil program pengembangan profesional dari database
-            $sql_prof_dev = "SELECT icon, judul, deskripsi, link, button_text 
-                 FROM pengembangan_profesional 
+$sql_prof_dev = "SELECT icon, judul, deskripsi, link, button_text 
+                 FROM tb_pengembangan_profesional 
                  ORDER BY id ASC 
                  LIMIT 3";
-            $result_prof_dev = $conn->query($sql_prof_dev);
+$result_prof_dev = $conn->query($sql_prof_dev);
             
             if ($result_prof_dev && $result_prof_dev->num_rows > 0) {
                 while($item = $result_prof_dev->fetch_assoc()) {
@@ -427,8 +393,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="row align-items-center justify-content-center">
             <?php
             // Query untuk mengambil partner dari database
-            $sql_partners = "SELECT gambar, nama FROM partner ORDER BY id ASC LIMIT 6";
-            $result_partners = $conn->query($sql_partners);
+$sql_partners = "SELECT gambar, nama FROM tb_partner ORDER BY id ASC LIMIT 6";
+$result_partners = $conn->query($sql_partners);
             
             if ($result_partners && $result_partners->num_rows > 0) {
                 while($partner = $result_partners->fetch_assoc()) {
@@ -455,8 +421,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="row">
             <?php
             // Query untuk mengambil testimoni dari database
-            $sql_testimonials = "SELECT quote, avatar, nama, posisi FROM testimoni ORDER BY id ASC LIMIT 3";
-            $result_testimonials = $conn->query($sql_testimonials);
+$sql_testimonials = "SELECT quote, avatar, nama, posisi FROM tb_testimoni ORDER BY id ASC LIMIT 3";
+$result_testimonials = $conn->query($sql_testimonials);
             
             if ($result_testimonials && $result_testimonials->num_rows > 0) {
                 while($testimonial = $result_testimonials->fetch_assoc()) {
@@ -519,189 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-dark text-white pt-5 pb-4">
-    <div class="container">
-        <div class="row">
-            <!-- Tentang & Kontak -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <?php
-                // Query untuk mengambil info website
-                $sql_site_info = "SELECT logo, tentang, email, telepon, alamat FROM site_info LIMIT 1";
-                $result_site_info = $conn->query($sql_site_info);
-                
-                if ($result_site_info && $result_site_info->num_rows > 0) {
-                    $site_info = $result_site_info->fetch_assoc();
-                    echo '<img src="' . $site_info['logo'] . '" alt="KelasKita Logo" height="40" class="mb-4">
-                    <p>' . $site_info['tentang'] . '</p>
-                    <div class="mt-3">
-                        <p><i class="fas fa-envelope me-2"></i> ' . $site_info['email'] . '</p>
-                        <p><i class="fas fa-phone me-2"></i> ' . $site_info['telepon'] . '</p>
-                        <p><i class="fas fa-map-marker-alt me-2"></i>' . $site_info['alamat'] . '</p>
-                    </div>';
-                } else {
-                    echo '<img src="../assets/images/ChatGPT Image 13 Mei 2025, 12.52.09.png" alt="KelasKita Logo" height="40" width="40" class="mb-4">
-                    <p>Platform pembelajaran online terkemuka yang menyediakan kursus berkualitas tinggi untuk membantu Anda mengembangkan keterampilan dan memajukan karier.</p>
-                    <div class="mt-3">
-                        <p><i class="fas fa-envelope me-2"></i> info@KelasKita.co.id</p>
-                        <p><i class="fas fa-phone me-2"></i> +62 21 12345678</p>
-                        <p><i class="fas fa-map-marker-alt me-2"></i>Jl. Telekomunikasi No. 1, Bandung Terusan Buahbatu - Bojongsoang, Sukapura, Kec. Dayeuhkolot, Kabupaten Bandung, Jawa Barat 40257</p>
-                    </div>';
-                }
-                ?>
-                <div class="mt-4">
-                    <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-linkedin-in fa-lg"></i></a>
-                    <a href="#" class="me-3 text-white"><i class="fab fa-youtube fa-lg"></i></a>
-                </div>
-            </div>
-
-            <!-- Tautan Cepat -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Tautan Cepat</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil quick links dari database
-                    $sql_quick_links = "SELECT url, text FROM quick_links ORDER BY urutan ASC LIMIT 6";
-                    $result_quick_links = $conn->query($sql_quick_links);
-                    
-                    if ($result_quick_links && $result_quick_links->num_rows > 0) {
-                        while($link = $result_quick_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="' . $link['url'] . '" class="text-white text-decoration-none">' . $link['text'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_links = [
-                            ["url" => "index.php", "text" => "Beranda"],
-                            ["url" => "courses.php", "text" => "Kursus"],
-                            ["url" => "bootcamp.php", "text" => "Bootcamp"],
-                            ["url" => "about.php", "text" => "Tentang Kami"],
-                            ["url" => "contact.php", "text" => "Kontak"],
-                            ["url" => "faq.php", "text" => "FAQ"]
-                        ];
-                        
-                        foreach ($default_links as $link) {
-                            echo '<li class="mb-2"><a href="' . $link['url'] . '" class="text-white text-decoration-none">' . $link['text'] . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-            <!-- Kategori -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Kategori</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil kategori untuk footer
-                    $sql_category_links = "SELECT nama_kategori 
-                       FROM kategori_kursus 
-                       ORDER BY jumlah_kursus DESC 
-                       LIMIT 6";
-                    $result_category_links = $conn->query($sql_category_links);
-                    
-                    if ($result_category_links && $result_category_links->num_rows > 0) {
-                        while($category = $result_category_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="category.php?cat=' . urlencode($category['nama_kategori']) . '" class="text-white text-decoration-none">' . $category['nama_kategori'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_categories = [
-                            "Pengembangan Web",
-                            "Pengembangan Mobile",
-                            "Data Science",
-                            "UI/UX Design",
-                            "Digital Marketing",
-                            "Business & Leadership"
-                        ];
-                        
-                        foreach ($default_categories as $category) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $category . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-
-            <!-- Dukungan -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Dukungan</h5>
-                <ul class="list-unstyled">
-                    <?php
-                    // Query untuk mengambil support links
-                    $sql_support_links = "SELECT judul FROM support_links ORDER BY id ASC LIMIT 6";
-                    $result_support_links = $conn->query($sql_support_links);
-                    
-                    if ($result_support_links->num_rows > 0) {
-                        while($support = $result_support_links->fetch_assoc()) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $support['judul'] . '</a></li>';
-                        }
-                    } else {
-                        // Data default jika tidak ada data di database
-                        $default_support = [
-                            "Pusat Bantuan",
-                            "Kebijakan Privasi",
-                            "Syarat & Ketentuan",
-                            "Kebijakan Refund",
-                            "Laporan Bug",
-                            "Affiliate Program"
-                        ];
-                        
-                        foreach ($default_support as $support) {
-                            echo '<li class="mb-2"><a href="#" class="text-white text-decoration-none">' . $support . '</a></li>';
-                        }
-                    }
-                    ?>
-                </ul>
-            </div>
-
-            <!-- Download Aplikasi -->
-            <div class="col-lg-2 col-md-3 col-6 mb-4">
-                <h5 class="mb-4">Aplikasi Mobile</h5>
-                <p>Belajar dari mana saja dengan aplikasi mobile kami</p>
-                <?php
-                // Query untuk mengambil app links
-                $sql_app_links = "SELECT playstore
-                , appstore FROM app_links LIMIT 1";
-                $result_app_links = $conn->query($sql_app_links);
-                
-                if ($result_app_links->num_rows > 0) {
-                    $app_links = $result_app_links->fetch_assoc();
-                    echo '<div class="mb-3">
-                        <a href="' . $app_links['playstore'] . '" class="d-block mb-2">
-                            <img src="../assets/images/c63de450df4c84bc4f7d1b0a762d8d56.jpg" alt="Google Play Store" height="50">
-                        </a>
-                        <a href="' . $app_links['appstore'] . '" class="d-block">
-                            <img src="../assets/images/7b51ea487052d8996a3c232fa23500c6.jpg" alt="Apple App Store" width="100" height="60">
-                        </a>
-                    </div>';
-                } else {
-                    echo '<div class="mb-3">
-                        <a href="#" class="d-block mb-2">
-                            <img src="../assets/images/c63de450df4c84bc4f7d1b0a762d8d56.jpg" alt="Google Play Store" height="50">
-                        </a>
-                        <a href="#" class="d-block">
-                            <img src="../assets/images/7b51ea487052d8996a3c232fa23500c6.jpg" alt="Apple App Store" width="100" height="60">
-                        </a>
-                    </div>';
-                }
-                ?>
-            </div>
-        </div>
-        
-        <hr class="my-4 bg-secondary">
-        
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="mb-0">&copy; <?php echo date('Y'); ?> <?php echo $site_name; ?>. All rights reserved.</p>
-            </div>
-            <div class="col-md-6 text-center text-md-end">
-                <p class="mb-0">Designed & Developed by KelasKita Dev Team</p>
-            </div>
-        </div>
-    </div>
-</footer>
+<?php include_once("../Views/footerbootsrap.php"); ?>
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
