@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2025 at 08:13 AM
+-- Generation Time: May 21, 2025 at 05:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -69,7 +69,8 @@ CREATE TABLE `tb_kelas` (
   `harga` decimal(10,2) NOT NULL,
   `profil_kelas` varchar(100) DEFAULT NULL,
   `badge` varchar(100) DEFAULT NULL,
-  `description` text DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `id_mentor` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -123,6 +124,18 @@ CREATE TABLE `tb_materi` (
   `deskripsi_m` int(255) NOT NULL,
   `id_kelas` int(30) NOT NULL,
   `id_sub_materi` int(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_mentor`
+--
+
+CREATE TABLE `tb_mentor` (
+  `id_mentor` int(30) NOT NULL,
+  `status` enum('Aktif','Non-Aktif') NOT NULL,
+  `id_user` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -206,6 +219,13 @@ CREATE TABLE `tb_user` (
   `github` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tb_user`
+--
+
+INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `password`, `role`, `deskripsi`, `fotoProfil`, `bahasa`, `zona_waktu`, `balasan_ke_komentar`, `komentar_baru`, `notifikasi_postingan_baru`, `email`, `instagram`, `twitter`, `linkdin`, `github`) VALUES
+(1, '', '', 'Shafnat', '$2y$10$YV/COEYYLs0JgWTNZu3Qy.FYz3nI/MFVGD.j8nOB27Pv16JArsXxW', '', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '');
+
 -- --------------------------------------------------------
 
 --
@@ -246,7 +266,8 @@ ALTER TABLE `tb_kategori_kelas`
 -- Indexes for table `tb_kelas`
 --
 ALTER TABLE `tb_kelas`
-  ADD PRIMARY KEY (`id_kelas`);
+  ADD PRIMARY KEY (`id_kelas`),
+  ADD KEY `fkid_mentor_kelas` (`id_mentor`);
 
 --
 -- Indexes for table `tb_keranjang`
@@ -279,6 +300,12 @@ ALTER TABLE `tb_materi`
   ADD PRIMARY KEY (`id_materi`),
   ADD KEY `fkid_kelas_materi` (`id_kelas`),
   ADD KEY `fkid_sub_materi_materi` (`id_sub_materi`);
+
+--
+-- Indexes for table `tb_mentor`
+--
+ALTER TABLE `tb_mentor`
+  ADD PRIMARY KEY (`id_mentor`);
 
 --
 -- Indexes for table `tb_progress_kelas`
@@ -377,6 +404,12 @@ ALTER TABLE `tb_materi`
   MODIFY `id_materi` int(30) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `tb_mentor`
+--
+ALTER TABLE `tb_mentor`
+  MODIFY `id_mentor` int(30) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `tb_progress_kelas`
 --
 ALTER TABLE `tb_progress_kelas`
@@ -404,7 +437,7 @@ ALTER TABLE `tb_transaksi`
 -- AUTO_INCREMENT for table `tb_user`
 --
 ALTER TABLE `tb_user`
-  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tb_video`
@@ -422,6 +455,12 @@ ALTER TABLE `tb_video`
 ALTER TABLE `tb_kategori_kelas`
   ADD CONSTRAINT `fkid_kategori_kk` FOREIGN KEY (`id_kategori`) REFERENCES `tb_kategori` (`id_kategori`),
   ADD CONSTRAINT `fkid_kelas_kk` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`);
+
+--
+-- Constraints for table `tb_kelas`
+--
+ALTER TABLE `tb_kelas`
+  ADD CONSTRAINT `fkid_mentor_kelas` FOREIGN KEY (`id_mentor`) REFERENCES `tb_mentor` (`id_mentor`);
 
 --
 -- Constraints for table `tb_keranjang`
