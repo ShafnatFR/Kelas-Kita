@@ -14,14 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kategori = $_POST['kategori'];
     $harga = $_POST['harga'];
     $description = $_POST['description'];
+    $id_mentor = $_POST['id_mentor'];
     
     // Pastikan data valid
     if (empty($nama_kelas) || empty($kategori) || empty($harga)) {
         $error_message = "Semua kolom wajib diisi!";
     } else {
-        // Insert data kelas ke database
-        $stmt = $conn->prepare("INSERT INTO tb_kelas (nama_kelas, kategori, harga, description, id_user) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssdi", $nama_kelas, $kategori, $harga, $description, $_SESSION['user_id']); // Menggunakan user_id dari session
+        // Insert data kelas ke tb_kelas
+        $stmt = $conn->prepare("INSERT INTO tb_kelas (nama_kelas, kategori, harga, description, id_mentor) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $nama_kelas, $kategori, $harga, $description, $id_mentor);
+
         if ($stmt->execute()) {
             $success_message = "Kelas berhasil ditambahkan!";
         } else {
@@ -76,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="description" class="form-label">Deskripsi</label>
                 <textarea class="form-control" id="description" name="description"></textarea>
             </div>
+            
             <button type="submit" class="btn btn-primary">Tambah Kelas</button>
         </form>
     </div>

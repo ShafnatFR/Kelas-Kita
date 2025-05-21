@@ -1,8 +1,20 @@
 <?php
 session_start();
-include "db.php";
+include "db.php";  // Pastikan sudah menghubungkan ke database
 
 $message = "";
+
+// Cek jika sudah login
+if (isset($_SESSION['username']) && isset($_SESSION['role'])) {
+    // Jika sudah login, redirect berdasarkan role
+    if ($_SESSION['role'] === 'murid') {
+        header("Location: index.php"); // Jika murid, redirect ke index
+        exit();
+    } elseif ($_SESSION['role'] === 'mentor') {
+        header("Location: mentor-dashboard.php"); // Jika mentor, redirect ke dashboard mentor
+        exit();
+    }
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
@@ -22,33 +34,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Verifikasi password
         if (password_verify($password, $row['password'])) {
             // Simpan ke session
-            $_SESSION['id'] = $row['id'];
+            $_SESSION['id'] = $row['id_user'];  // Menyimpan ID user
             $_SESSION['username'] = $row['username'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['role'] = $row['role']; // Menyimpan role di session
             $_SESSION['email'] = $row['email'];
             $_SESSION['fotoProfil'] = $row['fotoProfil'];
-            $_SESSION['bahasa'] = $row['bahasa'];
-            $_SESSION['zona_waktu'] = $row['zona_waktu'];
-            $_SESSION['deskripsi'] = $row['deskripsi'];
-            $_SESSION['balasan_ke_komentar'] = $row['balasan_ke_komentar'];
-            $_SESSION['komentar_baru'] = $row['komentar_baru'];
-            $_SESSION['notifikasi_postingan_baru'] = $row['notifikasi_postingan_baru'];
-            $_SESSION['instagram'] = $row['instagram'];
-            $_SESSION['twitter'] = $row['twitter'];
-            $_SESSION['linkdin'] = $row['linkdin'];
-            $_SESSION['github'] = $row['github'];
+
+            // Debugging: Pastikan session diset dengan benar
+            // var_dump($_SESSION); die();
 
             // Redirect ke halaman sesuai role
             if ($row['role'] == 'mentor') {
                 // Jika role mentor, redirect ke dashboard mentor
                 header("Location: mentor-dashboard.php");
+                exit();
             } else {
-                // Jika role peserta, redirect ke halaman utama
+                // Jika role murid, redirect ke halaman utama
                 header("Location: index.php");
+                exit();
             }
-            exit();
         } else {
             $message = "Password salah!";
         }
