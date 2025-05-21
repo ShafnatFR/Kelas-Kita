@@ -53,8 +53,22 @@ if ($reviews_result === false) {
     echo "Error: " . $stmt_reviews->error; // Menampilkan error jika query gagal
     exit();
 }
-?>
 
+$stmt_messages = $conn->prepare("
+    SELECT n.id_notifikasi , n.pesan_notif, u.username 
+    FROM tb_notifikasi n
+    JOIN tb_user u ON n.id_user = u.id_user
+    WHERE n.id_user =? 
+");
+$stmt_messages->bind_param("i", $_SESSION['user_id']); // Menggunakan user_id yang disimpan dalam session
+$stmt_messages->execute();
+$messages_result = $stmt_messages->get_result(); // Ambil hasil dari query
+
+if ($messages_result === false) {
+    echo "Error: " . $stmt_messages->error; // Menampilkan error jika query gagal
+    exit();
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -215,7 +229,7 @@ if ($reviews_result === false) {
             <!-- Menampilkan pesan -->
             <ul>
                 <?php while ($row = $messages_result->fetch_assoc()): ?>
-                    <li><?= htmlspecialchars($row['message']) ?></li>
+                    <li><?= htmlspecialchars($row['pesan_notif']) ?></li>
                 <?php endwhile; ?>
             </ul>
         </div>
@@ -223,37 +237,7 @@ if ($reviews_result === false) {
 
     <!-- Modal untuk menambah kelas -->
      <!-- Modal untuk menambah kelas -->
-<div class="modal fade" id="createClassModal" tabindex="-1" aria-labelledby="createClassModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createClassModalLabel">Tambah Kelas Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="create-class.php" method="POST">
-                    <div class="mb-3">
-                        <label for="class-name" class="form-label">Nama Kelas</label>
-                        <input type="text" class="form-control" id="class-name" name="class-name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="class-category" class="form-label">Kategori</label>
-                        <input type="text" class="form-control" id="class-category" name="class-category" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="class-price" class="form-label">Harga</label>
-                        <input type="number" class="form-control" id="class-price" name="class-price" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="class-description" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="class-description" name="class-description" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Tambah Kelas</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 
     <!-- (Sudah Anda buat sebelumnya) -->
     
