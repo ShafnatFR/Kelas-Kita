@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 18, 2025 at 06:47 PM
+-- Generation Time: May 21, 2025 at 08:13 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -174,7 +174,6 @@ CREATE TABLE `tb_sub_materi` (
 
 CREATE TABLE `tb_transaksi` (
   `id_transaksi` int(30) NOT NULL,
-  `id_user` int(30) NOT NULL,
   `id_keranjang` int(30) NOT NULL,
   `bukti_transaksi` varchar(50) NOT NULL,
   `tgl_transaksi` date NOT NULL
@@ -311,7 +310,6 @@ ALTER TABLE `tb_sub_materi`
 --
 ALTER TABLE `tb_transaksi`
   ADD PRIMARY KEY (`id_transaksi`),
-  ADD KEY `fkid_user_transaksi` (`id_user`),
   ADD KEY `fkid_keranjang_transaksi` (`id_keranjang`);
 
 --
@@ -479,8 +477,7 @@ ALTER TABLE `tb_sub_materi`
 -- Constraints for table `tb_transaksi`
 --
 ALTER TABLE `tb_transaksi`
-  ADD CONSTRAINT `fkid_keranjang_transaksi` FOREIGN KEY (`id_keranjang`) REFERENCES `tb_keranjang` (`id_keranjang`),
-  ADD CONSTRAINT `fkid_user_transaksi` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`);
+  ADD CONSTRAINT `fkid_keranjang_transaksi` FOREIGN KEY (`id_keranjang`) REFERENCES `tb_keranjang` (`id_keranjang`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
