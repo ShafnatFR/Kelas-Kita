@@ -2,11 +2,8 @@
 session_start();
 include "db.php";  // Pastikan sudah menghubungkan ke database
 
-$message = "";
-
-// Cek jika sudah login
+// Cek jika sudah login, jika sudah maka redirect ke halaman yang sesuai
 if (isset($_SESSION['username']) && isset($_SESSION['role'])) {
-    // Jika sudah login, redirect berdasarkan role
     if ($_SESSION['role'] === 'murid') {
         header("Location: index.php"); // Jika murid, redirect ke index
         exit();
@@ -16,50 +13,65 @@ if (isset($_SESSION['username']) && isset($_SESSION['role'])) {
     }
 }
 
+$message = "";
+
+// Proses login
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']); // Tambahkan trim untuk menghilangkan spasi
     $password = $_POST['password'];
 
-    // Ambil data user dari database berdasarkan username
-    $sql = "SELECT * FROM tb_user WHERE username = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    // Cek apakah user ditemukan
-    if ($result->num_rows === 1) {
-        $row = $result->fetch_assoc();
-
-        // Verifikasi password
-        if (password_verify($password, $row['password'])) {
-            // Simpan ke session
-            $_SESSION['id'] = $row['id_user'];  // Menyimpan ID user
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['first_name'] = $row['first_name'];
-            $_SESSION['last_name'] = $row['last_name'];
-            $_SESSION['role'] = $row['role']; // Menyimpan role di session
-            $_SESSION['email'] = $row['email'];
-            $_SESSION['fotoProfil'] = $row['fotoProfil'];
-
-            // Debugging: Pastikan session diset dengan benar
-            // var_dump($_SESSION); die();
-
-            // Redirect ke halaman sesuai role
-            if ($row['role'] == 'mentor') {
-                // Jika role mentor, redirect ke dashboard mentor
-                header("Location: mentor-dashboard.php");
-                exit();
-            } else {
-                // Jika role murid, redirect ke halaman utama
-                header("Location: index.php");
-                exit();
-            }
-        } else {
-            $message = "Password salah!";
-        }
+    // Validasi input tidak kosong
+    if (empty($username) || empty($password)) {
+        $message = "Username dan password tidak boleh kosong!";
     } else {
-        $message = "Username tidak ditemukan!";
+        // Ambil data user dari database berdasarkan username
+        $sql = "SELECT * FROM tb_user WHERE username = ?";
+        $stmt = $conn->prepare($sql);
+        
+        if ($stmt) {
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            // Cek apakah user ditemukan
+            if ($result->num_rows === 1) {
+                $row = $result->fetch_assoc();
+
+                // Verifikasi password
+                if (password_verify($password, $row['password'])) {
+                    // Regenerate session ID untuk keamanan
+                    session_regenerate_id(true);
+                    
+                    // Simpan ke session
+                    $_SESSION['id'] = $row['id_user'];  // Menyimpan ID user
+                    $_SESSION['username'] = $row['username'];
+                    $_SESSION['role'] = $row['role']; // Menyimpan role di session
+
+                    // Debug: Uncomment baris di bawah untuk debugging
+                    // echo "Login berhasil! Role: " . $row['role']; exit();
+
+                    // Redirect ke halaman sesuai role
+                    if ($row['role'] == 'mentor') {
+                        // Jika role mentor, redirect ke dashboard mentor
+                        header("Location: mentor-dashboard.php");
+                        exit();
+                    } elseif ($row['role'] == 'murid') {
+                        // Jika role murid, redirect ke halaman utama
+                        header("Location: index.php");
+                        exit();
+                    } else {
+                        $message = "Role tidak dikenali: " . $row['role'];
+                    }
+                } else {
+                    $message = "Password salah!";
+                }
+            } else {
+                $message = "Username tidak ditemukan!";
+            }
+            $stmt->close();
+        } else {
+            $message = "Terjadi kesalahan pada sistem!";
+        }
     }
 }
 ?>
@@ -88,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2 class="font-weight-bold text-primary">Masuk ke KelasKita</h2>
 
                 <?php if (!empty($message)) : ?>
-                    <div class="alert alert-warning w-75"><?php echo $message; ?></div>
+                    <div class="alert alert-warning w-75"><?php echo htmlspecialchars($message); ?></div>
                 <?php endif; ?>
 
                 <form class="w-75 mt-3" method="post">

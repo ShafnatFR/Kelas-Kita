@@ -1,10 +1,7 @@
 <?php
-session_start(); // Mulai session
-
-// Hapus semua data session
-session_unset();
-session_destroy();
-
-// Redirect ke halaman login atau home
-header("Location: HalamanSignIn.php");
-exit;
+session_start();
+session_unset(); // Menghapus semua session
+session_destroy(); // Menghancurkan session
+header("Location: HalamanSignIn.php"); // Arahkan ke halaman login setelah logout
+exit();
+?>
