@@ -1,39 +1,44 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan Anda sudah menghubungkan ke database
+include "db.php"; // Pastikan koneksi ke database sudah benar
 
-// Pastikan pengguna sudah login
-if (!isset($_SESSION['username'])) {
-    header("Location: HalamanSignIn.php");
+// Pastikan pengguna sudah login dan memiliki role sebagai murid
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'murid') {
+    header("Location: HalamanSignIn.php"); // Jika bukan murid, alihkan ke halaman login
     exit();
 }
 
-$username = $_SESSION['username']; // Mengambil username dari session
+// Update role menjadi mentor jika pengguna mengonfirmasi
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['confirm'])) {
+    $user_id = $_SESSION['id'];
+    $stmt = $conn->prepare("UPDATE tb_user SET role = 'mentor' WHERE id_user = ?");
+    $stmt->bind_param("i", $user_id);
 
-// Mengambil ID pengguna dan role dari session
-$stmt = $conn->prepare("SELECT id_user, role FROM tb_user WHERE username = ?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-
-// Pastikan role pengguna adalah 'murid' sebelum diubah
-if ($user['role'] === 'murid') {
-    $user_id = $user['id_user'];
-    
-    // Update role menjadi mentor
-    $stmt_update = $conn->prepare("UPDATE tb_user SET role = 'mentor' WHERE id_user = ?");
-    $stmt_update->bind_param("i", $user_id);
-    if ($stmt_update->execute()) {
-        $_SESSION['role'] = 'mentor'; // Menyimpan role baru di session
-        header("Location: mentor-dashboard.php"); // Arahkan ke dashboard mentor setelah role diperbarui
+    if ($stmt->execute()) {
+        // Set role baru di session
+        $_SESSION['role'] = 'mentor';
+        header("Location: mentor-dashboard.php"); // Redirect ke halaman dashboard mentor
         exit();
     } else {
-        echo "Error: " . $stmt_update->error;
+        // Jika ada kesalahan
+        $error_message = "Gagal mengubah role menjadi mentor.";
     }
-} else {
-    // Jika role tidak 'murid', arahkan ke halaman lain (misalnya halaman utama)
-    header("Location: index.php");
-    exit();
 }
 ?>
+
+<!-- Halaman untuk konfirmasi perubahan role -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfirmasi Menjadi Mentor</title>
+</head>
+<body>
+    <h3>Apakah Anda yakin ingin menjadi Mentor?</h3>
+    <form action="become-mentor.php?confirm=true" method="GET">
+        <button type="submit">Ya, Saya Yakin</button>
+    </form>
+    <a href="index.php">Batal</a>
+</body>
+</html>

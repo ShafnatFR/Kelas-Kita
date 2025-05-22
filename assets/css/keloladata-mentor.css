@@ -1,0 +1,15 @@
+        .content-wrapper {
+            margin-left: 250px; /* Berikan jarak agar konten tidak tertutupi oleh sidebar */
+            padding: 20px;
+        }
+        /* Membungkus tabel dengan elemen yang bisa digulir secara horizontal */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Memastikan scroll lancar pada perangkat sentuh */
+        }
+
+        /* Opsi tambahan untuk memastikan lebar tabel terbatas */
+        .table {
+            width: 100%;
+            table-layout: fixed; /* Mengatur lebar tabel agar tidak meluap */
+        }
