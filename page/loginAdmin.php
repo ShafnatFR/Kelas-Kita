@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($user['role'] == 'admin') {
             header("Location: admin-dashboard.php");
         } else {
-            header("Location: index.php");
+            header("Location: loginAdmin.php");
         }
         exit();
     } else {
@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $message = "Username atau Password salah!";
     }
 }
+?>
 
 <!DOCTYPE html>
 <html lang="en">
