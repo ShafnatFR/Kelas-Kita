@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2025 at 05:24 PM
+-- Generation Time: May 22, 2025 at 06:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -29,8 +29,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `tb_dokumen` (
   `id_dokumen` int(30) NOT NULL,
-  `nama_dokumen` int(50) NOT NULL,
-  `deskripsi_d` int(100) NOT NULL
+  `nama_dokumen` varchar(50) NOT NULL,
+  `deskripsi_d` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -65,7 +65,6 @@ CREATE TABLE `tb_kategori_kelas` (
 CREATE TABLE `tb_kelas` (
   `id_kelas` int(30) NOT NULL,
   `nama_kelas` varchar(255) NOT NULL,
-  `kategori` enum('SQL','Design','Java','Web Development','Bisnis','Ekonomi','Psikologi','IT','Python') NOT NULL,
   `harga` decimal(10,2) NOT NULL,
   `profil_kelas` varchar(100) DEFAULT NULL,
   `badge` varchar(100) DEFAULT NULL,
@@ -121,7 +120,7 @@ CREATE TABLE `tb_laporan` (
 
 CREATE TABLE `tb_materi` (
   `id_materi` int(30) NOT NULL,
-  `deskripsi_m` int(255) NOT NULL,
+  `deskripsi_m` varchar(255) NOT NULL,
   `id_kelas` int(30) NOT NULL,
   `id_sub_materi` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -161,7 +160,7 @@ CREATE TABLE `tb_review` (
   `id_review` int(30) NOT NULL,
   `bintang_review` enum('1','2','3','4','5') NOT NULL,
   `isi_review` varchar(100) NOT NULL,
-  `tgl_review` int(30) NOT NULL,
+  `tgl_review` date NOT NULL,
   `id_user` int(11) NOT NULL,
   `id_kelas` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -174,7 +173,7 @@ CREATE TABLE `tb_review` (
 
 CREATE TABLE `tb_sub_materi` (
   `id_sub_materi` int(30) NOT NULL,
-  `deskripsi_sm` int(255) NOT NULL,
+  `deskripsi_sm` varchar(255) NOT NULL,
   `id_dokumen` int(30) NOT NULL,
   `id_video` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -207,8 +206,6 @@ CREATE TABLE `tb_user` (
   `role` enum('murid','mentor','admin') NOT NULL,
   `deskripsi` text DEFAULT NULL,
   `fotoProfil` varchar(50) NOT NULL,
-  `bahasa` enum('Bahasa Indonesia','Inggris','Jepang') NOT NULL,
-  `zona_waktu` enum('Jakarta','London','Tokyo') NOT NULL,
   `balasan_ke_komentar` tinyint(1) NOT NULL,
   `komentar_baru` tinyint(1) NOT NULL,
   `notifikasi_postingan_baru` tinyint(1) NOT NULL,
@@ -219,13 +216,6 @@ CREATE TABLE `tb_user` (
   `github` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tb_user`
---
-
-INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `password`, `role`, `deskripsi`, `fotoProfil`, `bahasa`, `zona_waktu`, `balasan_ke_komentar`, `komentar_baru`, `notifikasi_postingan_baru`, `email`, `instagram`, `twitter`, `linkdin`, `github`) VALUES
-(1, '', '', 'Shafnat', '$2y$10$YV/COEYYLs0JgWTNZu3Qy.FYz3nI/MFVGD.j8nOB27Pv16JArsXxW', '', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '');
-
 -- --------------------------------------------------------
 
 --
@@ -234,8 +224,8 @@ INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `passwo
 
 CREATE TABLE `tb_video` (
   `id_video` int(30) NOT NULL,
-  `nama_video` int(50) NOT NULL,
-  `deskripsi_v` int(100) NOT NULL
+  `nama_video` varchar(50) NOT NULL,
+  `deskripsi_v` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -437,7 +427,7 @@ ALTER TABLE `tb_transaksi`
 -- AUTO_INCREMENT for table `tb_user`
 --
 ALTER TABLE `tb_user`
-  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tb_video`
