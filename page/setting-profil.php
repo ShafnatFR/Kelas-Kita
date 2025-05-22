@@ -11,7 +11,7 @@ if (!$username) {
 }
 
 // Ambil data user dari database
-$stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil FROM tbuser WHERE username = ?");
+$stmt = $conn->prepare("SELECT first_name, last_name, deskripsi, fotoProfil FROM tb_user WHERE username = ?");
 $stmt->bind_param("s", $username);
 // eksekusi
 $stmt->execute();
