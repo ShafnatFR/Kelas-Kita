@@ -2,11 +2,9 @@
 
 // Mulai session jika diperlukan
 include "db.php";
-
-$site_name = "db_KelasKita";
+$site_name = "db_kelasKita";
 
 // Remove manual connection creation since db.php already creates $conn
-
 // Ambil ID kursus dari parameter URL
 $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
