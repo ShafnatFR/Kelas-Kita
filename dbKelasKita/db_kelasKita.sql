@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 22, 2025 at 06:35 AM
+-- Generation Time: May 22, 2025 at 07:07 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -203,7 +203,7 @@ CREATE TABLE `tb_user` (
   `last_name` varchar(255) NOT NULL,
   `username` varchar(30) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('murid','mentor','admin') NOT NULL,
+  `role` enum('murid','mentor','admin') NOT NULL DEFAULT 'murid',
   `deskripsi` text DEFAULT NULL,
   `fotoProfil` varchar(50) NOT NULL,
   `balasan_ke_komentar` tinyint(1) NOT NULL,
@@ -215,6 +215,15 @@ CREATE TABLE `tb_user` (
   `linkdin` varchar(30) NOT NULL,
   `github` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_user`
+--
+
+INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `password`, `role`, `deskripsi`, `fotoProfil`, `balasan_ke_komentar`, `komentar_baru`, `notifikasi_postingan_baru`, `email`, `instagram`, `twitter`, `linkdin`, `github`) VALUES
+(5, '', '', 'Murid', '$2y$10$HKBEA1/qQyxcBoNa3xT4quUsUWHv4hBaNrXP6pAZnvtjzAhyu1BiG', '', NULL, '', 0, 0, 0, '', '', '', '', ''),
+(6, '', '', 'Mentor', '$2y$10$CX9KqmS8jtnx2ncX1A4D/.VBRfjbgAzou8VYdTb.ZnGoUQ3Xn9LBC', '', NULL, '', 0, 0, 0, '', '', '', '', ''),
+(7, '', '', 'User', '$2y$10$Neozo9JGhh6JZb2wR42Rv.A5m6eMZrdos7TubtspxEtfw.MPpydzm', '', NULL, '', 0, 0, 0, '', '', '', '', '');
 
 -- --------------------------------------------------------
 
@@ -427,7 +436,7 @@ ALTER TABLE `tb_transaksi`
 -- AUTO_INCREMENT for table `tb_user`
 --
 ALTER TABLE `tb_user`
-  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `tb_video`
