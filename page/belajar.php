@@ -1,47 +1,73 @@
+<?php
+include("db.php");
+
+// Ambil data dari database
+$sql_dokumen = "SELECT * FROM tb_dokumen";
+$result_dokumen = mysqli_query($conn, $sql_dokumen);
+
+$sql_video = "SELECT * FROM tb_video";
+$result_video = mysqli_query($conn, $sql_video);
+?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Belajar</title>
-    <link rel="stylesheet" href="belajar.css"> <!-- Link ke file CSS -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belajar - KelasKita</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 
-<body>
-    <main>
-        <?php
-        // Cek apakah video ada
-        $videos = []; // Ganti dengan array video Anda, misalnya ['video1.mp4', 'video2.mp4']
-        if (empty($videos)) {
-            echo "<p>Tidak ada video.</p>";
-        } else {
-            foreach ($videos as $video) {
-                echo "<div class='video-container'>";
-                echo "<video width='600' controls>";
-                echo "<source src='videos/$video' type='video/mp4'>"; // Ganti dengan path video Anda
-                echo "Browser Anda tidak mendukung tag video.";
-                echo "</video>";
-                echo "</div>";
-            }
-        }
+<body class="bg-gray-100 text-gray-800 font-sans">
 
+    <header class="bg-indigo-700 text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">📚 Belajar di KelasKita</h1>
+            <p class="text-sm mt-1">Tonton video pembelajaran dan download materi PDF dari mentor.</p>
+        </div>
+    </header>
 
-        // Mengatur nama file PDF yang akan di-download
-        $pdf_file = 'file_pelajaran.pdf';
+    <main class="container mx-auto px-4 py-10 space-y-16">
 
-        // Mengecek apakah file PDF ada
-        if (file_exists($pdf_file)) {
-            echo '<p><a href="' . $pdf_file . '" download>Download PDF Pelajaran</a></p>';
-        } else {
-            echo '<p>Maaf, file PDF tidak tersedia.</p>';
-        }
-        ?>
+        <!-- VIDEO PEMBELAJARAN -->
+        <section>
+            <h2 class="text-2xl font-semibold text-indigo-700 mb-6">🎥 Video Pembelajaran</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php while ($vid = mysqli_fetch_assoc($result_video)): ?>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="text-lg font-bold mb-2"><?= htmlspecialchars($vid['deskripsi_v']) ?></h3>
+                        <video controls class="w-full rounded mb-2">
+                            <source src="uploads/video/<?= htmlspecialchars($vid['nama_video']) ?>" type="video/mp4">
+                            Browser Anda tidak mendukung pemutar video.
+                        </video>
+                        <a href="uploads/video/<?= htmlspecialchars($vid['nama_video']) ?>" download
+                            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                            📥 Download Video
+                        </a>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </section>
+
+        <!-- MATERI PDF -->
+        <section>
+            <h2 class="text-2xl font-semibold text-indigo-700 mb-6">📄 Materi Pembelajaran (PDF)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php while ($doc = mysqli_fetch_assoc($result_dokumen)): ?>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="text-lg font-bold mb-2"><?= htmlspecialchars($doc['deskripsi_d']) ?></h3>
+                        <p class="text-sm text-gray-500 mb-3">File: <?= htmlspecialchars($doc['nama_dokumen']) ?></p>
+                        <a href="uploads/pdf/<?= htmlspecialchars($doc['nama_dokumen']) ?>" download
+                            class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                            📥 Download PDF
+                        </a>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </section>
+
     </main>
-
-    <footer>
-        <p>&copy; 2025 Kelas Kita. Hak Cipta Dilindungi.</p>
-    </footer>
+<?php include "../Views/footerbootsrap.php";  ?>
 </body>
-
 </html>
+<?php mysqli_close($conn); ?>
