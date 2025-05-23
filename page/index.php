@@ -469,7 +469,7 @@ $result_testimonials = $conn->query($sql_testimonials);
     </div>
 </section>
 
-<?php include_once("../Views/footerbootsrap.php"); ?>
+<?php include ("../Views/footerbootsrap.php"); ?>
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

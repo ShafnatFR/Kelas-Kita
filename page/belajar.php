@@ -67,12 +67,7 @@ $result_video = mysqli_query($conn, $sql_video);
         </section>
 
     </main>
-
-    <footer class="bg-gray-200 text-center py-4 mt-10">
-        <p class="text-sm text-gray-600">© 2025 KelasKita. Semua hak dilindungi.</p>
-    </footer>
-
+<?php include "../Views/footerbootsrap.php";  ?>
 </body>
-
 </html>
 <?php mysqli_close($conn); ?>
