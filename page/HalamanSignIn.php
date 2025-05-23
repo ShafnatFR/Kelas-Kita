@@ -10,6 +10,9 @@ if (isset($_SESSION['username']) && isset($_SESSION['role'])) {
     } elseif ($_SESSION['role'] === 'mentor') {
         header("Location: mentor-dashboard.php"); // Jika mentor, redirect ke dashboard mentor
         exit();
+    } elseif ($_SESSION['role'] === 'peserta') {
+        header("Location: index.php"); // Jika peserta, redirect ke index (sama seperti murid)
+        exit(); 
     }
 }
 
@@ -55,8 +58,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         // Jika role mentor, redirect ke dashboard mentor
                         header("Location: mentor-dashboard.php");
                         exit();
-                    } elseif ($row['role'] == 'murid') {
-                        // Jika role murid, redirect ke halaman utama
+                    } elseif ($row['role'] == 'murid' || $row['role'] == 'peserta') {
+                        // Jika role murid atau peserta, redirect ke halaman utama
                         header("Location: index.php");
                         exit();
                     } else {

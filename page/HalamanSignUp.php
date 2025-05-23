@@ -17,8 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Set role menjadi 'peserta' secara default
-        $role = 'peserta';
+        // Set role menjadi 'murid' secara default (bukan 'peserta')
+        $role = 'murid';
 
         // Cek apakah username sudah ada di database
         $sql = "SELECT * FROM tb_user WHERE username = ?";
@@ -30,17 +30,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $messege = "Username sudah terdaftar. Silahkan login.";
         } else {
-            // Simpan data pengguna baru ke dalam database dengan role 'peserta'
+            // Simpan data pengguna baru ke dalam database dengan role 'murid'
             $sql = "INSERT INTO tb_user (username, password, role) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sss", $username, $hashedPassword, $role);
 
             if ($stmt->execute()) {
-                // Set session untuk username dan role
-                $_SESSION['username'] = $username;
-                $_SESSION['role'] = $role;
-
-                // Redirect ke halaman login setelah berhasil registrasi
+                // JANGAN set session setelah registrasi
+                // Hanya set pesan sukses untuk ditampilkan di halaman login
                 $_SESSION['success_message'] = "Berhasil register. Silahkan login.";
                 header("Location: HalamanSignIn.php");
                 exit();
@@ -51,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="form-group">
                          <label for="password">Password</label>
-                         <input type="password" class="form-control" name="password" placeholder="Masukan Password" required>
+                         <input type="password" class="form-control" name="password" placeholder="Minimal memiliki 8 karakter dan karakter khusus" required>
                     </div>
                     <!-- Tombol akan memunculkan modal -->
                     <button type="button" class="btn btn-primary btn-block rounded-pill mt-4" data-toggle="modal" data-target="#termsModal">Sign Up</button>
