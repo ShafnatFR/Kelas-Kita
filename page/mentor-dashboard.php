@@ -28,8 +28,8 @@ $mentor_query->close();
 // Query untuk mengambil statistik kelas dan materi
 $stmt_stats = $conn->prepare("
     SELECT 
-        COUNT(DISTINCT k.id_kelas) AS total_kelas,
-        COALESCE(SUM(k.harga), 0) AS total_nilai_kelas
+    COUNT(DISTINCT k.id_kelas) AS total_kelas,
+    COALESCE(SUM(k.harga), 0) AS total_nilai_kelas
     FROM tb_kelas k
     WHERE k.id_mentor = ?
 ");
