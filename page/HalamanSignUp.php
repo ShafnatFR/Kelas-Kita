@@ -17,8 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Set role menjadi 'peserta' secara default
-        $role = 'peserta';
+        // Set role menjadi 'murid' secara default
+        $role = 'murid';
 
         // Cek apakah username sudah ada di database
         $sql = "SELECT * FROM tb_user WHERE username = ?";
