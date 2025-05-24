@@ -4,19 +4,18 @@ session_start();
 $host = "localhost";
 $username = "root";
 $password = "";
-$database = "db_KelasKita";
+$database = "KelasKita";
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $database);
 
-$site_name = "db_KelasKita"; // Define site name for footer usage
+$site_name = "KelasKita"; // Define site name for footer usage
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Ambil ID kursus dari parameter URL
 $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 // Validasi ID kursus
@@ -25,7 +24,41 @@ if (!is_numeric($course_id)) {
     exit;
 }
 
-// Add to cart logic
+// Fungsi untuk memformat harga
+function formatRupiah($angka) {
+    // Memastikan angka adalah numerik
+    if (is_string($angka) && strpos($angka, 'Rp') !== false) {
+        // Jika string sudah mengandung 'Rp', hilangkan dan bersihkan formatnya
+        $angka = str_replace('Rp', '', $angka);
+        $angka = str_replace('.', '', $angka);
+        $angka = str_replace(',', '', $angka);
+        $angka = trim($angka);
+    }
+    
+    // Memastikan angka adalah numerik
+    $angka = floatval($angka);
+    
+    return 'Rp ' . number_format($angka, 0, ',', '.');
+}
+
+// Query untuk mengambil data kursus - perbaikan nama kolom
+$sql = "SELECT tk.*, tb.* 
+        FROM tb_kursus tk
+        LEFT JOIN tb_kelas tb ON tk.id_kelas = tb.id_kelas 
+        WHERE tk.id_kursus = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $course_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $course = $result->fetch_assoc();
+} else {
+    echo "Kursus tidak ditemukan";
+    exit;
+}
+
+// Add to cart logic - dipindah setelah $course sudah didefinisikan
 if (isset($_GET['add_to_cart']) && $_GET['add_to_cart'] == '1') {
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
@@ -40,13 +73,13 @@ if (isset($_GET['add_to_cart']) && $_GET['add_to_cart'] == '1') {
         }
     }
     if (!$found) {
-        // Add new item
+        // Add new item - perbaikan nama kolom
         $new_item = [
-            'id' => $course['id'],
-            'name' => $course['judul'],
-            'price' => floatval(str_replace(['Rp', '.', ','], '', formatRupiah($course['harga']))),
+            'id' => $course['id_kursus'],
+            'name' => $course['judul_kursus'],
+            'price' => floatval(str_replace(['Rp', '.', ','], '', formatRupiah($course['harga_kursus']))),
             'quantity' => 1,
-            'image' => $course['gambar'] ?? '',
+            'image' => $course['gambar_kursus'] ?? '',
             'category' => $course['kategori'] ?? ''
         ];
         $_SESSION['cart'][] = $new_item;
@@ -55,24 +88,9 @@ if (isset($_GET['add_to_cart']) && $_GET['add_to_cart'] == '1') {
     exit;
 }
 
-// Query untuk mengambil detail kursus
-$sql = "SELECT * FROM kursus WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $course_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $course = $result->fetch_assoc();
-} else {
-    echo "Kursus tidak ditemukan";
-    exit;
-}
-
-// Query untuk mengambil materi kursus
-$sql_materi = "SELECT * FROM materi_kursus WHERE kursus_id = ? ORDER BY urutan ASC";
+$sql_materi = "SELECT * FROM materi_kursus WHERE kelas_id = ? ORDER BY urutan ASC";
 $stmt_materi = $conn->prepare($sql_materi);
-$stmt_materi->bind_param("i", $course_id);
+$stmt_materi->bind_param("i", $course['id_kelas']);
 $stmt_materi->execute();
 $result_materi = $stmt_materi->get_result();
 
@@ -99,30 +117,9 @@ if (isset($course['instruktur_id'])) {
     $stmt_instruktur->close();
 }
 
-// Fungsi untuk memformat harga
-function formatRupiah($angka) {
-    // Memastikan angka adalah numerik
-    if (is_string($angka) && strpos($angka, 'Rp') !== false) {
-        // Jika string sudah mengandung 'Rp', hilangkan dan bersihkan formatnya
-        $angka = str_replace('Rp', '', $angka);
-        $angka = str_replace('.', '', $angka);
-        $angka = str_replace(',', '', $angka);
-        $angka = trim($angka);
-    }
-    
-    // Memastikan angka adalah numerik
-    $angka = floatval($angka);
-    
-    return 'Rp ' . number_format($angka, 0, ',', '.');
-}
-
 $stmt->close();
 $stmt_materi->close();
 $stmt_ulasan->close();
-if (isset($stmt_instruktur)) {
-    $stmt_instruktur->close();
-}
-// Remove $conn->close() here to avoid closing connection before footer queries
 ?>
 
 <!DOCTYPE html>
@@ -130,7 +127,7 @@ if (isset($stmt_instruktur)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($course['judul'] ?? 'Detail Kursus'); ?> - Detail Kursus | KelasKita</title>
+    <title><?php echo htmlspecialchars($course['judul_kursus'] ?? 'Detail Kursus'); ?> - Detail Kursus | KelasKita</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -272,7 +269,7 @@ if (isset($stmt_instruktur)) {
                             ?>
                         </span>
                     </div>
-                    <h1 class="mb-3"><?php echo htmlspecialchars($course['judul'] ?? 'Judul Kursus'); ?></h1>
+                    <h1 class="mb-3"><?php echo htmlspecialchars($course['judul_kursus'] ?? 'Judul Kursus'); ?></h1>
                     <p class="mb-2"><?php echo htmlspecialchars($course['deskripsi_singkat'] ?? 'Deskripsi singkat kursus tidak tersedia.'); ?></p>
                     <div class="d-flex align-items-center mt-3">
                         <div class="rating-stars me-2">
@@ -309,8 +306,8 @@ if (isset($stmt_instruktur)) {
                     </div>
                 </div>
                 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
-                    <div class="course-price mb-3"><?php echo formatRupiah($course['harga'] ?? 0); ?></div>
-                    <a href="Coursedetail.php?id=<?php echo $course['id']; ?>&add_to_cart=1" class="course-button">Daftar Sekarang</a>
+                    <div class="course-price mb-3"><?php echo formatRupiah($course['harga_kursus'] ?? 0); ?></div>
+                    <a href="Coursedetail.php?id=<?php echo $course['id_kursus']; ?>&add_to_cart=1" class="course-button">Daftar Sekarang</a>
                 </div>
             </div>
         </div>
@@ -447,8 +444,8 @@ if (isset($stmt_instruktur)) {
             <div class="col-lg-4">
                 <!-- Course Image -->
                 <div class="course-content mb-4">
-                    <img src="<?php echo $course['gambar'] ?? 'img/courses/default.jpg'; ?>" alt="<?php echo htmlspecialchars($course['judul'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
-                    <a href="Coursedetail.php?id=<?php echo $course['id']; ?>&add_to_cart=1" class="btn btn-primary btn-lg w-100">Daftar Sekarang</a>
+                    <img src="<?php echo $course['gambar_kursus'] ?? 'img/courses/default.jpg'; ?>" alt="<?php echo htmlspecialchars($course['judul_kursus'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
+                    <a href="Coursedetail.php?id=<?php echo $course['id_kursus']; ?>&add_to_cart=1" class="btn btn-primary btn-lg w-100">Daftar Sekarang</a>
                 </div>
                 
                 <!-- Course Features -->

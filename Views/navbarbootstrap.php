@@ -2,8 +2,8 @@
 // Pastikan ada session yang sudah login
 
 session_start();
-// Cek apakah user sudah login dan rolenya murid
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'murid') {
+// Cek apakah user sudah login
+if (!isset($_SESSION['username'])) {
     header("Location: HalamanSignIn.php");
     exit();
 }

@@ -4,12 +4,12 @@ session_start();
 // Include cart database integration functions
 include "cart_db_integration.php";
 
-$site_name = "db_KelasKita"; // Define site name for footer usage
+$site_name = "KelasKita"; // Define site name for footer usage
 
 $db_host = "localhost";
 $db_user = "root";
 $db_pass = ""; 
-$db_name = "db_kelaskita";
+$db_name = "KelasKita";
 
 
 // Membuat koneksi

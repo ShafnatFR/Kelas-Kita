@@ -17,7 +17,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+<<<<<<< Updated upstream
         // Set role menjadi 'murid' secara default (bukan 'peserta')
+=======
+        // Set role menjadi 'murid' secara default
+>>>>>>> Stashed changes
         $role = 'murid';
 
         // Cek apakah username sudah ada di database
