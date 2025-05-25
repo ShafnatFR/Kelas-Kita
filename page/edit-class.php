@@ -11,9 +11,9 @@ $id_kelas = $_GET['id_kelas'] ?? 0;
 $message = "";
 
 // Ambil data kelas untuk diedit
-// Ambil data kelas untuk diedit
 $stmt = $conn->prepare("
-    SELECT k.*, k.status_publikasi FROM tb_kelas k JOIN tb_mentor m ON k.id_mentor = m.id_mentor
+    SELECT k.* FROM tb_kelas k
+    JOIN tb_mentor m ON k.id_mentor = m.id_mentor
     WHERE k.id_kelas = ? AND m.id_user = ?
 ");
 $stmt->bind_param("ii", $id_kelas, $_SESSION['id']);
@@ -39,19 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // --- AWAL PERUBAHAN YANG SUDAH ANDA TERAPKAN ---
         // Ambil status kelas saat ini sebelum update
-        $current_status_query = $conn->prepare("SELECT status_publikasi FROM tb_kelas WHERE id_kelas = ?");
-        $current_status_query->bind_param("i", $id_kelas); // Gunakan $id_kelas yang didapat dari GET
-        $current_status_query->execute();
-        $current_status_result = $current_status_query->get_result();
-        $current_status_row = $current_status_result->fetch_assoc();
-        $current_status = $current_status_row['status_publikasi'];
-        $current_status_query->close();
+       $current_status_query = $conn->prepare("SELECT status_publikasi FROM tb_kelas WHERE id_kelas = ?");
+       $current_status_query->bind_param("i", $id_kelas); // Gunakan $id_kelas yang didapat dari GET
+       $current_status_query->execute();
+       $current_status_result = $current_status_query->get_result();
+       $current_status_row = $current_status_result->fetch_assoc();
+    $current_status = $current_status_row['status_publikasi'];
+$current_status_query->close();
 
-        $new_status = $current_status; // Default: status tidak berubah
-        if ($current_status === 'approved' || $current_status === 'rejected') {
-            // Jika kelas sudah disetujui atau ditolak, setiap edit akan mengembalikan status ke 'pending' untuk review ulang
-            $new_status = 'pending';
-        }
+$new_status = $current_status; // Default: status tidak berubah
+
+// Jika kelas sudah disetujui atau ditolak, setiap edit akan mengembalikan status ke 'pending' untuk review ulang
+if ($current_status === 'approved' || $current_status === 'rejected') {
+    $new_status = 'pending';
+}
+// Jika status sebelumnya adalah 'draft', tetap biarkan statusnya 'draft'
+elseif ($current_status === 'draft') {
+    $new_status = 'draft';
+}
         // --- AKHIR PERUBAHAN YANG SUDAH ANDA TERAPKAN ---
 
         // Query UPDATE sudah disesuaikan untuk menyertakan status_publikasi
@@ -84,30 +89,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card-header">
                         <h4>Edit Kelas</h4>
                     </div>
-                    <div class="card-body">
-                        <?php if (!empty($message)): ?>
-                            <div class="alert alert-warning"><?= htmlspecialchars($message) ?></div>
-                        <?php endif; ?>
-                         <?php if (isset($kelas['status_publikasi'])): ?>
-                            <div class="mb-3">
-                                <strong>Status Saat Ini: </strong>
-                                <?php
-                                $status = $kelas['status_publikasi'];
-                                $text_bg_class = ''; // Untuk Bootstrap 5 text-bg-* classes
-                                switch ($status) {
-                                    case 'draft': $text_bg_class = 'text-bg-secondary'; break;
-                                    case 'pending': $text_bg_class = 'text-bg-warning'; break;
-                                    case 'approved': $text_bg_class = 'text-bg-success'; break;
-                                    case 'rejected': $text_bg_class = 'text-bg-danger'; break;
-                                    default: $text_bg_class = 'text-bg-info'; break;
-                                }
-                                ?>
-                                <span class="badge <?= $text_bg_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
-                                <?php if ($status === 'approved' || $status === 'rejected'): ?>
-                                    <small class="text-muted ms-2">(Perubahan akan mengembalikan status ke 'Pending')</small>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+<div class="card-body">
+    <?php if (!empty($message)): ?>
+        <div class="alert alert-warning"><?= htmlspecialchars($message) ?></div>
+    <?php endif; ?>
+    
+    <?php if (isset($kelas['status_publikasi'])): ?>
+        <div class="mb-3">
+            <strong>Status Saat Ini: </strong>
+            <?php
+            $status = $kelas['status_publikasi'];
+            $text_bg_class = ''; // Untuk Bootstrap 5 text-bg-* classes
+            switch ($status) {
+                case 'draft': $text_bg_class = 'text-bg-secondary'; break;
+                case 'pending': $text_bg_class = 'text-bg-warning'; break;
+                case 'approved': $text_bg_class = 'text-bg-success'; break;
+                case 'rejected': $text_bg_class = 'text-bg-danger'; break;
+                default: $text_bg_class = 'text-bg-info'; break;
+            }
+            ?>
+            <span class="badge <?= $text_bg_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
+            <?php if ($status === 'approved' || $status === 'rejected'): ?>
+                <small class="text-muted ms-2">(Perubahan akan mengembalikan status ke 'Pending')</small>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
                         <form method="POST">
                             <div class="mb-3">
