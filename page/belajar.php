@@ -67,7 +67,7 @@ $result_video = mysqli_query($conn, $sql_video);
         </section>
 
     </main>
-<?php include "../Views/footerbootsrap.php";  ?>
+<?php include "../Views/footer.php";  ?>
 </body>
 </html>
 <?php mysqli_close($conn); ?>
