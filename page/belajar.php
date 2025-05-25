@@ -34,14 +34,18 @@ $result_video = mysqli_query($conn, $sql_video);
             <h2 class="text-2xl font-semibold text-indigo-700 mb-6">🎥 Video Pembelajaran</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php while ($vid = mysqli_fetch_assoc($result_video)): ?>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="text-lg font-bold mb-2"><?= htmlspecialchars($vid['deskripsi_v']) ?></h3>
-                        <video controls class="w-full rounded mb-2">
-                            <source src="uploads/video/<?= htmlspecialchars($vid['nama_video']) ?>" type="video/mp4">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col h-full">
+                        <h3 class="text-base font-semibold mb-3 truncate w-full" title="<?= htmlspecialchars(basename($vid['file_path_video'])) ?>">
+                            <?= htmlspecialchars(mb_strimwidth(basename($vid['file_path_video']), 0, 40, "...")) ?>
+                        </h3>
+
+                        <video class="rounded-md mb-4 w-full h-48 object-cover" controls>
+                            <source src="<?= htmlspecialchars($vid['file_path_video']) ?>" type="video/mp4">
                             Browser Anda tidak mendukung pemutar video.
                         </video>
-                        <a href="uploads/video/<?= htmlspecialchars($vid['nama_video']) ?>" download
-                            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+
+                        <a href="<?= htmlspecialchars($vid['file_path_video']) ?>" download
+                            class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
                             📥 Download Video
                         </a>
                     </div>
@@ -54,11 +58,13 @@ $result_video = mysqli_query($conn, $sql_video);
             <h2 class="text-2xl font-semibold text-indigo-700 mb-6">📄 Materi Pembelajaran (PDF)</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php while ($doc = mysqli_fetch_assoc($result_dokumen)): ?>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <h3 class="text-lg font-bold mb-2"><?= htmlspecialchars($doc['deskripsi_d']) ?></h3>
-                        <p class="text-sm text-gray-500 mb-3">File: <?= htmlspecialchars($doc['nama_dokumen']) ?></p>
-                        <a href="uploads/pdf/<?= htmlspecialchars($doc['nama_dokumen']) ?>" download
-                            class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                    <div class="bg-white rounded-lg shadow p-4 flex flex-col h-full">
+                        <h3 class="text-lg font-bold mb-2 truncate" title="<?= htmlspecialchars(basename($doc['file_path_dokumen'])) ?>">
+                            <?= htmlspecialchars(mb_strimwidth(basename($doc['file_path_dokumen']), 0, 40, "...")) ?>
+                        </h3>
+                        <p class="text-sm text-gray-500 mb-3">File: <?= htmlspecialchars($doc['file_path_dokumen']) ?></p>
+                        <a href="<?= htmlspecialchars($doc['file_path_dokumen']) ?>" download
+                            class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
                             📥 Download PDF
                         </a>
                     </div>
@@ -67,7 +73,9 @@ $result_video = mysqli_query($conn, $sql_video);
         </section>
 
     </main>
-<?php include "../Views/footer.php";  ?>
+
+    <?php include "../Views/footer.php"; ?>
 </body>
+
 </html>
 <?php mysqli_close($conn); ?>

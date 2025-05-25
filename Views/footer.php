@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
-                <p>© 2025 Upskill. All rights reserved. | www.DownloadRealProjectSource.com</p>
+                <p>© 2025 Upskill. All rights reserved. | Designed & Developed by KelasKita Dev Team</p>
             </div>
         </div>
     </footer>
