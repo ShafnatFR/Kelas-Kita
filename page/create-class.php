@@ -49,9 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!is_numeric($harga) || $harga < 0) {
         $error_message = "Harga harus berupa angka yang valid!";
     } else {
-        // Insert data kelas ke tb_kelas dengan id_mentor yang sudah didapat
-        $stmt = $conn->prepare("INSERT INTO tb_kelas (nama_kelas, kategori, harga, description, id_mentor) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssdsi", $nama_kelas, $kategori, $harga, $description, $id_mentor);
+        // PERUBAHAN ADA DI SINI:
+        // Anda perlu menambahkan kolom `status_publikasi` dan variabelnya
+        // serta menambahkan tipe data 's' di bind_param untuk kolom tersebut.
+        $default_status = 'draft'; // <--- Tambahkan baris ini
+
+        $stmt = $conn->prepare("INSERT INTO tb_kelas (nama_kelas, kategori, harga, description, id_mentor, status_publikasi) VALUES (?, ?, ?, ?, ?, ?)"); // <--- Tambahkan `status_publikasi` di sini
+        $stmt->bind_param("ssdsis", $nama_kelas, $kategori, $harga, $description, $id_mentor, $default_status); // <--- Tambahkan `s` dan `$default_status` di sini
 
         if ($stmt->execute()) {
             $success_message = "Kelas '$nama_kelas' berhasil ditambahkan!";
