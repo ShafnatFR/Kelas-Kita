@@ -1,8 +1,16 @@
 <?php
 
-// Mulai session jika diperlukan
-include "db.php";
-$site_name = "kelasKita";
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "KelasKita";
+
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
+
+$site_name = "KelasKita"; // Define site name for footer usage
+
 
 // Remove manual connection creation since db.php already creates $conn
 // Ambil ID kursus dari parameter URL
