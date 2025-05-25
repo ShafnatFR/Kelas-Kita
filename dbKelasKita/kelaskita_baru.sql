@@ -71,8 +71,9 @@ CREATE TABLE `tb_kategori_kelas` (
 -- Table structure for table `tb_kelas`
 --
 
+-- Membuat tabel tb_kelas dengan struktur yang diperbaiki
 CREATE TABLE `tb_kelas` (
-  `id_kelas` int(30) NOT NULL,
+  `id_kelas` int(30) NOT NULL AUTO_INCREMENT,
   `id_mentor` int(30) NOT NULL,
   `nama_kelas` varchar(255) NOT NULL,
   `kategori` enum('SQL','Design','Java','Web Development','Bisnis','Ekonomi','Psikologi','IT','Python') NOT NULL,
@@ -80,18 +81,26 @@ CREATE TABLE `tb_kelas` (
   `profil_kelas` varchar(100) DEFAULT NULL,
   `badge` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft'
+  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft',
+  `tanggal_rilis` DATE DEFAULT NULL,
+  PRIMARY KEY (`id_kelas`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tb_kelas`
---
+-- Insert data dengan kategori yang sudah diperbaiki dan id_mentor yang ditambahkan
+INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`, `tanggal_rilis`) VALUES
+(1, 1, 'Full Stack Web Development', 'Web Development', 500000.00, 'fullstack_profile.jpg', 'advanced_badge.png', 'Belajar membuat website lengkap dari frontend hingga backend dengan teknologi modern', 'approved', '2024-01-15'),
+(2, 2, 'UI/UX Design Fundamentals', 'Design', 300000.00, 'uiux_profile.jpg', 'beginner_badge.png', 'Dasar-dasar desain antarmuka dan pengalaman pengguna yang menarik', 'approved', '2024-01-20'),
+(3, 3, 'Digital Marketing Strategy', 'Bisnis', 400000.00, 'marketing_profile.jpg', 'intermediate_badge.png', 'Strategi pemasaran digital untuk mengembangkan bisnis online', 'approved', '2024-02-01'),
+(4, 4, 'Python Data Analysis', 'Python', 450000.00, 'python_profile.jpg', 'advanced_badge.png', 'Analisis data menggunakan Python dan library populer seperti Pandas dan NumPy', 'approved', '2024-02-10'),
+(5, 5, 'Mobile App Development', 'Web Development', 600000.00, 'mobile_profile.jpg', 'expert_badge.png', 'Membuat aplikasi mobile dengan React Native dan Flutter', 'pending', NULL),
+(6, 6, 'SQL Database Management', 'SQL', 350000.00, 'sql_profile.jpg', 'intermediate_badge.png', 'Mengelola database dengan SQL dari dasar hingga query kompleks', 'approved', '2024-02-15'),
+(7, 7, 'JavaScript Modern', 'Web Development', 380000.00, 'js_profile.jpg', 'intermediate_badge.png', 'Belajar JavaScript ES6+ dan framework modern seperti React dan Vue', 'approved', '2024-02-20'),
+(8, 8, 'Graphic Design Mastery', 'Design', 320000.00, 'graphic_profile.jpg', 'advanced_badge.png', 'Menguasai desain grafis dengan Adobe Creative Suite', 'approved', '2024-03-01'),
+(9, 9, 'SEO & Content Marketing', 'Bisnis', 250000.00, 'seo_profile.jpg', 'beginner_badge.png', 'Optimasi mesin pencari dan strategi content marketing', 'draft', NULL),
+(10, 10, 'Cloud Computing AWS', 'IT', 550000.00, 'aws_profile.jpg', 'expert_badge.png', 'Membangun infrastruktur cloud menggunakan Amazon Web Services', 'approved', '2024-03-10');
 
-INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`) VALUES
-(0, 5, 'Website Programing', '', 120000.00, NULL, NULL, 'Kelas Website Programing', ''),
-(3, 4, 'Belajar PHP untuk pemula', '', 80000.00, NULL, NULL, 'Kelas belajar php pemula', 'draft');
-
--- --------------------------------------------------------
+-- Set AUTO_INCREMENT untuk memulai dari 11 untuk data selanjutnya
+ALTER TABLE `tb_kelas` AUTO_INCREMENT = 11;
 
 --
 -- Table structure for table `tb_keranjang`
