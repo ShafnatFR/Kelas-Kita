@@ -1,15 +1,16 @@
 <?php
+session_start();
 
 // Database connection
 $host = "localhost";
 $username = "root";
 $password = "";
-$database = "KelasKita";
+$database = "KelasKita_baru";
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $database);
 
-$site_name = "KelasKita"; // Define site name for footer usage
+$site_name = "KelasKita_baru"; // Define site name for footer usage
 
 
 // Remove manual connection creation since db.php already creates $conn
@@ -115,7 +116,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 </head>
 <body class="bg-gray-50">
     
-<?php include_once("../Views/navbarbootstrap.php"); ?>
+<?php include("../Views/navbarbootstrap.php"); ?>
 
 <script>
     function toggleDropdown() {
@@ -189,79 +190,130 @@ $result_Kategori_links = $conn->query($sql_Kategori_links);
 
 <section class="section-padding">
     <div class="container">
-        <div class="section-title">
-            <h2>Kursus Unggulan & Terpopuler</h2>
-            <p>Kursus yang direkomendasikan dan paling banyak diambil oleh pelajar kami</p>
+        <div class="section-title text-center">
+            <h2>Berbagai <span class="text-success">Kelas</span> menarik ada di sini</h2>
         </div>
-        
         <div class="row">
             <?php
-            $base_url = ""; 
-            
-$sql_featured_courses = "
-    SELECT 
-        k.id_kelas AS id, 
-        k.profil_kelas AS image, 
-        k.badge AS badge, 
-        '' AS tag, 
-        k.nama_kelas AS title,  -- Use 'nama_kelas' for course name
-        0 AS participant_count, 
-        0 AS rating, 
-        k.harga AS price,
-        k.description AS description
-    FROM tb_kelas k
-    ORDER BY k.id_kelas DESC 
-    LIMIT 3
-";
-            // Execute the query and store the result in $result_featured
-            $result_featured = $conn->query($sql_featured_courses);
+            $base_url = "";
 
-            // Check for query errors
+            // Updated SQL query to fetch additional details for the course cards
+            $sql_featured_courses = "
+                SELECT 
+                    k.id_kelas AS id,
+                    k.profil_kelas AS image,
+                    c.nama_kategori AS category,
+                    k.nama_kelas AS title,
+                    CONCAT(u.first_name, ' ', u.last_name) AS instructor,
+                    k.jumlah_peserta AS views,
+                    (SELECT COUNT(*) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS comments,
+                    (SELECT AVG(rating) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS avg_rating,
+                    k.harga AS price
+                FROM tb_kelas k
+                LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
+                LEFT JOIN tb_user u ON k.instruktur_id = u.id_user
+                WHERE k.status_publikasi = 'approved'
+                ORDER BY k.tanggal_rilis DESC
+                LIMIT 8
+            ";
+            $result_featured = $conn->query($sql_featured_courses);
             if (!$result_featured) {
-                echo "Query error: " . $conn->error;
-                // Fallback to show some default content
                 echo '<div class="col-12 text-center">Maaf, tidak dapat memuat kursus unggulan saat ini.</div>';
             } else {
-                // Check if query returned any results
                 if ($result_featured->num_rows > 0) {
                     while ($course = $result_featured->fetch_assoc()) {
-                        // Create the detail URL
-$detail_url = "Coursedetail.php?id=" . intval($course['id']);
-                        
-                        // Badge class determination
-                        $badge_class = "bg-primary";
-                        if ($course['badge'] == "Hot") {
-                            $badge_class = "bg-warning text-dark";
-                        } elseif ($course['badge'] == "New") {
-                            $badge_class = "bg-success";
-                        }
+                        $detail_url = "Coursedetail.php?id=" . intval($course['id']);
+                        $avg_rating = round(floatval($course['avg_rating']), 1);
+                        $comments = intval($course['comments']);
+                        $views = intval($course['views']);
+                        $duration = htmlspecialchars($course['duration'] ?? '1 Jam');
+                        $category = htmlspecialchars($course['category']);
+                        $instructor = htmlspecialchars($course['instructor']);
+                        $title = htmlspecialchars($course['title']);
+                        $image = htmlspecialchars($course['image']);
+                        $price = intval($course['price']);
+                        $original_price = intval($course['original_price'] ?? $price * 2);
+                        $type = strtoupper($course['type'] ?? 'VIDEO');
+                        $discount = round((($original_price - $price) / $original_price) * 100);
                         ?>
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100">
-                                <img src="<?php echo htmlspecialchars($course['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($course['title']); ?>">
-                                <div class="p-3">
-                                    <?php if (!empty($course['badge'])) : ?>
-                                    <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($course['badge']); ?></span>
-                                    <?php endif; ?>
-                                    <h5 class="mt-2"><?php echo htmlspecialchars($course['title']); ?></h5>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span><i class="fas fa-user-graduate"></i> <?php echo intval($course['participant_count']); ?>+ peserta</span>
-                                        <span><i class="fas fa-star text-warning"></i> <?php echo floatval($course['rating']); ?></span>
-                                    </div>
-                                    <p class="small mb-4"><?php echo htmlspecialchars(substr($course['description'], 0, 120)); ?>...</p>
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                <div class="position-relative">
+                                    <img src="<?php echo $image; ?>" class="card-img-top" alt="<?php echo $title; ?>" style="height: 200px; object-fit: cover;">
                                     
-                                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                                        <h5 class="fw-bold text-primary mb-0"><?php 
-                                        // Periksa apakah harga sudah dalam format 'Rp X.XXX.XXX'
-                                        if (strpos($course['price'], 'Rp') !== false) {
-                                            echo $course['price']; // Tampilkan apa adanya jika sudah berformat
-                                        } else {
-                                            // Jika belum berformat, konversi ke format yang diinginkan
-                                            echo 'Rp ' . number_format((float)$course['price'], 0, ',', '.');
-                                        }
-                                        ?></h5>
-                                        <a href="<?php echo $detail_url; ?>" class="btn btn-outline-primary btn-sm">Lihat Detail</a>
+                                    <!-- Duration Badge -->
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-dark px-2 py-1" style="font-size: 0.75rem; border-radius: 6px;">
+                                            <?php echo $duration; ?>
+                                        </span>
                                     </div>
+                                    
+                                    <!-- Category and Type Badges -->
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-primary me-1 px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
+                                            <?php echo strtoupper($category); ?>
+                                        </span>
+                                        <span class="badge bg-secondary px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
+                                            <?php echo $type; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body p-3 d-flex flex-column">
+                                    <!-- Course Title -->
+                                    <a href="<?php echo $detail_url; ?>" class="text-decoration-none text-dark">
+                                        <h6 class="card-title fw-bold mb-2" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                            <?php echo $title; ?>
+                                        </h6>
+                                    </a>
+                                    
+                                    <!-- Instructor -->
+                                    <p class="mb-2 text-muted" style="font-size: 0.85rem;">
+                                        <?php echo $instructor; ?>
+                                    </p>
+                                    
+                                    <!-- Stats (Views, Comments, Rating) -->
+                                    <div class="d-flex align-items-center mb-3" style="font-size: 0.8rem; color: #666;">
+                                        <span class="me-3">
+                                            <i class="fas fa-eye me-1"></i><?php echo number_format($views); ?>
+                                        </span>
+                                        <span class="me-3">
+                                            <i class="fas fa-comment me-1"></i><?php echo $comments; ?>
+                                        </span>
+                                        <span class="d-flex align-items-center">
+                                            <?php
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                if ($i <= floor($avg_rating)) {
+                                                    echo '<i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                                                } elseif ($i - $avg_rating < 1) {
+                                                    echo '<i class="fas fa-star-half-alt text-warning" style="font-size: 0.7rem;"></i>';
+                                                } else {
+                                                    echo '<i class="far fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                                                }
+                                            }
+                                            ?>
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Price Section -->
+                                    <div class="mt-auto">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+<span class="badge bg-primary" style="font-size: 0.7rem;">
+    <?php echo $discount; ?>%
+</span>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
+                                                    Rp <?php echo number_format($original_price, 0, ',', '.'); ?>
+                                                </div>
+<div class="fw-bold text-primary" style="font-size: 1.1rem;">
+    Rp <?php echo number_format($price, 0, ',', '.'); ?>
+</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="<?php echo $detail_url; ?>" class="btn btn-outline-primary mt-3 w-100">Lihat Detail</a>
                                 </div>
                             </div>
                         </div>
@@ -274,11 +326,14 @@ $detail_url = "Coursedetail.php?id=" . intval($course['id']);
             ?>
         </div>
         
-        <div class="text-center mt-4">
-            <a href="courses.php" class="btn btn-primary">Lihat Semua Kursus</a>
+        <!-- View All Button -->
+        <div class="text-center mt-5">
+<a href="courses.php" class="btn btn-primary btn-lg px-4 py-2" style="border-radius: 8px; font-weight: 600;">
+    Lihat Semua Kelas <i class="fas fa-arrow-right ms-2"></i>
+</a>
         </div>
     </div>
-</section>
+</section>>
 
 <!-- Kamp Pelatihan & Program Pembelajaran -->
 <section class="section-padding">
@@ -375,32 +430,7 @@ $result_prof_dev = $conn->query($sql_prof_dev);
 </section>
 
 <!-- Mitra Merek Teratas -->
-<section class="section-padding">
-    <div class="container">
-        <div class="section-title">
-            <h2>Dipercaya oleh Perusahaan Terkemuka</h2>
-            <p>Bermitra dengan berbagai perusahaan ternama untuk pengembangan bakat</p>
-        </div>
-        
-        <div class="row align-items-center justify-content-center">
-            <?php
-            // Query untuk mengambil partner dari database
-$sql_partners = "SELECT gambar, nama FROM tb_partner ORDER BY id ASC LIMIT 6";
-$result_partners = $conn->query($sql_partners);
-            
-            if ($result_partners && $result_partners->num_rows > 0) {
-                while($partner = $result_partners->fetch_assoc()) {
-                    echo '<div class="col-md-2 col-6 mb-4 text-center">
-                        <img src="' . $partner['gambar'] . '" alt="' . $partner['nama'] . '" class="partner-logo">
-                    </div>';
-                }
-            } else {
-                echo '<div class="col-12 text-center">Tidak ada partner ditemukan</div>';
-            }
-            ?>
-        </div>
-    </div>
-</section>
+<!-- Section removed as per user request -->
 
 <!-- Testimoni -->
 <section class="section-padding bg-light">

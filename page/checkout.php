@@ -8,6 +8,12 @@ ini_set('display_errors', 1);
 // Session start untuk mengakses data keranjang
 session_start();
 
+// Cek apakah user sudah login
+if (!isset($_SESSION['username'])) {
+    header('Location: HalamanSignIn.php');
+    exit;
+}
+
 // Redirect jika keranjang kosong
 if (empty($_SESSION['cart'])) {
     header('Location: cart.php');
@@ -84,35 +90,63 @@ if (isset($_POST['complete_payment'])) {
     }
     
     // If no errors, process payment (simulation)
-    if (empty($errors)) {
-        // In a real application, you would process the payment with a payment gateway here
-        // For this simulation, we'll just set payment as successful
-        $payment_success = true;
-        
-        // Clear cart and applied coupon after successful payment
-        if ($payment_success) {
-            // Save order to database (simulation)
-            $order_id = 'ORD-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        if (empty($errors)) {
+            // In a real application, you would process the payment with a payment gateway here
+            // For this simulation, we'll just set payment as successful
+            $payment_success = true;
             
-            // Clear cart and coupon
-            $_SESSION['last_order'] = [
-                'id' => $order_id,
-                'items' => $_SESSION['cart'],
-                'total' => $discounted_total,
-                'discount' => $discount_amount,
-                'date' => date('Y-m-d H:i:s')
-            ];
-            
-            $_SESSION['cart'] = [];
-            unset($_SESSION['applied_coupon']);
-            
-            // Redirect to thank you page
-            header('Location: checkout.php?success=true&order_id=' . $order_id);
-            exit;
+            // Clear cart and applied coupon after successful payment
+            if ($payment_success) {
+                // Save order to database (real implementation)
+                $user_id = $_SESSION['id'];
+                $order_id = 'ORD-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+                $date = date('Y-m-d');
+                
+            // Insert each cart item as a transaction record in tb_transaksi
+            foreach ($_SESSION['cart'] as $item) {
+                $id_kelas = $item['id'];
+                $quantity = isset($item['quantity']) ? $item['quantity'] : 1;
+
+                // Get id_keranjang for this user and kelas
+                $stmt_keranjang = $conn->prepare("SELECT id_keranjang FROM tb_keranjang WHERE id_user = ? AND id_kelas = ? LIMIT 1");
+                $stmt_keranjang->bind_param("ii", $user_id, $id_kelas);
+                $stmt_keranjang->execute();
+                $result_keranjang = $stmt_keranjang->get_result();
+                $row_keranjang = $result_keranjang->fetch_assoc();
+                $id_keranjang = $row_keranjang ? $row_keranjang['id_keranjang'] : 0;
+
+                // For each quantity, insert a transaction record
+                for ($i = 0; $i < $quantity; $i++) {
+                    $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status) VALUES (?, ?, ?, '', ?, 'Pending')");
+                    $stmt->bind_param("iiis", $id_kelas, $user_id, $id_keranjang, $date);
+                    $stmt->execute();
+                }
+            }
+
+            // Clear tb_keranjang entries for the user
+            $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ?");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+                
+                // Clear cart and coupon in session
+                $_SESSION['last_order'] = [
+                    'id' => $order_id,
+                    'items' => $_SESSION['cart'],
+                    'total' => $discounted_total,
+                    'discount' => $discount_amount,
+                    'date' => date('Y-m-d H:i:s')
+                ];
+                
+                $_SESSION['cart'] = [];
+                unset($_SESSION['applied_coupon']);
+                
+                // Redirect to thank you page
+                header('Location: checkout.php?success=true&order_id=' . $order_id);
+                exit;
+            }
+        } else {
+            $payment_error = implode('<br>', $errors);
         }
-    } else {
-        $payment_error = implode('<br>', $errors);
-    }
 }
 
 // Check for success parameter (after payment)
@@ -146,6 +180,7 @@ $last_order_data = (is_array($last_order)) ? $last_order : [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $payment_success ? 'Order Confirmation' : 'Checkout'; ?> | Upskill - Online Learning Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -157,25 +192,7 @@ $last_order_data = (is_array($last_order)) ? $last_order : [];
 </head>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
-    <nav class="bg-white py-4 px-6 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <a href="index.php" class="text-blue-600 font-bold text-2xl">upskill</a>
-                <div class="hidden md:flex ml-10 space-x-6">
-                    <a href="index.php" class="text-gray-500 hover:text-gray-900">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Courses</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Categories</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Blog</a>
-                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="hidden md:inline-block text-gray-600 hover:text-gray-900 px-4 py-2">Log in</a>
-                <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 transition">Sign Up</a>
-            </div>
-        </div>
-    </nav>
-
+    <?php include("../Views/navbarbootstrap.php"); ?>
     <!-- Content Section -->
     <div class="container mx-auto px-4 py-10">
         <?php if ($payment_success && $order_id !== null && $last_order !== null): ?>
@@ -277,5 +294,6 @@ $last_order_data = (is_array($last_order)) ? $last_order : [];
             </div>
         <?php endif; ?>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
