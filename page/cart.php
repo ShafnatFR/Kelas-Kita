@@ -1,6 +1,15 @@
 <?php
 session_start();
 
+// Redirect if user not logged in
+if (!isset($_SESSION['username'])) {
+    $_SESSION['message'] = "Silakan login terlebih dahulu untuk melanjutkan pembelian.";
+    $_SESSION['message_type'] = "warning";
+    $_SESSION['redirect_after_login'] = "cart.php";
+    header("Location: HalamanSignIn.php");
+    exit();
+}
+
 // Include cart database integration functions
 include "cart_db_integration.php";
 
@@ -9,7 +18,7 @@ $site_name = "KelasKita"; // Define site name for footer usage
 $db_host = "localhost";
 $db_user = "root";
 $db_pass = ""; 
-$db_name = "KelasKita";
+$db_name = "KelasKita_baru";
 
 
 // Membuat koneksi
@@ -28,15 +37,15 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
     
     // If user is logged in, get cart data from database
-    if (isset($_SESSION['user_id'])) {
-        $_SESSION['cart'] = getCartItems($_SESSION['user_id'], $conn);
+    if (isset($_SESSION['id'])) {
+        $_SESSION['cart'] = getCartItems($_SESSION['id'], $conn);
     }
 }
 
 // Proses aksi keranjang
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get user ID if logged in
-    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+    $user_id = isset($_SESSION['id']) ? $_SESSION['id'] : null;
     
     // Menghapus item dari keranjang
     if (isset($_POST['remove_item']) && isset($_POST['item_id'])) {
@@ -82,51 +91,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['checkout'])) {
         if (!empty($_SESSION['cart'])) {
             // Jika pengguna sudah login, proses checkout
-            if (isset($_SESSION['user_id'])) {
-                // Insert ke tabel orders
-                $user_id = $_SESSION['user_id'];
-                $total = 0;
-                
-                foreach ($_SESSION['cart'] as $item) {
-                    $total += $item['price'] * $item['quantity'];
-                }
-                
-                $timestamp = date('Y-m-d H:i:s');
-                $reference = 'ORD-'.time().'-'.$user_id;
-                
-                $sql = "INSERT INTO orders (user_id, total_amount, reference_id, status, created_at) 
-                        VALUES (?, ?, ?, 'pending', ?)";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("idss", $user_id, $total, $reference, $timestamp);
-                $stmt->execute();
-                
-                $order_id = $conn->insert_id;
-                
-                // Insert ke tabel order_items
-                foreach ($_SESSION['cart'] as $item) {
-                    $item_total = $item['price'] * $item['quantity'];
-                    
-                    $sql = "INSERT INTO order_items (order_id, course_id, quantity, price, total) 
-                            VALUES (?, ?, ?, ?, ?)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("iiidi", $order_id, $item['id'], $item['quantity'], $item['price'], $item_total);
-                    $stmt->execute();
-                }
-                
-                // Kosongkan keranjang
-                clearCart($user_id, $conn);
-                
-                // Redirect ke halaman konfirmasi
-                $_SESSION['message'] = "Pesanan berhasil dibuat!";
-                $_SESSION['message_type'] = "success";
-                header("Location: checkout.php?order_id=".$order_id);
+            if (isset($_SESSION['id'])) {
+                // Just redirect to checkout page for payment processing
+                header("Location: checkout.php");
                 exit();
             } else {
                 // Jika belum login, arahkan ke halaman login
                 $_SESSION['message'] = "Silakan login terlebih dahulu untuk melanjutkan pembelian.";
                 $_SESSION['message_type'] = "warning";
                 $_SESSION['redirect_after_login'] = "cart.php";
-                header("Location: login.php");
+                header("Location: HalamanSignIn.php");
                 exit();
             }
         } else {
@@ -219,67 +193,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="#">KelasKita</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Kursus</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Kategori</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Blog</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Kontak</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="cart.php" class="nav-link active">
-                            <i class="fas fa-shopping-cart"></i>
-                            <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                                <span class="badge bg-primary rounded-pill"><?php echo count($_SESSION['cart']); ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Login dan Sign Up -->
-                <div class="d-flex align-items-center gap-2">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                <?php echo htmlspecialchars($_SESSION['username'] ?? 'Akun'); ?>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="profile.php">Profil Saya</a></li>
-                                <li><a class="dropdown-item" href="my-courses.php">Kursus Saya</a></li>
-                                <li><a class="dropdown-item" href="my-orders.php">Pesanan Saya</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="logout.php">Logout</a></li>
-                            </ul>
-                        </div>
-                    <?php else: ?>
-                        <a href="login.php" class="btn btn-outline-primary btn-sm">Login</a>
-                        <a href="signup.php" class="btn btn-primary btn-sm">Sign Up</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+    <?php include("../Views/navbarbootstrap.php"); ?>
     <!-- Display message if any -->
     <?php if (isset($_SESSION['message'])): ?>
         <div class="container mt-3">
