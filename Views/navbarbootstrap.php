@@ -2,13 +2,6 @@
 // Pastikan ada session yang sudah login
 
 session_start();
-// Cek apakah user sudah login
-if (!isset($_SESSION['username'])) {
-    header("Location: HalamanSignIn.php");
-    exit();
-}
-
-$username = $_SESSION['username'];
 
 // Pastikan role diambil dari database dan diset dengan benar
 $stmt = $conn->prepare("SELECT role FROM tb_user WHERE username = ?");
