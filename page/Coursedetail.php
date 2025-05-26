@@ -1,10 +1,10 @@
 <?php
-session_start();
+
 // Database connection
 $host = "localhost";
 $username = "root";
 $password = "";
-$database = "KelasKita";
+$database = "kelaskita";
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $database);
@@ -41,11 +41,41 @@ function formatRupiah($angka) {
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }
 
-// Query untuk mengambil data kursus - perbaikan nama kolom
-$sql = "SELECT tk.*, tb.* 
-        FROM tb_kursus tk
-        LEFT JOIN tb_kelas tb ON tk.id_kelas = tb.id_kelas 
-        WHERE tk.id_kursus = ?";
+function checkExistingTables($conn) {
+    $tables = [];
+    $result = $conn->query("SHOW TABLES");
+    if ($result) {
+        while ($row = $result->fetch_array()) {
+            $tables[] = $row[0];
+        }
+    }
+    return $tables;
+}
+
+$existing_tables = checkExistingTables($conn);
+
+$course_table = '';
+$class_table = '';
+
+$possible_course_tables = ['tb_kursus', 'kursus', 'courses', 'tb_courses', 'course'];
+foreach ($possible_course_tables as $table) {
+    if (in_array($table, $existing_tables)) {
+        $course_table = $table;
+        break;
+    }
+}
+
+$possible_class_tables = ['tb_kelas', 'kelas', 'classes', 'tb_classes', 'class'];
+foreach ($possible_class_tables as $table) {
+    if (in_array($table, $existing_tables)) {
+        $class_table = $table;
+        break;
+    }
+}
+
+// Remove join because kursus table has no id_kelas column
+$sql = "SELECT * FROM $course_table WHERE id = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $course_id);
 $stmt->execute();
@@ -75,11 +105,11 @@ if (isset($_GET['add_to_cart']) && $_GET['add_to_cart'] == '1') {
     if (!$found) {
         // Add new item - perbaikan nama kolom
         $new_item = [
-            'id' => $course['id_kursus'],
-            'name' => $course['judul_kursus'],
-            'price' => floatval(str_replace(['Rp', '.', ','], '', formatRupiah($course['harga_kursus']))),
+            'id' => $course['id'],
+            'name' => $course['judul'],
+            'price' => floatval(str_replace(['Rp', '.', ','], '', formatRupiah($course['harga']))),
             'quantity' => 1,
-            'image' => $course['gambar_kursus'] ?? '',
+            'image' => $course['gambar'] ?? '',
             'category' => $course['kategori'] ?? ''
         ];
         $_SESSION['cart'][] = $new_item;
@@ -88,16 +118,16 @@ if (isset($_GET['add_to_cart']) && $_GET['add_to_cart'] == '1') {
     exit;
 }
 
-$sql_materi = "SELECT * FROM materi_kursus WHERE kelas_id = ? ORDER BY urutan ASC";
+$sql_materi = "SELECT * FROM materi_kursus WHERE kursus_id = ? ORDER BY urutan ASC";
 $stmt_materi = $conn->prepare($sql_materi);
-$stmt_materi->bind_param("i", $course['id_kelas']);
+$stmt_materi->bind_param("i", $course['id']);
 $stmt_materi->execute();
 $result_materi = $stmt_materi->get_result();
 
 // Query untuk mengambil ulasan kursus
-$sql_ulasan = "SELECT u.*, p.nama, p.foto 
-               FROM ulasan u 
-               JOIN pelajar p ON u.pelajar_id = p.id 
+$sql_ulasan = "SELECT u.*, CONCAT(p.first_name, ' ', p.last_name) AS nama, p.fotoProfil AS foto 
+               FROM tb_ulasan u 
+               JOIN tb_user p ON u.pelajar_id = p.id_user 
                WHERE u.kursus_id = ? 
                ORDER BY u.tanggal DESC
                LIMIT 5";
@@ -307,7 +337,7 @@ $stmt_ulasan->close();
                 </div>
                 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
                     <div class="course-price mb-3"><?php echo formatRupiah($course['harga_kursus'] ?? 0); ?></div>
-                    <a href="Coursedetail.php?id=<?php echo $course['id_kursus']; ?>&add_to_cart=1" class="course-button">Daftar Sekarang</a>
+<a href="Coursedetail.php?id=<?php echo $course['id']; ?>&add_to_cart=1" class="course-button">Daftar Sekarang</a>
                 </div>
             </div>
         </div>
@@ -445,7 +475,7 @@ $stmt_ulasan->close();
                 <!-- Course Image -->
                 <div class="course-content mb-4">
                     <img src="<?php echo $course['gambar_kursus'] ?? 'img/courses/default.jpg'; ?>" alt="<?php echo htmlspecialchars($course['judul_kursus'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
-                    <a href="Coursedetail.php?id=<?php echo $course['id_kursus']; ?>&add_to_cart=1" class="btn btn-primary btn-lg w-100">Daftar Sekarang</a>
+<a href="Coursedetail.php?id=<?php echo $course['id']; ?>&add_to_cart=1" class="btn btn-primary btn-lg w-100">Daftar Sekarang</a>
                 </div>
                 
                 <!-- Course Features -->
@@ -521,7 +551,7 @@ $stmt_ulasan->close();
             </div>
         </div>
     </div>
-    <?php include_once("../Views/Views/footerbootsrap.php"); ?>
+    <?php include_once("../Views/footerbootsrap.php"); ?>
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
