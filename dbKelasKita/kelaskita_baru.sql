@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 25, 2025 at 06:58 AM
+-- Generation Time: May 25, 2025 at 04:22 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,18 +29,18 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `tb_dokumen` (
   `id_dokumen` int(30) NOT NULL,
-  `file_path_dokumen` varchar(255) NOT NULL,
-  `deskripsi_d` text DEFAULT NULL
+  `file_path_dokumen` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tb_dokumen`
 --
 
-INSERT INTO `tb_dokumen` (`id_dokumen`, `file_path_dokumen`, `deskripsi_d`) VALUES
-(1, 'Pengenalan PHP.pdf', 'Dokumen berisi pengenalan dasar PHP untuk pemula'),
-(2, 'Variabel dan Tipe Data.pdf', 'Penjelasan tentang variabel dan tipe data dalam PHP'),
-(3, 'Control Structure.pdf', 'Materi tentang if-else, loop, dan struktur kontrol PHP');
+INSERT INTO `tb_dokumen` (`id_dokumen`, `file_path_dokumen`) VALUES
+(0, '../uploads/dokumen/68330a508dcc9_BUKU PANDUAN PKL 2024.pdf'),
+(1, 'Pengenalan PHP.pdf'),
+(2, 'Variabel dan Tipe Data.pdf'),
+(3, 'Control Structure.pdf');
 
 -- --------------------------------------------------------
 
@@ -71,9 +71,8 @@ CREATE TABLE `tb_kategori_kelas` (
 -- Table structure for table `tb_kelas`
 --
 
--- Membuat tabel tb_kelas dengan struktur yang diperbaiki
 CREATE TABLE `tb_kelas` (
-  `id_kelas` int(30) NOT NULL AUTO_INCREMENT,
+  `id_kelas` int(30) NOT NULL,
   `id_mentor` int(30) NOT NULL,
   `nama_kelas` varchar(255) NOT NULL,
   `kategori` enum('SQL','Design','Java','Web Development','Bisnis','Ekonomi','Psikologi','IT','Python') NOT NULL,
@@ -81,26 +80,21 @@ CREATE TABLE `tb_kelas` (
   `profil_kelas` varchar(100) DEFAULT NULL,
   `badge` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft',
-  `tanggal_rilis` DATE DEFAULT NULL,
-  PRIMARY KEY (`id_kelas`)
+  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert data dengan kategori yang sudah diperbaiki dan id_mentor yang ditambahkan
-INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`, `tanggal_rilis`) VALUES
-(1, 1, 'Full Stack Web Development', 'Web Development', 500000.00, 'fullstack_profile.jpg', 'advanced_badge.png', 'Belajar membuat website lengkap dari frontend hingga backend dengan teknologi modern', 'approved', '2024-01-15'),
-(2, 2, 'UI/UX Design Fundamentals', 'Design', 300000.00, 'uiux_profile.jpg', 'beginner_badge.png', 'Dasar-dasar desain antarmuka dan pengalaman pengguna yang menarik', 'approved', '2024-01-20'),
-(3, 3, 'Digital Marketing Strategy', 'Bisnis', 400000.00, 'marketing_profile.jpg', 'intermediate_badge.png', 'Strategi pemasaran digital untuk mengembangkan bisnis online', 'approved', '2024-02-01'),
-(4, 4, 'Python Data Analysis', 'Python', 450000.00, 'python_profile.jpg', 'advanced_badge.png', 'Analisis data menggunakan Python dan library populer seperti Pandas dan NumPy', 'approved', '2024-02-10'),
-(5, 5, 'Mobile App Development', 'Web Development', 600000.00, 'mobile_profile.jpg', 'expert_badge.png', 'Membuat aplikasi mobile dengan React Native dan Flutter', 'pending', NULL),
-(6, 6, 'SQL Database Management', 'SQL', 350000.00, 'sql_profile.jpg', 'intermediate_badge.png', 'Mengelola database dengan SQL dari dasar hingga query kompleks', 'approved', '2024-02-15'),
-(7, 7, 'JavaScript Modern', 'Web Development', 380000.00, 'js_profile.jpg', 'intermediate_badge.png', 'Belajar JavaScript ES6+ dan framework modern seperti React dan Vue', 'approved', '2024-02-20'),
-(8, 8, 'Graphic Design Mastery', 'Design', 320000.00, 'graphic_profile.jpg', 'advanced_badge.png', 'Menguasai desain grafis dengan Adobe Creative Suite', 'approved', '2024-03-01'),
-(9, 9, 'SEO & Content Marketing', 'Bisnis', 250000.00, 'seo_profile.jpg', 'beginner_badge.png', 'Optimasi mesin pencari dan strategi content marketing', 'draft', NULL),
-(10, 10, 'Cloud Computing AWS', 'IT', 550000.00, 'aws_profile.jpg', 'expert_badge.png', 'Membangun infrastruktur cloud menggunakan Amazon Web Services', 'approved', '2024-03-10');
+--
+-- Dumping data for table `tb_kelas`
+--
 
--- Set AUTO_INCREMENT untuk memulai dari 11 untuk data selanjutnya
-ALTER TABLE `tb_kelas` AUTO_INCREMENT = 11;
+INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`) VALUES
+(3, 4, 'Belajar PHP untuk pemula', '', 80000.00, NULL, NULL, 'Kelas belajar php pemula', 'draft'),
+(4, 5, 'Kelas Bahasa Inggris (SD, SMP, SMA) 123', '', 100000.00, NULL, NULL, 'kelas bahasa inggris blabla', ''),
+(5, 5, 'Belajar PHP untuk pemula 1', '', 150000.00, NULL, NULL, 'kenfwbwifbuWI', ''),
+(6, 5, 'desaign grafis 1', 'Design', 80000.00, NULL, NULL, 'hehe', ''),
+(7, 6, 'Belajar PHP untuk pemula', '', 100000.00, NULL, NULL, 'kelas belajar php untuk pemula', 'draft');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `tb_keranjang`
@@ -148,7 +142,6 @@ CREATE TABLE `tb_laporan` (
 
 CREATE TABLE `tb_materi` (
   `id_materi` int(30) NOT NULL,
-  `deskripsi_m` text NOT NULL,
   `id_kelas` int(30) NOT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_materi` varchar(255) NOT NULL
@@ -158,14 +151,17 @@ CREATE TABLE `tb_materi` (
 -- Dumping data for table `tb_materi`
 --
 
-INSERT INTO `tb_materi` (`id_materi`, `deskripsi_m`, `id_kelas`, `urutan`, `judul_materi`) VALUES
-(1, 'Bab pertama: Mengenal PHP dan dasar-dasarnya', 3, 1, 'Pengenalan PHP'),
-(2, 'Bab pertama: Instalasi dan setup environment', 3, 1, 'Pengenalan PHP'),
-(3, 'Bab pertama: Memahami sintaks dasar PHP', 3, 1, 'Pengenalan PHP'),
-(4, 'Bab kedua: Bekerja dengan variabel', 3, 2, 'Variabel dan Tipe Data'),
-(5, 'Bab kedua: Memahami tipe data', 3, 2, 'Variabel dan Tipe Data'),
-(6, 'Bab ketiga: Pengambilan keputusan', 3, 3, 'Struktur Kontrol'),
-(7, 'Bab ketiga: Perulangan dalam PHP', 3, 3, 'Struktur Kontrol');
+INSERT INTO `tb_materi` (`id_materi`, `id_kelas`, `urutan`, `judul_materi`) VALUES
+(1, 3, 1, 'Pengenalan PHP'),
+(2, 3, 1, 'Pengenalan PHP'),
+(3, 3, 1, 'Pengenalan PHP'),
+(4, 3, 2, 'Variabel dan Tipe Data'),
+(5, 3, 2, 'Variabel dan Tipe Data'),
+(6, 3, 3, 'Struktur Kontrol'),
+(7, 3, 3, 'Struktur Kontrol'),
+(8, 6, 1, 'Belajar Design Grafis pada tools figma'),
+(9, 6, 2, 'Variabel dan Tipe Data'),
+(10, 7, 1, 'Pengenalan PHP');
 
 -- --------------------------------------------------------
 
@@ -188,7 +184,8 @@ INSERT INTO `tb_mentor` (`id_mentor`, `status`, `id_user`) VALUES
 (2, 'Aktif', 14),
 (3, 'Aktif', 15),
 (4, 'Aktif', 11),
-(5, 'Aktif', 17);
+(5, 'Aktif', 17),
+(6, 'Aktif', 16);
 
 -- --------------------------------------------------------
 
@@ -238,13 +235,19 @@ CREATE TABLE `tb_review` (
 
 CREATE TABLE `tb_sub_materi` (
   `id_sub_materi` int(30) NOT NULL,
-  `deskripsi_sm` text NOT NULL,
   `id_materi` int(30) NOT NULL,
   `id_dokumen` int(30) NOT NULL,
   `id_video` int(30) NOT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_sub_materi` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_sub_materi`
+--
+
+INSERT INTO `tb_sub_materi` (`id_sub_materi`, `id_materi`, `id_dokumen`, `id_video`, `urutan`, `judul_sub_materi`) VALUES
+(8, 10, 0, 4, 1, 'Penginstalan Vs Code dan Extensi PHP');
 
 -- --------------------------------------------------------
 
@@ -301,7 +304,7 @@ INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `passwo
 (13, '', '', 'Gua123', '$2y$10$xbonLUo2ymeprYB6OAgmQut/fdN18FP5FsFF3rV/FcbauZNjMNnGK', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
 (14, '', '', 'Aliqns', '$2y$10$Uv1iau892wYDCp4i1PuJKeU0YX4nYe.uBbUSK3reYACNYY9EdTWMC', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
 (15, '', '', 'Galih', '$2y$10$/TPnN4zkLIvY0HMByXcfp.9oh8QdxCkGiSW1TMvbSDsoKaO6PsLIa', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
-(16, '', '', 'coba db baru', '$2y$10$TW9ZWuqYnaZpmxwk1X9JNeCCepSGDxwBk.4V7oi2JwzAAzBNxjF6O', 'murid', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
+(16, '', '', 'coba db baru', '$2y$10$TW9ZWuqYnaZpmxwk1X9JNeCCepSGDxwBk.4V7oi2JwzAAzBNxjF6O', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
 (17, '', '', 'blabla', '$2y$10$4imiVUlOZFABSuRzavGqxeghZqhCIFY6JCyfVXRsj0fKWbxqBYQWi', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '');
 
 -- --------------------------------------------------------
@@ -312,18 +315,18 @@ INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `passwo
 
 CREATE TABLE `tb_video` (
   `id_video` int(30) NOT NULL,
-  `file_path_video` varchar(255) NOT NULL,
-  `deskripsi_v` text DEFAULT NULL
+  `file_path_video` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tb_video`
 --
 
-INSERT INTO `tb_video` (`id_video`, `file_path_video`, `deskripsi_v`) VALUES
-(1, 'Video Pengenalan PHP.mp4', 'Video tutorial pengenalan PHP untuk pemula'),
-(2, 'Video Variabel PHP.mp4', 'Video tutorial tentang penggunaan variabel dalam PHP'),
-(3, 'Video Control Structure.mp4', 'Video tutorial tentang if-else dan loop di PHP');
+INSERT INTO `tb_video` (`id_video`, `file_path_video`) VALUES
+(1, 'Video Pengenalan PHP.mp4'),
+(2, 'Video Variabel PHP.mp4'),
+(3, 'Video Control Structure.mp4'),
+(4, '../uploads/video/68330a508fd51_lv_7392906537750072583_20240905064053.mp4');
 
 --
 -- Indexes for dumped tables
@@ -412,22 +415,28 @@ ALTER TABLE `tb_video`
 --
 
 --
+-- AUTO_INCREMENT for table `tb_kelas`
+--
+ALTER TABLE `tb_kelas`
+  MODIFY `id_kelas` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `tb_materi`
 --
 ALTER TABLE `tb_materi`
-  MODIFY `id_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `tb_mentor`
 --
 ALTER TABLE `tb_mentor`
-  MODIFY `id_mentor` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_mentor` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tb_sub_materi`
 --
 ALTER TABLE `tb_sub_materi`
-  MODIFY `id_sub_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_sub_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tb_user`
@@ -439,7 +448,7 @@ ALTER TABLE `tb_user`
 -- AUTO_INCREMENT for table `tb_video`
 --
 ALTER TABLE `tb_video`
-  MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
