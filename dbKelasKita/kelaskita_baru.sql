@@ -22,6 +22,45 @@ SET time_zone = "+00:00";
 --
 
 -- --------------------------------------------------------
+CREATE TABLE `tb_bootcamp` (
+  `id` int(11) NOT NULL,
+  `judul` varchar(255) NOT NULL,
+  `deskripsi` text DEFAULT NULL,
+  `gambar` varchar(255) DEFAULT NULL,
+  `kategori_id` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `tb_bootcamp`
+--
+
+INSERT INTO `tb_bootcamp` (`id`, `judul`, `deskripsi`, `gambar`, `kategori_id`, `created_at`, `updated_at`) VALUES
+(1, 'Full Stack Web Developer Bootcamp', 'Program intensif 12 minggu untuk menjadi Full Stack Web Developer dengan jaminan kerja', '../assets/images/47dd78487f5e0994dc32fe6a7f48f609.jpg', NULL, '2025-05-13 15:26:17', '2025-05-14 16:17:14'),
+(2, 'Data Science & Machine Learning Bootcamp', 'Program intensif 16 minggu untuk menguasai Data Science dan Machine Learning', '../assets/images/a4df645483f9877ac9e95d189b662d53.jpg', NULL, '2025-05-13 15:26:17', '2025-05-14 16:18:42');
+
+
+-- --------------------------------------------------------
+
+CREATE TABLE `tb_bootcamp_fitur` (
+  `id` int(11) NOT NULL,
+  `bootcamp_id` int(11) NOT NULL,
+  `fitur` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `tb_bootcamp_fitur`
+--
+
+INSERT INTO `tb_bootcamp_fitur` (`id`, `bootcamp_id`, `fitur`, `created_at`) VALUES
+(1, 1, 'Lebih dari 500 jam pembelajaran intensif', '2025-05-13 15:26:17'),
+(2, 1, 'Portfolio dan proyek nyata', '2025-05-13 15:26:17'),
+(3, 1, 'Jaminan penempatan kerja', '2025-05-13 15:26:17'),
+(4, 2, 'Bimbingan dari praktisi Data Science', '2025-05-13 15:26:17'),
+(5, 2, 'Project-based learning dengan data real', '2025-05-13 15:26:17'),
+(6, 2, 'Career coaching dan networking', '2025-05-13 15:26:17');
 
 --
 -- Table structure for table `tb_dokumen`
@@ -43,14 +82,38 @@ INSERT INTO `tb_dokumen` (`id_dokumen`, `file_path_dokumen`) VALUES
 (3, 'Control Structure.pdf');
 
 -- --------------------------------------------------------
-
+CREATE TABLE `tb_instruktur` (
+  `id` int(11) NOT NULL,
+  `nama` varchar(255) NOT NULL,
+  `foto` varchar(255) DEFAULT NULL,
+  `bidang` varchar(255) DEFAULT NULL,
+  `rating` decimal(3,2) DEFAULT 0.00,
+  `jumlah_pelajar` int(11) DEFAULT 0,
+  `jumlah_kursus` int(11) DEFAULT 0,
+  `bio_singkat` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Dumping data untuk tabel `tb_instruktur`
+INSERT INTO `tb_instruktur` (`id`, `nama`, `foto`, `bidang`, `rating`, `jumlah_pelajar`, `jumlah_kursus`, `bio_singkat`, `created_at`) VALUES
+(1, 'John Doe', 'img/instruktur/john.jpg', 'Web Development', 4.80, 1250, 15, 'Experienced web developer with 10+ years in the industry', '2025-05-26 10:45:11'),
+(2, 'Jane Smith', 'img/instruktur/jane.jpg', 'Digital Marketing', 4.90, 980, 12, 'Digital marketing expert specializing in social media and SEO', '2025-05-26 10:45:11');
+-- Indeks untuk tabel `tb_instruktur`
+ALTER TABLE `tb_instruktur`
+  ADD PRIMARY KEY (`id`);
+-- AUTO_INCREMENT untuk tabel `tb_instruktur`
+ALTER TABLE `tb_instruktur`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+COMMIT;
 --
 -- Table structure for table `tb_kategori`
 --
 
 CREATE TABLE `tb_kategori` (
-  `id_kategori` int(30) NOT NULL,
-  `nama_kategori` varchar(30) NOT NULL
+  `id_kategori` int(30) NOT NULL AUTO_INCREMENT,
+  `nama_kategori` varchar(30) NOT NULL,
+  `icon` varchar(100) DEFAULT NULL,
+  `jumlah_kursus` int(11) DEFAULT 0,
+  PRIMARY KEY (`id_kategori`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -71,29 +134,42 @@ CREATE TABLE `tb_kategori_kelas` (
 -- Table structure for table `tb_kelas`
 --
 
-CREATE TABLE `tb_kelas` (
+CCREATE TABLE `tb_kelas` (
   `id_kelas` int(30) NOT NULL,
   `id_mentor` int(30) NOT NULL,
   `nama_kelas` varchar(255) NOT NULL,
   `kategori` enum('SQL','Design','Java','Web Development','Bisnis','Ekonomi','Psikologi','IT','Python') NOT NULL,
+  `jumlah_peserta` int(11) DEFAULT 0,
+  `rating` decimal(2,1) DEFAULT 0.0,
   `harga` decimal(10,2) NOT NULL,
-  `profil_kelas` varchar(100) DEFAULT NULL,
+  `profil_kelas` varchar(100) DEFAULT 'default.jpg',
   `badge` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft'
+  `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft',
+  `tanggal_rilis` date DEFAULT NULL,
+  `instruktur_id` int(11) DEFAULT NULL,
+  `jumlah_ulasan` int(11) DEFAULT 0,
+  `jumlah_pelajar` int(11) DEFAULT 0,
+  `jumlah_video` int(11) DEFAULT 0,
+  `jumlah_resource` int(11) DEFAULT 0,
+  `ada_sertifikat` tinyint(1) DEFAULT 0,
+  `tanggal_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tb_kelas`
---
-
-INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`) VALUES
-(3, 4, 'Belajar PHP untuk pemula', '', 80000.00, NULL, NULL, 'Kelas belajar php pemula', 'draft'),
-(4, 5, 'Kelas Bahasa Inggris (SD, SMP, SMA) 123', '', 100000.00, NULL, NULL, 'kelas bahasa inggris blabla', ''),
-(5, 5, 'Belajar PHP untuk pemula 1', '', 150000.00, NULL, NULL, 'kenfwbwifbuWI', ''),
-(6, 5, 'desaign grafis 1', 'Design', 80000.00, NULL, NULL, 'hehe', ''),
-(7, 6, 'Belajar PHP untuk pemula', '', 100000.00, NULL, NULL, 'kelas belajar php untuk pemula', 'draft');
-
+-- Dumping data untuk tabel `tb_kelas`
+INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `jumlah_peserta`, `rating`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`, `tanggal_rilis`, `instruktur_id`, `jumlah_ulasan`, `jumlah_pelajar`, `jumlah_video`, `jumlah_resource`, `ada_sertifikat`, `tanggal_update`) VALUES
+(3, 4, 'Belajar PHP untuk Pemula', 'Web Development', 150, 4.5, 80000.00, 'default.jpg', NULL, 'Kelas belajar PHP dari dasar untuk pemula.', 'approved', '2024-10-01', NULL, 0, 0, 0, 0, 0, '2025-05-26 12:41:44'),
+(4, 5, 'Kelas Bahasa Inggris (SD, SMP, SMA)', 'Bisnis', 200, 4.2, 100000.00, 'default.jpg', NULL, 'Kelas Bahasa Inggris untuk semua jenjang dengan metode interaktif.', 'approved', '2024-11-15', NULL, 0, 0, 0, 0, 0, '2025-05-26 12:41:44'),
+(5, 5, 'Belajar PHP untuk Pemula 1', 'Web Development', 180, 4.9, 150000.00, 'default.jpg', NULL, 'Kelas lanjutan PHP untuk pemula yang sudah memiliki dasar.', 'approved', '2024-12-01', NULL, 0, 0, 0, 0, 0, '2025-05-26 13:14:54'),
+(6, 5, 'Desain Grafis 1', 'Design', 120, 4.7, 80000.00, 'default.jpg', NULL, 'Belajar dasar desain grafis menggunakan tools populer.', 'approved', '2025-01-10', NULL, 0, 0, 0, 0, 0, '2025-05-26 13:14:47'),
+(7, 6, 'Belajar PHP untuk Pemula', 'Web Development', 160, 4.8, 100000.00, 'default.jpg', NULL, 'Kelas belajar PHP untuk pemula yang lengkap dan praktis.', 'approved', '2025-01-20', NULL, 0, 0, 0, 0, 0, '2025-05-26 13:14:26');
+-- Indeks untuk tabel `tb_kelas`
+ALTER TABLE `tb_kelas`
+  ADD PRIMARY KEY (`id_kelas`);
+-- AUTO_INCREMENT untuk tabel `tb_kelas`
+ALTER TABLE `tb_kelas`
+  MODIFY `id_kelas` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+COMMIT;
 -- --------------------------------------------------------
 
 --
@@ -200,7 +276,31 @@ CREATE TABLE `tb_notifikasi` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+CREATE TABLE `tb_pengembangan_profesional` (
+  `id` int(11) NOT NULL,
+  `icon` varchar(50) NOT NULL,
+  `judul` varchar(100) NOT NULL,
+  `deskripsi` text DEFAULT NULL,
+  `link` varchar(255) DEFAULT NULL,
+  `button_text` varchar(50) DEFAULT 'Pelajari Lebih Lanjut',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `tb_pengembangan_profesional`
+--
+
+INSERT INTO `tb_pengembangan_profesional` (`id`, `icon`, `judul`, `deskripsi`, `link`, `button_text`, `created_at`, `updated_at`) VALUES
+(1, 'fas fa-id-badge', 'Program Sertifikasi', 'Dapatkan sertifikasi profesional yang diakui industri untuk meningkatkan nilai di dunia kerja', 'certification.php', 'Lihat Sertifikasi', '2025-05-13 15:26:17', '2025-05-13 15:26:17'),
+(2, 'fas fa-handshake', 'Career Coaching', 'Konsultasikan karier Anda dengan coach profesional untuk percepat kemajuan karier', 'career-coaching.php', 'Jadwalkan Sesi', '2025-05-13 15:26:17', '2025-05-13 15:26:17'),
+(3, 'fas fa-building', 'Corporate Training', 'Program pelatihan khusus untuk perusahaan untuk meningkatkan keterampilan tim', 'corporate.php', 'Untuk Perusahaan', '2025-05-13 15:26:17', '2025-05-13 15:26:17');
+
+ALTER TABLE `tb_pengembangan_profesional`
+  ADD PRIMARY KEY (`id`);
+  ALTER TABLE `tb_pengembangan_profesional`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+COMMIT;
 --
 -- Table structure for table `tb_progress_kelas`
 --
@@ -250,7 +350,27 @@ INSERT INTO `tb_sub_materi` (`id_sub_materi`, `id_materi`, `id_dokumen`, `id_vid
 (8, 10, 0, 4, 1, 'Penginstalan Vs Code dan Extensi PHP');
 
 -- --------------------------------------------------------
-
+CREATE TABLE `tb_testimoni` (
+  `id` int(11) NOT NULL,
+  `nama` varchar(100) NOT NULL,
+  `posisi` varchar(100) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `quote` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Dumping data untuk tabel `tb_testimoni`
+INSERT INTO `tb_testimoni` (`id`, `nama`, `posisi`, `avatar`, `quote`, `created_at`, `updated_at`) VALUES
+(1, 'Ahmad Rizki', 'Full Stack Developer with Tokopedia', '../assets/images/c3913dc52d35241596ade71e69d29ab0.jpg', 'Berkat kursus di KelasKita, saya berhasil beralih karier dari seorang akuntan menjadi developer dalam waktu kurang dari 6 bulan. Materi yang diajarkan sangat relevan dengan kebutuhan industri.', '2025-05-13 15:26:17', '2025-05-21 14:00:42'),
+(2, 'Chimika', 'UI/UX Designer with Gojek', '../assets/images/8c6ddb5fe6600fcc4b183cb2ee228eb7.jpg', 'Bootcamp UI/UX Design di KelasKita memberikan saya pengetahuan dan keterampilan yang dibutuhkan untuk masuk ke industri teknologi. Instrukturnya sangat supportif dan proyek-proyeknya menantang.', '2025-05-13 15:26:17', '2025-05-21 14:01:10'),
+(3, 'Budi Pratama', 'Data Scientist with Bukalapak', '../assets/images/090ff51bf1b9e39ce8930063d7b252cf.jpg', 'Program Data Science sangat komprehensif dan up-to-date dengan teknologi terkini. Saya merekomendasikan KelasKita untuk siapa saja yang ingin menguasai Data Science dan Machine Learning.', '2025-05-13 15:26:17', '2025-05-21 14:01:27');
+-- Indeks untuk tabel `tb_testimoni`
+ALTER TABLE `tb_testimoni`
+  ADD PRIMARY KEY (`id`);
+-- AUTO_INCREMENT untuk tabel `tb_testimoni`
+ALTER TABLE `tb_testimoni`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+COMMIT;
 --
 -- Table structure for table `tb_transaksi`
 --
@@ -266,7 +386,35 @@ CREATE TABLE `tb_transaksi` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+CREATE TABLE `tb_ulasan` (
+  `id_ulasan` int(30) NOT NULL,
+  `kursus_id` int(30) NOT NULL,
+  `pelajar_id` int(30) NOT NULL,
+  `rating` int(1) NOT NULL CHECK (`rating` >= 1 and `rating` <= 5),
+  `komentar` text DEFAULT NULL,
+  `tanggal` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+INSERT INTO `tb_ulasan` (`id_ulasan`, `kursus_id`, `pelajar_id`, `rating`, `komentar`, `tanggal`) VALUES
+(1, 3, 1, 5, 'Kursus PHP yang sangat bagus dan mudah dipahami!', '2025-05-26 12:52:03'),
+(2, 3, 3, 4, 'Materi lengkap, instruktur juga menjelaskan dengan baik.', '2025-05-26 12:52:03'),
+(3, 4, 1, 5, 'Kelas Bahasa Inggris yang sangat membantu', '2025-05-26 12:52:03'),
+(4, 5, 3, 4, 'Penjelasan step-by-step yang mudah diikuti', '2025-05-26 12:52:03'),
+(5, 6, 1, 5, 'Design grafis untuk pemula sangat cocok', '2025-05-26 12:52:03'),
+(6, 7, 3, 4, 'Kursus PHP pemula yang recommended', '2025-05-26 12:52:03');
+-- Indeks untuk tabel `tb_ulasan`
+ALTER TABLE `tb_ulasan`
+  ADD PRIMARY KEY (`id_ulasan`),
+  ADD KEY `kursus_id` (`kursus_id`),
+  ADD KEY `pelajar_id` (`pelajar_id`);
+-- AUTO_INCREMENT untuk tabel `tb_ulasan`
+ALTER TABLE `tb_ulasan`
+  MODIFY `id_ulasan` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+-- Ketidakleluasaan untuk tabel `tb_ulasan`
+ALTER TABLE `tb_ulasan`
+  ADD CONSTRAINT `tb_ulasan_ibfk_1` FOREIGN KEY (`kursus_id`) REFERENCES `tb_kelas` (`id_kelas`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tb_ulasan_ibfk_2` FOREIGN KEY (`pelajar_id`) REFERENCES `tb_user` (`id_user`) ON DELETE CASCADE;
+COMMIT;
 --
 -- Table structure for table `tb_user`
 --

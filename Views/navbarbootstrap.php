@@ -1,7 +1,7 @@
 <?php
 // Pastikan ada session yang sudah login
 
-session_start();
+// session_start();  // Removed session_start from navbarbootstrap.php as per user request
 
 // Pastikan role diambil dari database dan diset dengan benar
 $stmt = $conn->prepare("SELECT role FROM tb_user WHERE username = ?");
@@ -81,7 +81,7 @@ if (isset($user['role'])) {
         <li><a class="dropdown-item" href="setting-profil.php">KelasKu</a></li>
         <?php if ($_SESSION['role'] !== 'mentor'): ?>
             <!-- Menampilkan opsi "Instruktur" hanya jika role pengguna adalah peserta -->
-            <li><a class="dropdown-item" href="become-mentor.php">Instruktur</a></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#confirmBecomeMentorModal">Instruktur</a></li>
         <?php endif; ?>
         <li><a class="dropdown-item" href="keranjang.php">Keranjang</a></li>
         <li><a class="dropdown-item" href="setting-profil.php">Pengaturan Profil</a></li>
@@ -104,13 +104,13 @@ if (isset($user['role'])) {
                 <h5 class="modal-title" id="confirmBecomeMentorModalLabel">Konfirmasi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                Apakah Anda yakin ingin menjadi Instruktur? Perubahan ini akan mengubah role Anda dari **Murid** menjadi **Mentor**.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <a href="become-mentor.php" class="btn btn-primary">Ya, Saya Yakin</a>
-            </div>
+    <div class="modal-body">
+        Apakah Anda yakin ingin menjadi Instruktur? Perubahan ini akan mengubah role Anda dari **Murid** menjadi **Mentor**.
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="confirmBecomeMentorBtn" class="btn btn-primary">Ya, Saya Yakin</button>
+    </div>
         </div>
     </div>
 </div>
@@ -118,3 +118,10 @@ if (isset($user['role'])) {
 
 <!-- Tambahkan link ke Bootstrap JS jika belum ada -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById('confirmBecomeMentorBtn').addEventListener('click', function() {
+    // Redirect to become-mentor.php only after confirmation
+    window.location.href = 'become-mentor.php';
+});
+</script>
