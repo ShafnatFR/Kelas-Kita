@@ -80,6 +80,20 @@ $recent_classes_query = $conn->prepare("
 $recent_classes_query->bind_param("i", $id_mentor);
 $recent_classes_query->execute();
 $recent_classes_result = $recent_classes_query->get_result();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ubah role kembali menjadi peserta
+    $stmt = $conn->prepare("UPDATE tb_user SET role = 'murid' WHERE username = ?");
+    $stmt->bind_param("s", $_SESSION['username']);
+    $stmt->execute();
+
+    // Update session role
+    $_SESSION['role'] = 'murid';
+
+    // Redirect kembali ke halaman utama
+    header("Location: index.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -269,8 +283,16 @@ $recent_classes_result = $recent_classes_query->get_result();
                 Username: <?= $_SESSION['username'] ?? 'Not set' ?><br>
                 Total Kelas: <?= $stats['total_kelas'] ?? 0 ?><br>
                 Total Nilai: <?= $stats['total_nilai_kelas'] ?? 0 ?>
-            </div>
+            </div>  
         <?php endif; ?>
+    </div>
+
+    <!-- Tombol Switch to Peserta -->
+                <form method="POST">
+                    <button type="submit" class="btn btn-warning btn-lg mt-4">Switch to Peserta</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
