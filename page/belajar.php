@@ -45,7 +45,7 @@ $result_video = mysqli_query($conn, $sql_video);
                         </video>
 
                         <a href="<?= htmlspecialchars($vid['file_path_video']) ?>" download
-                            class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
+                            class="mt-auto bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
                             📥 Download Video
                         </a>
                     </div>
@@ -59,12 +59,14 @@ $result_video = mysqli_query($conn, $sql_video);
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php while ($doc = mysqli_fetch_assoc($result_dokumen)): ?>
                     <div class="bg-white rounded-lg shadow p-4 flex flex-col h-full">
-                        <h3 class="text-lg font-bold mb-2 truncate" title="<?= htmlspecialchars(basename($doc['file_path_dokumen'])) ?>">
-                            <?= htmlspecialchars(mb_strimwidth(basename($doc['file_path_dokumen']), 0, 40, "...")) ?>
-                        </h3>
-                        <p class="text-sm text-gray-500 mb-3">File: <?= htmlspecialchars($doc['file_path_dokumen']) ?></p>
+                        <div>
+                            <h3 class="text-lg font-bold mb-2 truncate" title="<?= htmlspecialchars(basename($doc['file_path_dokumen'])) ?>">
+                                <?= htmlspecialchars(mb_strimwidth(basename($doc['file_path_dokumen']), 0, 40, "...")) ?>
+                            </h3>
+                            <p class="text-sm text-gray-500">File: <?= htmlspecialchars($doc['file_path_dokumen']) ?></p>
+                        </div>
                         <a href="<?= htmlspecialchars($doc['file_path_dokumen']) ?>" download
-                            class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
+                            class="mt-auto bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded text-center transition">
                             📥 Download PDF
                         </a>
                     </div>
