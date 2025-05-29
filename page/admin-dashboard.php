@@ -137,7 +137,7 @@ $namaAdmin = $_SESSION['username'];
                     <a href="admin-kelolaKelas.php" class="btn btn-outline-primary">Kelola Kelas</a>
                     <a href="admin-kelolaMateri.php" class="btn btn-outline-primary">Kelola Materi</a>
                     <a href="admin-kelolaTransaksi.php" class="btn btn-outline-primary">Kelola Transaksi</a>
-                    <a href="logout.php" class="btn btn-outline-primary">Logout</a>
+                    <a href="adminLogout.php" class="btn btn-outline-primary">Logout</a>
                 </div>
             </div>
 
