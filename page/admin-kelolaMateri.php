@@ -185,6 +185,19 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-money-bill-wave fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="card-title mb-0">Total Materi Pending</h5>
+                                        <h5 class="mb-0">Rp<?= number_format($transaksi['total_transaksi'], 0, ',', '.') ?></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <div class="card bg-info text-white">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">

@@ -197,6 +197,32 @@ $namaAdmin = $_SESSION['username'];
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-book fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="card-title mb-0">Total User Dinonaktifkan</h5>
+                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_materi']) ?></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-book fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="card-title mb-0">Message Semua User</h5>
+                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_materi']) ?></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tabel User dan Kelas -->
