@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link" href="pesan-mentor.php">Pesan</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="mentor-profil.php">Profil</a>    
+        </li>
         <li>
             <li class="nav-item"></li>
             <a class="nav-link" href="logout.php">Logout</a>
