@@ -132,10 +132,10 @@ $namaAdmin = $_SESSION['username'];
                     <h4 class="fw-bold mb-3"><?= htmlspecialchars($namaAdmin) ?></h4>
                 </div>
                 <div class="d-grid gap-2 w-75 mb-4">
-                    <a href="admin-dashboard.php" class="btn btn-outline-primary active">Dashboard</a>
+                    <a href="admin-dashboard.php" class="btn btn-outline-primary">Dashboard</a>
                     <a href="admin-kelolaUser.php" class="btn btn-outline-primary">Kelola User</a>
                     <a href="admin-kelolaKelas.php" class="btn btn-outline-primary">Kelola Kelas</a>
-                    <a href="admin-kelolaMateri.php" class="btn btn-outline-primary">Kelola Materi</a>
+                    <a href="admin-kelolaMateri.php" class="btn btn-outline-primary active">Kelola Materi</a>
                     <a href="admin-kelolaTransaksi.php" class="btn btn-outline-primary">Kelola Transaksi</a>
                     <a href="adminLogout.php" class="btn btn-outline-primary">Logout</a>
                 </div>
@@ -146,26 +146,26 @@ $namaAdmin = $_SESSION['username'];
                 <!-- Stats Overview -->
                 <div class="row w-100 mt-4">
                     <div class="col-md-3 mb-3">
-                        <div class="card bg-primary text-white">
+                        <div class="card bg-success text-white">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-users fa-2x me-3"></i>
+                                    <i class="fas fa-chalkboard-teacher fa-2x me-3"></i>
                                     <div>
-                                        <h5 class="card-title mb-0">Total User</h5>
-                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_users']) ?></h5>
+                                        <h5 class="card-title mb-0">Total Report Materi</h5>
+                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_kelas']) ?></h5>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <div class="card bg-success text-white">
+                        <div class="card bg-primary text-white">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-chalkboard-teacher fa-2x me-3"></i>
+                                    <i class="fas fa-users fa-2x me-3"></i>
                                     <div>
-                                        <h5 class="card-title mb-0">Total Kelas</h5>
-                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_kelas']) ?></h5>
+                                        <h5 class="card-title mb-0">Total Seluruh Materi</h5>
+                                        <h5 class="mb-0"><?= htmlspecialchars($stats['total_users']) ?></h5>
                                     </div>
                                 </div>
                             </div>
@@ -177,7 +177,20 @@ $namaAdmin = $_SESSION['username'];
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-money-bill-wave fa-2x me-3"></i>
                                     <div>
-                                        <h5 class="card-title mb-0">Pendapatan</h5>
+                                        <h5 class="card-title mb-0">Total Materi Diterima</h5>
+                                        <h5 class="mb-0">Rp<?= number_format($transaksi['total_transaksi'], 0, ',', '.') ?></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-money-bill-wave fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="card-title mb-0">Total Materi Pending</h5>
                                         <h5 class="mb-0">Rp<?= number_format($transaksi['total_transaksi'], 0, ',', '.') ?></h5>
                                     </div>
                                 </div>
@@ -190,7 +203,7 @@ $namaAdmin = $_SESSION['username'];
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-book fa-2x me-3"></i>
                                     <div>
-                                        <h5 class="card-title mb-0">Total Materi</h5>
+                                        <h5 class="card-title mb-0">Total Materi Dinonatifkan</h5>
                                         <h5 class="mb-0"><?= htmlspecialchars($stats['total_materi']) ?></h5>
                                     </div>
                                 </div>
