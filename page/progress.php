@@ -1,165 +1,95 @@
 <?php
-include "db.php";
-
-// Koneksi Database
-$conn = mysqli_connect($servername, $username, $password, $dbname);
-if (!$conn) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+session_start();
+include "db.php";  // koneksi database
+if (!isset($_SESSION['id'])) {
+    header("Location: ../login.php");
+    exit();
 }
 
-// Contoh user dan kelas (ganti sesuai aplikasi kamu)
-$id_user  = 1;
-$id_kelas = 1;
+$id_user = $_SESSION['id'];
 
-// Jika form disubmit untuk update progres
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_progres'])) {
-    $checkedMateri = isset($_POST['materi']) ? $_POST['materi'] : [];
+// Ambil kelas yang sudah dibeli user dengan status Completed
+$sql = "SELECT k.id_kelas, k.nama_kelas, k.badge 
+        FROM tb_kelas k
+        JOIN tb_transaksi t ON k.id_kelas = t.id_kelas
+        WHERE t.id_user = ? AND t.status = 'Completed'";
 
-    // Hapus progres lama
-    mysqli_query($conn, "DELETE FROM tb_progress_kelas WHERE id_user=$id_user AND id_kelas=$id_kelas");
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_user);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    // Tambahkan progres baru
-    foreach ($checkedMateri as $id_materi) {
-        $id_materi = intval($id_materi);
-        mysqli_query($conn, "INSERT INTO tb_progress_kelas (id_kelas, id_user, id_materi) VALUES ($id_kelas, $id_user, $id_materi)");
-    }
-}
-
-// Ambil semua materi di kelas
-$materi = [];
-$result = mysqli_query($conn, "SELECT id_materi, judul_materi FROM tb_materi WHERE id_kelas=$id_kelas ORDER BY urutan ASC");
-while ($row = mysqli_fetch_assoc($result)) {
-    $materi[$row['id_materi']] = $row['judul_materi'];
-}
-
-// Ambil progres user
-$progres = [];
-$result2 = mysqli_query($conn, "SELECT id_materi FROM tb_progress_kelas WHERE id_user=$id_user AND id_kelas=$id_kelas");
-while ($row2 = mysqli_fetch_assoc($result2)) {
-    $progres[] = $row2['id_materi'];
-}
-
-// Hitung progres
-$total_materi = count($materi);
-$materi_selesai = count($progres);
-$persen = $total_materi > 0 ? round(($materi_selesai / $total_materi) * 100) : 0;
 ?>
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Progress Belajar | Kelas Kita</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kelas Saya - KelasKita</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <style>
-        body {
-            background: #f6f8fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
         header {
             background-color: rgb(22, 137, 213);
-            color: white;
-            padding: 16px 24px;
-            text-align: center;
-            font-size: 20px;
-        }
-
-        .container {
-            max-width: 560px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-            padding: 32px 24px;
-        }
-
-        h2 {
-            color: #333;
-        }
-
-        .progress-container {
-            width: 100%;
-            background: #eee;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            height: 28px;
-            overflow: hidden;
-        }
-
-        .summary {
-            margin-bottom: 22px;
-            color: #555;
-        }
-
-        ul {
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 7px;
-        }
-
-        label {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .empty {
-            color: #aaa;
-            font-style: italic;
-        }
-
-        button {
-            background-color: rgb(59, 94, 190);
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: rgb(59, 94, 190);
         }
     </style>
 </head>
 
-<body>
-    <header>
-        Kelas Kita - Progress Belajar
-    </header>
-    <div class="container">
-        <h2>Progres Kelas Anda</h2>
-        <div class="progress-container">
-            <div class="progress-bar"><?php echo $persen; ?>%</div>
-        </div>
-        <div class="summary">
-            <?php echo $materi_selesai; ?> dari <?php echo $total_materi; ?> materi selesai
-        </div>
+<body class="bg-gray-100 min-h-screen">
 
-        <form method="POST" action="">
-            <h3>Checklist Materi:</h3>
-            <ul>
-                <?php if ($total_materi > 0): ?>
-                    <?php foreach ($materi as $id_materi => $judul_materi): ?>
-                        <li>
-                            <label>
-                                <input type="checkbox" name="materi[]" value="<?php echo $id_materi; ?>" <?php echo in_array($id_materi, $progres) ? 'checked' : ''; ?>>
-                                <?php echo htmlspecialchars($judul_materi); ?>
-                            </label>
-                        </li>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <li class="empty">Belum ada materi di kelas ini.</li>
-                <?php endif; ?>
-            </ul>
-            <button type="submit" name="update_progres">Simpan Progres</button>
-        </form>
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6">Kelas Saya</h1>
+
+        <?php if ($result->num_rows > 0): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php while ($kelas = $result->fetch_assoc()): ?>
+                    <div class="bg-white rounded-lg shadow-md p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-xl font-semibold"><?php echo htmlspecialchars($kelas['nama_kelas']); ?></h2>
+                            <?php if (!empty($kelas['badge'])): ?>
+                                <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded"><?php echo htmlspecialchars($kelas['badge']); ?></span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php
+                        // Ambil materi untuk kelas ini
+                        $sql_materi = "SELECT id_materi, urutan, judul_materi FROM tb_materi WHERE id_kelas = ? ORDER BY urutan ASC";
+                        $stmt_materi = $conn->prepare($sql_materi);
+                        $stmt_materi->bind_param("i", $kelas['id_kelas']);
+                        $stmt_materi->execute();
+                        $result_materi = $stmt_materi->get_result();
+                        ?>
+
+                        <ul class="list-disc pl-5 space-y-1">
+                            <?php while ($materi = $result_materi->fetch_assoc()): ?>
+                                <?php
+                                // Cek progress materi sudah selesai atau belum
+                                $sql_progress = "SELECT 1 FROM tb_progress_kelas WHERE id_user = ? AND id_kelas = ? AND id_materi = ? LIMIT 1";
+                                $stmt_progress = $conn->prepare($sql_progress);
+                                $stmt_progress->bind_param("iii", $id_user, $kelas['id_kelas'], $materi['id_materi']);
+                                $stmt_progress->execute();
+                                $stmt_progress->store_result();
+                                $selesai = $stmt_progress->num_rows > 0;
+                                ?>
+                                <li class="<?php echo $selesai ? 'text-green-600 font-semibold' : 'text-gray-700'; ?>">
+                                    <?php echo htmlspecialchars($materi['urutan'] . '. ' . $materi['judul_materi']); ?>
+                                    <?php if ($selesai): ?>
+                                        <span class="ml-2 text-sm text-green-500 font-bold">&#10003; Selesai</span>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endwhile; ?>
+                        </ul>
+
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        <?php else: ?>
+            <p class="text-gray-600">Belum ada kelas yang dibeli.</p>
+        <?php endif; ?>
+
     </div>
+    <?php include "../Views/footer.php"; ?>
 </body>
+
 </html>
-<?php mysqli_close($conn); ?>
