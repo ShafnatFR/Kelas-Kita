@@ -1,162 +1,137 @@
 <?php
-// db.php harus ada dan berisi koneksi mysqli ke database
+session_start();
 include "db.php";
 
-$alert = "";
-date_default_timezone_set('Asia/Jakarta'); // Set timezone WIB
+// Pastikan user login
+if (!isset($_SESSION['id_user'])) {
+    die("Anda harus login terlebih dahulu.");
+}
 
-// Ambil kelas dari GET jika ada
-$selected_kelas = isset($_GET['id_kelas']) ? $_GET['id_kelas'] : null;
+$id_user = $_SESSION['id_user'];
 
-// Proses kirim review
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_review'])) {
-    $bintang_review = $_POST['bintang_review'];
-    $isi_review     = mysqli_real_escape_string($conn, $_POST['isi_review']);
-    $id_user        = $_POST['id_user'];
-    $id_kelas       = $_POST['id_kelas'];
-    $tgl_review     = date("Y-m-d H:i:s");
+// Ambil id_kelas dari URL
+if (!isset($_GET['id_kelas']) || !is_numeric($_GET['id_kelas'])) {
+    die("ID kelas tidak ditemukan.");
+}
+$id_kelas = (int)$_GET['id_kelas'];
 
-    $query = "INSERT INTO tb_review (bintang_review, isi_review, tgl_review, id_user, id_kelas)
-            VALUES ('$bintang_review', '$isi_review', '$tgl_review', '$id_user', '$id_kelas')";
+// Cek apakah kelas ada
+$cekKelas = $con->prepare("SELECT nama_kelas FROM tb_kelas WHERE id_kelas = ?");
+$cekKelas->bind_param("i", $id_kelas);
+$cekKelas->execute();
+$cekKelas->store_result();
+if ($cekKelas->num_rows === 0) {
+    die("Kelas tidak tersedia.");
+}
+$cekKelas->bind_result($nama_kelas);
+$cekKelas->fetch();
+$cekKelas->close();
 
-    if (mysqli_query($conn, $query)) {
-        // Redirect ke halaman dengan GET id_kelas agar review terbaru muncul
-        header("Location: ".$_SERVER['PHP_SELF']."?id_kelas=".$id_kelas);
-        exit();
+// Cek apakah user sudah membeli kelas dengan transaksi 'Completed'
+$cekTransaksi = $con->prepare("SELECT COUNT(*) FROM tb_transaksi WHERE id_user = ? AND id_kelas = ? AND status = 'Completed'");
+$cekTransaksi->bind_param("ii", $id_user, $id_kelas);
+$cekTransaksi->execute();
+$cekTransaksi->bind_result($sudahBeli);
+$cekTransaksi->fetch();
+$cekTransaksi->close();
+
+// Handle kirim review
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
+    $bintang = $_POST['bintang_review'] ?? '';
+    $isi_review = trim($_POST['isi_review'] ?? '');
+
+    if ($sudahBeli == 0) {
+        $error = "Anda belum membeli kelas ini.";
+    } elseif (!$bintang || !$isi_review) {
+        $error = "Semua field wajib diisi.";
     } else {
-        $alert = "<div class='bg-red-100 text-red-800 p-3 rounded-lg mb-4'>Gagal mengirim review: " . mysqli_error($conn) . "</div>";
+        $stmt = $con->prepare("INSERT INTO tb_review (bintang_review, isi_review, id_user, id_kelas) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssii", $bintang, $isi_review, $id_user, $id_kelas);
+        if ($stmt->execute()) {
+            header("Location: review_kelas.php?id_kelas=$id_kelas");
+            exit;
+        } else {
+            $error = "Gagal menyimpan review.";
+        }
+        $stmt->close();
     }
 }
 
-// Data kelas statis
-$kelas_list = [
-    1 => 'Pemrograman Web',
-    2 => 'UI/UX Desain',
-    3 => 'Bahasa Jepang',
-    4 => 'Bahasa Inggris',
-    5 => 'Kalkulus',
-    6 => 'Dasar Manajemen',
-    7 => 'Ekonomi',
-];
-
-// Ambil review jika kelas dipilih
-$review_result = null;
-if ($selected_kelas) {
-    $selected_kelas = intval($selected_kelas); // Amankan input
-    $review_result = mysqli_query($conn, "SELECT * FROM tb_review WHERE id_kelas = $selected_kelas ORDER BY tgl_review DESC");
-}
-
+// Ambil semua review kelas
+$queryReviews = $con->prepare("
+    SELECT r.bintang_review, r.isi_review, r.tgl_review, u.first_name, u.last_name 
+    FROM tb_review r 
+    JOIN tb_user u ON r.id_user = u.id_user 
+    WHERE r.id_kelas = ? 
+    ORDER BY r.tgl_review DESC
+");
+$queryReviews->bind_param("i", $id_kelas);
+$queryReviews->execute();
+$resultReviews = $queryReviews->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <title>Review Kelas - KelasKita</title>
+    <meta charset="UTF-8">
+    <title>Review Kelas - <?= htmlspecialchars($nama_kelas) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        function setRating(value) {
-            document.getElementById('bintang_review').value = value;
-            let stars = document.querySelectorAll('.star');
-            stars.forEach((star, index) => {
-                if (index < value) {
-                    star.classList.add('text-yellow-400');
-                    star.classList.remove('text-gray-300');
-                } else {
-                    star.classList.add('text-gray-300');
-                    star.classList.remove('text-yellow-400');
-                }
-            });
-        }
-    </script>
 </head>
+<body class="bg-gray-100 p-6">
 
-<body class="bg-gray-100">
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Review untuk: <?= htmlspecialchars($nama_kelas) ?></h1>
 
-<header style="background-color: rgb(22, 137, 213);" class="text-white py-6 shadow-md">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Review KelasKita</h1>
-    </div>
-</header>
-
-<main class="p-6 max-w-3xl mx-auto">
-
-    <!-- Pilih Kelas -->
-    <div class="bg-white p-6 rounded-2xl shadow-md mb-8">
-        <h2 class="text-xl font-bold mb-4 text-center">Pilih Kelas yang Ingin Direview</h2>
-        <form method="GET">
-            <select name="id_kelas" class="w-full border rounded-lg p-2" onchange="this.form.submit()" required>
-                <option value="">-- Pilih Kelas --</option>
-                <?php foreach ($kelas_list as $id => $nama): ?>
-                    <option value="<?= $id ?>" <?= $selected_kelas == $id ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($nama) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </form>
-    </div>
-
-    <?php if ($selected_kelas): ?>
-        <!-- Form Review -->
-        <div class="bg-white p-6 rounded-2xl shadow-md mb-8">
-            <h2 class="text-2xl font-bold mb-4 text-center">Tulis Review</h2>
-            <?= $alert ?>
-            <form method="POST" class="space-y-4">
-                <div>
-                    <label class="block font-medium mb-1">Rating:</label>
-                    <div class="flex space-x-1 text-3xl cursor-pointer">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <span class="star text-gray-300" onclick="setRating(<?= $i ?>)">&#9733;</span>
-                        <?php endfor; ?>
-                    </div>
-                    <input type="hidden" name="bintang_review" id="bintang_review" required>
-                </div>
-
-                <div>
-                    <label class="block font-medium mb-1">Isi Review:</label>
-                    <textarea name="isi_review" rows="4" maxlength="100" required
-                        class="w-full border rounded-lg p-2" placeholder="Tulis pendapatmu tentang kelas ini..."></textarea>
-                </div>
-
-                <!-- Hidden Inputs -->
-                <input type="hidden" name="id_user" value="1"> <!-- Ganti dengan user session jika ada -->
-                <input type="hidden" name="id_kelas" value="<?= $selected_kelas ?>">
-
-                <div class="flex justify-end">
-                    <button
-                        type="submit"
-                        name="submit_review"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
-                    >
-                        Kirim Review
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Daftar Review -->
-        <div class="bg-white p-6 rounded-2xl shadow-md">
-            <h2 class="text-xl font-bold mb-4">Review untuk Kelas Ini</h2>
-            <?php if ($review_result && mysqli_num_rows($review_result) > 0): ?>
-                <div class="space-y-4">
-                    <?php while ($review = mysqli_fetch_assoc($review_result)): ?>
-                        <div class="border-b pb-3">
-                            <div class="flex items-center mb-1">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <span class="text-xl <?= $i <= $review['bintang_review'] ? 'text-yellow-400' : 'text-gray-300' ?>">&#9733;</span>
-                                <?php endfor; ?>
-                            </div>
-                            <p class="text-gray-700"><?= htmlspecialchars($review['isi_review']) ?></p>
-                            <p class="text-sm text-gray-500"><?= date('d M Y H:i', strtotime($review['tgl_review'])) ?></p>
-                        </div>
-                    <?php endwhile; ?>
-                </div>
-            <?php else: ?>
-                <p class="text-gray-500">Belum ada review untuk kelas ini.</p>
+    <!-- Form Review -->
+    <?php if ($sudahBeli > 0): ?>
+        <form method="POST" class="mb-6">
+            <?php if (isset($error)): ?>
+                <div class="bg-red-100 text-red-700 p-2 mb-3 rounded"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
+
+            <label class="block mb-2 font-semibold">Rating Bintang</label>
+            <select name="bintang_review" class="w-full p-2 border rounded mb-4" required>
+                <option value="">-- Pilih Rating --</option>
+                <option value="1">1 ★</option>
+                <option value="2">2 ★★</option>
+                <option value="3">3 ★★★</option>
+                <option value="4">4 ★★★★</option>
+                <option value="5">5 ★★★★★</option>
+            </select>
+
+            <label class="block mb-2 font-semibold">Isi Review</label>
+            <textarea name="isi_review" rows="4" class="w-full p-2 border rounded mb-4" required></textarea>
+
+            <button type="submit" name="submit_review" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Kirim Review</button>
+        </form>
+    <?php else: ?>
+        <div class="mb-6 p-4 bg-yellow-100 border border-yellow-300 rounded">
+            Anda belum membeli kelas ini. Hanya pembeli yang bisa memberikan review.
         </div>
     <?php endif; ?>
-</main>
+
+    <!-- List Review -->
+    <h2 class="text-xl font-semibold mb-3">Ulasan dari Pelajar Lain</h2>
+    <?php if ($resultReviews->num_rows == 0): ?>
+        <p class="text-gray-500">Belum ada ulasan untuk kelas ini.</p>
+    <?php else: ?>
+        <ul class="space-y-4">
+            <?php while($row = $resultReviews->fetch_assoc()): ?>
+                <li class="border p-4 rounded bg-gray-50">
+                    <div class="flex items-center justify-between mb-1">
+                        <strong><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></strong>
+                        <span class="text-yellow-500">
+                            <?= str_repeat('★', (int)$row['bintang_review']) ?>
+                            <?= str_repeat('☆', 5 - (int)$row['bintang_review']) ?>
+                        </span>
+                    </div>
+                    <p class="mb-2"><?= htmlspecialchars($row['isi_review']) ?></p>
+                    <small class="text-gray-500"><?= date('d M Y, H:i', strtotime($row['tgl_review'])) ?></small>
+                </li>
+            <?php endwhile; ?>
+        </ul>
+    <?php endif; ?>
+</div>
 <?php include "../Views/footer.php"; ?>
 </body>
 </html>
