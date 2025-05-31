@@ -341,13 +341,22 @@ $stmt_ulasan->close();
                 </div>
             </div>
 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
-    <div class="course-price mb-3"><?php 
-        if (strpos($course['harga'], 'Rp') !== false) {
-            echo $course['harga']; // Tampilkan apa adanya jika sudah berformat
-        } else {
-            echo 'Rp ' . number_format((float)$course['harga'], 2, ',', '.');
-        }
-    ?></div>
+    <?php
+    $price = intval($course['harga']);
+    $original_price = intval($course['original_price'] ?? $price * 2);
+    $discount = $original_price > 0 ? round((($original_price - $price) / $original_price) * 100) : 0;
+    ?>
+    <div class="mb-2">
+        <span class="badge bg-primary" style="font-size: 0.7rem;">
+            <?php echo $discount; ?>%
+        </span>
+    </div>
+    <div class="text-muted text-decoration-line-through mb-1" style="font-size: 0.8rem;">
+        Rp <?php echo number_format($original_price, 0, ',', '.'); ?>
+    </div>
+    <div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
+        Rp <?php echo number_format($price, 0, ',', '.'); ?>
+    </div>
     <form method="post" action="Coursedetail.php?id=<?php echo $course['id_kelas']; ?>">
         <input type="hidden" name="add_to_cart" value="1">
         <button type="submit" class="course-button">Daftar Sekarang</button>
