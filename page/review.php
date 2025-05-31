@@ -157,6 +157,6 @@ if ($selected_kelas) {
         </div>
     <?php endif; ?>
 </main>
-
+<?php include "../Views/footer.php"; ?>
 </body>
 </html>
