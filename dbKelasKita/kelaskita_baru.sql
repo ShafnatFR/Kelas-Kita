@@ -82,31 +82,6 @@ INSERT INTO `tb_dokumen` (`id_dokumen`, `file_path_dokumen`) VALUES
 (3, 'Control Structure.pdf');
 
 -- --------------------------------------------------------
-CREATE TABLE `tb_instruktur` (
-  `id` int(11) NOT NULL,
-  `nama` varchar(255) NOT NULL,
-  `foto` varchar(255) DEFAULT NULL,
-  `bidang` varchar(255) DEFAULT NULL,
-  `rating` decimal(3,2) DEFAULT 0.00,
-  `jumlah_pelajar` int(11) DEFAULT 0,
-  `jumlah_kursus` int(11) DEFAULT 0,
-  `bio_singkat` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- Dumping data untuk tabel `tb_instruktur`
-INSERT INTO `tb_instruktur` (`id`, `nama`, `foto`, `bidang`, `rating`, `jumlah_pelajar`, `jumlah_kursus`, `bio_singkat`, `created_at`) VALUES
-(1, 'John Doe', 'img/instruktur/john.jpg', 'Web Development', 4.80, 1250, 15, 'Experienced web developer with 10+ years in the industry', '2025-05-26 10:45:11'),
-(2, 'Jane Smith', 'img/instruktur/jane.jpg', 'Digital Marketing', 4.90, 980, 12, 'Digital marketing expert specializing in social media and SEO', '2025-05-26 10:45:11');
--- Indeks untuk tabel `tb_instruktur`
-ALTER TABLE `tb_instruktur`
-  ADD PRIMARY KEY (`id`);
--- AUTO_INCREMENT untuk tabel `tb_instruktur`
-ALTER TABLE `tb_instruktur`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-COMMIT;
---
--- Table structure for table `tb_kategori`
---
 
 CREATE TABLE `tb_kategori` (
   `id_kategori` int(30) NOT NULL AUTO_INCREMENT,
@@ -147,11 +122,6 @@ CCREATE TABLE `tb_kelas` (
   `description` text DEFAULT NULL,
   `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft',
   `tanggal_rilis` date DEFAULT NULL,
-  `instruktur_id` int(11) DEFAULT NULL,
-  `jumlah_ulasan` int(11) DEFAULT 0,
-  `jumlah_pelajar` int(11) DEFAULT 0,
-  `jumlah_video` int(11) DEFAULT 0,
-  `jumlah_resource` int(11) DEFAULT 0,
   `ada_sertifikat` tinyint(1) DEFAULT 0,
   `tanggal_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -198,24 +198,25 @@ $result_Kategori_links = $conn->query($sql_Kategori_links);
             $base_url = "";
 
             // Updated SQL query to fetch additional details for the course cards
-            $sql_featured_courses = "
-                SELECT 
-                    k.id_kelas AS id,
-                    k.profil_kelas AS image,
-                    c.nama_kategori AS category,
-                    k.nama_kelas AS title,
-                    CONCAT(u.first_name, ' ', u.last_name) AS instructor,
-                    k.jumlah_peserta AS views,
-                    (SELECT COUNT(*) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS comments,
-                    (SELECT AVG(rating) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS avg_rating,
-                    k.harga AS price
-                FROM tb_kelas k
-                LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
-                LEFT JOIN tb_user u ON k.instruktur_id = u.id_user
-                WHERE k.status_publikasi = 'approved'
-                ORDER BY k.tanggal_rilis DESC
-                LIMIT 8
-            ";
+$sql_featured_courses = "
+    SELECT 
+        k.id_kelas AS id,
+        k.profil_kelas AS image,
+        c.nama_kategori AS category,
+        k.nama_kelas AS title,
+        CONCAT(u.first_name, ' ', u.last_name) AS instructor,
+        k.jumlah_peserta AS views,
+        (SELECT COUNT(*) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS comments,
+        (SELECT AVG(rating) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS avg_rating,
+        k.harga AS price
+    FROM tb_kelas k
+    LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
+    LEFT JOIN tb_mentor m ON k.id_mentor = m.id_mentor
+    LEFT JOIN tb_user u ON m.id_user = u.id_user
+    WHERE k.status_publikasi = 'approved'
+    ORDER BY k.tanggal_rilis DESC
+    LIMIT 8
+";
             $result_featured = $conn->query($sql_featured_courses);
             if (!$result_featured) {
                 echo '<div class="col-12 text-center">Maaf, tidak dapat memuat kursus unggulan saat ini.</div>';

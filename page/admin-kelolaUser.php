@@ -15,6 +15,22 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
+
+// Query untuk mengambil data laporan user
+$totalLaporanUser = $conn->prepare("
+SELECT COUNT(*) as total_laporan
+FROM tb_laporan
+WHERE kategori_report
+LIKE 'Penggunaan kata kasar';
+");
+if (!$totalLaporanUser) {
+    die("Error preparing laporan statement: " . $conn->error);
+}
+$totalLaporanUser->execute();
+$laporanResult = $totalLaporanUser->get_result();
+$laporanData = $laporanResult->fetch_assoc();
+
+
 // Query untuk mengambil total user dengan error handling
 $totalUser = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
 if (!$totalUser) {
@@ -24,76 +40,50 @@ $totalUser->execute();
 $userResult = $totalUser->get_result();
 $userData = $userResult->fetch_assoc();
 
-// Query untuk mengambil data user untuk tabel - sesuaikan dengan kolom yang ada
-$tb_user = $conn->prepare("
-    SELECT id_user, 
-           CASE 
-               WHEN first_name IS NOT NULL AND last_name IS NOT NULL 
-               THEN CONCAT(first_name, ' ', last_name)
-               ELSE username
-           END AS fullname, 
-           username
-    FROM tb_user
-    ORDER BY id_user ASC
+
+// Query untuk mengambil total mentor
+$totalMentor = $conn->prepare("
+SELECT COUNT(*) as total_mentor FROM tb_user WHERE role = 'mentor'
 ");
-if (!$tb_user) {
-    die("Error preparing user statement: " . $conn->error);
+if (!$totalMentor) {
+    die("Error preparing mentor statement: " . $conn->error);
 }
-$tb_user->execute();
-$tb_userResult = $tb_user->get_result();
-$tb_userData = $tb_userResult->fetch_all(MYSQLI_ASSOC);
+$totalMentor->execute();
+$mentorResult = $totalMentor->get_result();
+$mentorData = $mentorResult->fetch_assoc();
 
-//QUERY BUAT KELAS
-$tb_kelas = $conn->prepare("
-    SELECT id_kelas, nama_kelas FROM tb_kelas
-    ORDER BY id_kelas ASC
+
+// Query untuk mengambil total pelajar
+$totalPelajar = $conn->prepare("
+SELECT COUNT(*) as total_pelajar FROM tb_user WHERE role = 'murid'
 ");
-if (!$tb_kelas) {
-    die("Error preparing kelas statement: " . $conn->error);
+if (!$totalPelajar) {
+    die("Error preparing pelajar statement: " . $conn->error);
 }
-$tb_kelas->execute();
-$tb_kelasResult = $tb_kelas->get_result();
-$tb_kelasData = $tb_kelasResult->fetch_all(MYSQLI_ASSOC);
+$totalPelajar->execute();
+$pelajarResult = $totalPelajar->get_result();
+$pelajarData = $pelajarResult->fetch_assoc();
 
-// Query untuk mengambil total kelas
-$totalKelas = $conn->prepare("SELECT COUNT(*) as total_kelas FROM tb_kelas");
-if (!$totalKelas) {
-    die("Error preparing kelas statement: " . $conn->error);
-}
-$totalKelas->execute();
-$kelasResult = $totalKelas->get_result();
-$kelasData = $kelasResult->fetch_assoc();
 
-// Query untuk mengambil total transaksi - disederhanakan jika tabel join bermasalah
-$totalTransaksi = $conn->prepare("
-    SELECT COALESCE(SUM(k.harga), 0) AS total_transaksi
-    FROM tb_kelas k
-    LEFT JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
-    LEFT JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
-    WHERE tk.status = 'Completed'
+// Query untuk mengambil data user yang dinonaktifkan
+$totalUserDinonAktifkan = $conn->prepare("
+SELECT COUNT(*) as total_pelajar FROM tb_user WHERE status = 'non-aktif'
 ");
-if (!$totalTransaksi) {
-    // Jika query join gagal, gunakan query sederhana
-    $totalTransaksi = $conn->prepare("SELECT 0 AS total_transaksi");
+if (!$totalUserDinonAktifkan) {
+    die("Error preparing non-active user statement: " . $conn->error);
 }
-$totalTransaksi->execute();
-$transaksiResult = $totalTransaksi->get_result();
-$transaksiData = $transaksiResult->fetch_assoc();
+$totalUserDinonAktifkan->execute();
+$userDinonAktifkanResult = $totalUserDinonAktifkan->get_result();
+$userDinonAktifkanData = $userDinonAktifkanResult->fetch_assoc();
 
-// Query untuk mengambil total materi
-$totalMateri = $conn->prepare("SELECT COUNT(*) as total_materi FROM tb_materi");
-if (!$totalMateri) {
-    die("Error preparing materi statement: " . $conn->error);
-}
-$totalMateri->execute();
-$materiResult = $totalMateri->get_result();
-$materiData = $materiResult->fetch_assoc();
 
 // Menyimpan data untuk ditampilkan
 $stats = array(
+    'total_kelas' => $laporanData['total_laporan'] ?? 0,
     'total_users' => $userData['total_users'] ?? 0,
-    'total_kelas' => $kelasData['total_kelas'] ?? 0,
-    'total_materi' => $materiData['total_materi'] ?? 0
+    'total_mentor' => $mentorData['total_mentor'] ?? 0,
+    'total_pelajar' => $pelajarData['total_pelajar'] ?? 0,
+    'total_user_dinonaktifkan' => $userDinonAktifkanData['total_pelajar'] ?? 0,
 );
 
 $transaksi = array(
@@ -229,7 +219,7 @@ $namaAdmin = $_SESSION['username'];
 
                 <!-- Tabel User dan Kelas -->
                 <div class="row w-100">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-12 mb-4">
                         <div class="card">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="card-title mb-0">
@@ -300,85 +290,6 @@ $namaAdmin = $_SESSION['username'];
                                         <i class="fas fa-users fa-4x text-muted mb-3"></i>
                                         <h5 class="text-muted mb-2">Belum Ada User Terdaftar</h5>
                                         <p class="text-muted">Data user akan muncul di sini ketika ada user yang mendaftar</p>
-                                        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
-                                            <i class="fas fa-sync-alt me-1"></i>Refresh Data
-                                        </button>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="col-md-6 mb-4">
-                        <div class="card">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="card-title mb-0">
-                                    <i class="fas fa-chalkboard-teacher fa-2x me-3"></i>Data Kelas Terdaftar
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                            
-                                <?php if (count($tb_kelasData) > 0): ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped table-hover">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">ID Kelas</th>
-                                                    <th scope="col">Nama Kelas</th>
-                                                    <th scope="col" class="text-center">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php 
-                                                $no = 1;
-                                                foreach ($tb_kelasData as $kelas): 
-                                                ?>
-                                                <tr>
-                                                    <th scope="row"><?= $no++ ?></th>
-                                                    <td><?= htmlspecialchars($kelas['id_kelas']) ?></td>
-                                                    <td>
-                                                        <span class="badge bg-success">
-                                                            <?= htmlspecialchars($kelas['nama_kelas']) ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="btn-group" role="group">
-                                                            <a href="edit_kelas.php?id=<?= $kelas['id_kelas'] ?>" 
-                                                               class="btn btn-sm btn-outline-primary" 
-                                                               title="Edit Kelas">
-                                                                <i class="fas fa-edit"></i> Edit
-                                                            </a>
-                                                            <a href="delete_kelas.php?id=<?= $kelas['id_kelas'] ?>" 
-                                                               class="btn btn-sm btn-outline-danger" 
-                                                               title="Hapus Kelas"
-                                                               onclick="return confirm('Apakah Anda yakin ingin menghapus kelas <?= htmlspecialchars($kelas['nama_kelas']) ?>?\n\nTindakan ini tidak dapat dibatalkan!')">
-                                                                <i class="fas fa-trash"></i> Hapus
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="mt-3 d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Total: <?= count($tb_kelasData) ?> kelas terdaftar
-                                        </small>
-                                        <div>
-                                            <button class="btn btn-sm btn-outline-success" onclick="location.reload()">
-                                                <i class="fas fa-sync-alt me-1"></i>Refresh
-                                            </button>
-                                        </div>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-chalkboard-teacher fa-4x text-muted mb-3"></i>
-                                        <h5 class="text-muted mb-2">Belum Ada Kelas Terdaftar</h5>
-                                        <p class="text-muted">Data kelas akan muncul di sini ketika ada kelas yang ditambahkan</p>
                                         <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
                                             <i class="fas fa-sync-alt me-1"></i>Refresh Data
                                         </button>
