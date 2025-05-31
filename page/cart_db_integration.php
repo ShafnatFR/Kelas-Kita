@@ -9,11 +9,11 @@
 function syncCartOnLogin($user_id, $conn) {
     // 1. Get user's cart from database
     $db_cart = [];
-    $sql = "SELECT uc.course_id, k.nama_kursus, k.harga, k.gambar, kat.nama_kategori 
-            FROM user_cart uc 
-            JOIN kursus k ON uc.course_id = k.id 
-            LEFT JOIN kategori_kursus kat ON k.kategori_id = kat.id 
-            WHERE uc.user_id = ?";
+    $sql = "SELECT uc.id_kelas, k.nama_kelas, k.harga, k.profil_kelas, kat.nama_kategori 
+            FROM tb_keranjang uc 
+            JOIN tb_kelas k ON uc.id_kelas = k.id_kelas 
+            LEFT JOIN tb_kategori kat ON k.kategori = kat.id_kategori 
+            WHERE uc.id_user = ?";
     
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $user_id);
@@ -63,14 +63,14 @@ function updateDatabaseCart($user_id, $conn) {
     if (!$user_id) return;
     
     // 1. Clear existing cart
-    $sql = "DELETE FROM user_cart WHERE user_id = ?";
+    $sql = "DELETE FROM tb_keranjang WHERE id_user = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     
     // 2. Insert current session cart items to database
     if (!empty($_SESSION['cart'])) {
-        $sql = "INSERT INTO user_cart (user_id, course_id, price, added_at) VALUES (?, ?, ?, NOW())";
+        $sql = "INSERT INTO tb_keranjang (id_user, id_kelas) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         
         foreach ($_SESSION['cart'] as $item) {
@@ -108,12 +108,10 @@ function addToCart($item, $user_id, $conn) {
         
         // 3. Add to database if user is logged in
         if ($user_id) {
-            $sql = "INSERT INTO user_cart (user_id, course_id, price, added_at) 
-                    VALUES (?, ?, ?, NOW()) 
-                    ON DUPLICATE KEY UPDATE price = ?, added_at = NOW()";
+            $sql = "INSERT INTO tb_keranjang (id_user, id_kelas) VALUES (?, ?)";
             
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iidi", $user_id, $item['id'], $item['price'], $item['price']);
+            $stmt->bind_param("ii", $user_id, $item['id']);
             $stmt->execute();
         }
         
@@ -142,10 +140,10 @@ function removeFromCart($item_id, $user_id, $conn) {
     
     // 2. Remove from database if user is logged in
     if ($user_id) {
-        $sql = "DELETE FROM user_cart WHERE user_id = ? AND course_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $user_id, $item_id);
-        $stmt->execute();
+    $sql = "DELETE FROM tb_keranjang WHERE id_user = ? AND id_kelas = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $user_id, $item_id);
+    $stmt->execute();
     }
 }
 
@@ -160,7 +158,7 @@ function clearCart($user_id, $conn) {
     
     // 2. Clear database cart if user is logged in
     if ($user_id) {
-        $sql = "DELETE FROM user_cart WHERE user_id = ?";
+        $sql = "DELETE FROM tb_keranjang WHERE id_user = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -182,11 +180,11 @@ function getCartItems($user_id = null, $conn = null) {
     // If session cart is empty but user is logged in, try getting from database
     if ($user_id && $conn) {
         $cart = [];
-        $sql = "SELECT uc.course_id, k.nama_kursus, k.harga, k.gambar, kat.nama_kategori 
-                FROM user_cart uc 
-                JOIN kursus k ON uc.course_id = k.id 
-                LEFT JOIN kategori_kursus kat ON k.kategori_id = kat.id 
-                WHERE uc.user_id = ?";
+        $sql = "SELECT uc.id_kelas, k.nama_kelas, k.harga, k.profil_kelas, kat.nama_kategori 
+                FROM tb_keranjang uc 
+                JOIN tb_kelas k ON uc.id_kelas = k.id_kelas 
+                LEFT JOIN tb_kategori kat ON k.kategori = kat.id_kategori 
+                WHERE uc.id_user = ?";
         
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
@@ -195,11 +193,11 @@ function getCartItems($user_id = null, $conn = null) {
         
         while ($row = $result->fetch_assoc()) {
             $cart[] = [
-                'id' => $row['course_id'],
-                'name' => $row['nama_kursus'],
+                'id' => $row['id_kelas'],
+                'name' => $row['nama_kelas'],
                 'price' => $row['harga'],
                 'quantity' => 1,
-                'image' => $row['gambar'],
+                'image' => $row['profil_kelas'],
                 'category' => $row['nama_kategori']
             ];
         }
