@@ -347,7 +347,7 @@ $conn->close();
                 <div class="course-content">
                     <h3 class="mb-4">Deskripsi Kursus</h3>
                     <div>
-                        <?php echo nl2br(htmlspecialchars($course['deskripsi'] ?? 'Deskripsi lengkap tidak tersedia.')); // nl2br untuk baris baru ?>
+                        <?php echo nl2br(htmlspecialchars($course['description'] ?? 'Deskripsi lengkap tidak tersedia.')); // nl2br untuk baris baru ?>
                     </div>
                 </div>
 
