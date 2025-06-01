@@ -205,7 +205,6 @@ $sql_featured_courses = "
         c.nama_kategori AS category,
         k.nama_kelas AS title,
         CONCAT(u.first_name, ' ', u.last_name) AS instructor,
-        k.jumlah_peserta AS views,
         0 AS comments,
         0 AS avg_rating,
         k.harga AS price
@@ -226,7 +225,7 @@ $sql_featured_courses = "
                         $detail_url = "Coursedetail.php?id=" . intval($course['id']);
                         $avg_rating = round(floatval($course['avg_rating']), 1);
                         $comments = intval($course['comments']);
-                        $views = intval($course['views']);
+                        
                         $duration = htmlspecialchars($course['duration'] ?? '1 Jam');
                         $category = htmlspecialchars($course['category']);
                         $instructor = htmlspecialchars($course['instructor']);
