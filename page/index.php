@@ -235,8 +235,8 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                     k.nama_kelas AS title,
                     CONCAT(u.first_name, ' ', u.last_name) AS instructor,
                     k.jumlah_peserta AS views,
-                    COALESCE(SUM(rev.rating) / COUNT(rev.id_ulasan), 0) AS avg_rating,
-                    COUNT(rev.id_ulasan) AS comments,
+                    COALESCE(SUM(rev.bintang_review) / COUNT(rev.id_review), 0) AS avg_rating,
+                    COUNT(rev.id_review) AS comments,
                     k.harga AS price,
                     $duration_field AS duration,
                     $type_field AS type
@@ -244,7 +244,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                 LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
                 LEFT JOIN tb_mentor m ON k.id_mentor = m.id_mentor
                 LEFT JOIN tb_user u ON m.id_user = u.id_user
-                LEFT JOIN tb_ulasan rev ON k.id_kelas = rev.kursus_id
+                LEFT JOIN tb_review rev ON k.id_kelas = rev.id_kelas
                 WHERE k.status_publikasi = 'approved'
                 GROUP BY k.id_kelas
                 ORDER BY k.tanggal_rilis DESC
