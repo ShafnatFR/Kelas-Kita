@@ -7,6 +7,17 @@ $id_kelas = $_SESSION['id_kelas'] ?? 101; // default testing
 
 $msg = '';
 
+// Ambil nama kelas
+$nama_kelas = 'Kelas Tidak Diketahui';
+$stmt_kelas = $conn->prepare("SELECT nama_kelas FROM tb_kelas WHERE id_kelas = ?");
+$stmt_kelas->bind_param("i", $id_kelas);
+$stmt_kelas->execute();
+$stmt_kelas->bind_result($nama_kelas_db);
+if ($stmt_kelas->fetch()) {
+    $nama_kelas = $nama_kelas_db;
+}
+$stmt_kelas->close();
+
 // Proses kirim komentar
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_komentar'])) {
     $isi = trim($_POST['isi']);
@@ -24,8 +35,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_komentar'])) {
     }
 }
 
-// Ambil komentar
-$result = $conn->query("SELECT * FROM tb_komentar WHERE id_kelas = $id_kelas ORDER BY id_komentar DESC");
+// Ambil komentar beserta nama user
+$query = "
+    SELECT k.isi, u.first_name, u.last_name 
+    FROM tb_komentar k 
+    JOIN tb_user u ON k.id_user = u.id_user 
+    WHERE k.id_kelas = ? 
+    ORDER BY k.id_komentar DESC
+";
+
+$stmt_komentar = $conn->prepare($query);
+$stmt_komentar->bind_param("i", $id_kelas);
+$stmt_komentar->execute();
+$result = $stmt_komentar->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -39,7 +61,6 @@ $result = $conn->query("SELECT * FROM tb_komentar WHERE id_kelas = $id_kelas ORD
 
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-    <!-- Header dengan warna biru VSC (#007ACC) via inline style -->
     <header style="background-color:rgb(22, 137, 213);" class="text-white py-6">
         <div class="container mx-auto px-4">
             <h1 class="text-3xl font-bold">📝 Komentar KelasKita</h1>
@@ -48,7 +69,7 @@ $result = $conn->query("SELECT * FROM tb_komentar WHERE id_kelas = $id_kelas ORD
     </header>
 
     <div class="max-w-3xl mx-auto py-10 px-4">
-        <h1 class="text-2xl font-bold text-[#007ACC] mb-4">💬 Komentar untuk Kelas ID <?= htmlspecialchars($id_kelas) ?></h1>
+        <h1 class="text-2xl font-bold text-[#007ACC] mb-4">💬 Komentar untuk <?= htmlspecialchars($nama_kelas) ?></h1>
 
         <?php if ($msg): ?>
             <div class="mb-4 px-4 py-3 rounded <?= str_contains($msg, 'berhasil') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
@@ -58,10 +79,16 @@ $result = $conn->query("SELECT * FROM tb_komentar WHERE id_kelas = $id_kelas ORD
 
         <form method="post" class="mb-8 bg-white p-6 rounded shadow">
             <label for="isi" class="block text-sm font-medium mb-2">Tulis Komentar</label>
-            <textarea name="isi" id="isi" rows="4" class="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-[#007ACC]" placeholder="Tulis komentar kamu di sini..." required></textarea>
-            <button type="submit" name="submit_komentar" class="mt-4 bg-[#007ACC] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                Kirim Komentar
-            </button>
+            <textarea name="isi" id="isi" rows="4"
+                class="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-[#007ACC]"
+                placeholder="Tulis komentar kamu di sini..." required></textarea>
+
+            <div class="mt-4 text-right">
+                <button type="submit" name="submit_komentar"
+                    class="bg-[#007ACC] text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                    Kirim Komentar
+                </button>
+            </div>
         </form>
 
         <h2 class="text-xl font-semibold mb-4">Komentar Sebelumnya</h2>
@@ -70,7 +97,9 @@ $result = $conn->query("SELECT * FROM tb_komentar WHERE id_kelas = $id_kelas ORD
             <?php if ($result && $result->num_rows > 0): ?>
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <div class="bg-white p-4 rounded shadow">
-                        <div class="text-sm text-gray-500 mb-1">User ID: <?= htmlspecialchars($row['id_user']) ?></div>
+                        <div class="text-sm text-gray-500 mb-1 font-semibold">
+                            👤 <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
+                        </div>
                         <p class="text-gray-800"><?= nl2br(htmlspecialchars($row['isi'])) ?></p>
                     </div>
                 <?php endwhile; ?>

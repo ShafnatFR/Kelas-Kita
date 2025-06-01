@@ -273,6 +273,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </div>
+        <form method="POST">
+                    <button type="submit" class="btn btn-warning btn-lg mt-4">Switch to Peserta</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
         <!-- Debug Info (hapus setelah selesai testing) -->
         <?php if (isset($_GET['debug'])): ?>
@@ -288,12 +294,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- Tombol Switch to Peserta -->
-                <form method="POST">
-                    <button type="submit" class="btn btn-warning btn-lg mt-4">Switch to Peserta</button>
-                </form>
-            </div>
-        </div>
-    </div>
+                
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

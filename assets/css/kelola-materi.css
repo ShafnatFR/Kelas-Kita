@@ -1,0 +1,126 @@
+<style>
+    /* CSS untuk sidebar */
+    .sidebar {
+        width: 250px; /* Lebar sidebar */
+        background-color: #343a40; /* Contoh warna latar belakang */
+        color: white; /* Warna teks */
+        padding-top: 20px;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 1040; /* Z-index yang lebih tinggi dari konten utama dan navbar Bootstrap (navbar default 1030) */
+        height: 100vh; /* Memastikan sidebar mengisi tinggi viewport */
+        overflow-y: auto; /* Jika konten sidebar panjang, bisa discroll */
+        left: 0; /* Pastikan sidebar menempel di kiri */
+        top: 0; /* Pastikan sidebar menempel di atas */
+    }
+
+    .sidebar .sidebar-header {
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 20px !important;
+    }
+
+    .sidebar .sidebar-header h3 {
+        color: white;
+        font-size: 1.2rem;
+        margin-top: 10px;
+    }
+
+    .sidebar .sidebar-header img {
+        border: 2px solid white;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255,255,255,0.7);
+        padding: 10px 15px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+    }
+
+    /* Ini adalah KUNCI untuk konten utama agar tidak tertutup sidebar */
+    /* Menggunakan flexbox pada body untuk layout utama */
+    body {
+        display: flex;
+        min-height: 100vh;
+        margin: 0; /* Pastikan tidak ada margin default pada body */
+        padding: 0; /* Pastikan tidak ada padding default pada body */
+        background-color: #f8f9fa; /* Warna latar belakang body */
+    }
+
+    /* main-content akan menjadi kontainer utama yang disamping sidebar */
+    .main-content {
+        flex-grow: 1; /* Biarkan main-content mengambil sisa ruang */
+        margin-left: 250px; /* Sesuaikan dengan lebar sidebar */
+        padding: 20px; /* Padding di dalam main-content */
+        position: relative; /* Penting untuk z-index */
+        z-index: 1; /* Pastikan konten utama di bawah sidebar */
+        overflow-x: hidden; /* Mencegah overflow horizontal */
+    }
+    
+    /* Hapus aturan .container lama yang mungkin bertabrakan */
+    .container {
+        /* Properti container sekarang harusnya ada di dalam main-content */
+        /* Anda bisa tetap menggunakan kelas container Bootstrap untuk mengatur lebar konten */
+        /* Hapus atau komentari aturan .container yang bersifat global jika sudah ada yang khusus main-content */
+        /* Contoh: max-width: 1140px; (default Bootstrap untuk .container) */
+    }
+
+
+    /* Card & element kustom lainnya */
+    .card-hover {
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #007bff;
+    }
+    .badge-count {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .card-body {
+        position: relative;
+        overflow: hidden;
+    }
+    .card-body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(45deg, transparent 50%, rgba(0,123,255,0.1) 50%);
+        transform: rotate(45deg) translate(50px, -50px);
+        pointer-events: none; /* Penting! agar tidak menutupi klik di card body */
+    }
+    .stats-row {
+        background: rgba(0,123,255,0.05);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    /* Responsif untuk layar kecil (mobile) */
+    @media (max-width: 991.98px) { /* Gunakan 991.98px untuk konsisten dengan breakpoint Bootstrap 'lg' */
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative; /* Sidebar tidak fixed di mobile, tapi relatif */
+            /* Anda mungkin ingin menyembunyikan sidebar di mobile dan menampilkannya dengan toggle button (JS) */
+            /* Contoh: display: none; */
+            z-index: 10; /* Z-index lebih rendah di mobile jika tidak fixed */
+        }
+
+        .main-content {
+            margin-left: 0; /* Kembalikan margin ke 0 di mobile */
+            padding-top: 20px; /* Tambahkan padding atas jika sidebar di atas */
+        }
+    }
+</style>
