@@ -206,8 +206,8 @@ $sql_featured_courses = "
         k.nama_kelas AS title,
         CONCAT(u.first_name, ' ', u.last_name) AS instructor,
         k.jumlah_peserta AS views,
-        (SELECT COUNT(*) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS comments,
-        (SELECT AVG(rating) FROM tb_ulasan WHERE kursus_id = k.id_kelas) AS avg_rating,
+        0 AS comments,
+        0 AS avg_rating,
         k.harga AS price
     FROM tb_kelas k
     LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
