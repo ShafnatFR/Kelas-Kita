@@ -103,7 +103,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <?php echo $message; ?>
                                         </div>
                                     <?php endif; ?>
-                                    <?php endif; ?>
                                     <form class="user" action="authenticate.php" method="POST">
                                         <div class="form-group">
                                             <input type="text" class="form-control form-control-user" name="username" placeholder="Masukkan Username" required>
