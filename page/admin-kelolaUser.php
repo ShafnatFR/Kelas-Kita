@@ -4,7 +4,7 @@ require 'db.php'; // Pastikan sudah menghubungkan ke database
 
 // Pastikan pengguna sudah login dan memiliki role sebagai admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: loginAdmin.php");
+    header("Location: adminLogin.php");
     exit();
 }
 
@@ -38,7 +38,7 @@ $laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
 
 // Query untuk mengambil 10 user aktif terbaru
 $recent_users_query = $conn->prepare("
-    SELECT username, role, status, tgl_dibuat
+    SELECT id_user, username, role, status, tgl_dibuat
     FROM tb_user
     WHERE status = 'aktif'
     ORDER BY tgl_dibuat DESC
@@ -58,6 +58,17 @@ $tbUserNonAktif_stmt = $conn->prepare("
 ");
 $tbUserNonAktif_stmt->execute();
 $tbUserNonAktifResult = $tbUserNonAktif_stmt->get_result();
+
+// Quey untuk user yang dilaporkan
+$tbUserDilaporkan = $conn->prepare("
+    SELECT u.id_user, u.username, u.role, u.status, l.keterangan_report, l.tgl_dibuat
+    FROM tb_user u
+    JOIN tb_laporan l ON u.id_user=l.id_user
+    WHERE u.status LIKE 'aktif'
+    ORDER BY l.tgl_dibuat DESC;
+");
+$tbUserDilaporkan->execute();
+$tbUserDilaporkanResult = $tbUserDilaporkan->get_result();
 
 // Data untuk statistik cards
 $stats = array(
@@ -181,7 +192,12 @@ $namaAdmin = $_SESSION['username'];
                                 <table class="table table-hover table-striped mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Tgl Dibuat</th>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Tgl Dibuat</th>
+                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -194,10 +210,14 @@ $namaAdmin = $_SESSION['username'];
                                                     <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
                                                     <td><span class="badge bg-success">Aktif</span></td>
                                                     <td><?= (new DateTime($user['tgl_dibuat']))->format('d M Y') ?></td>
+                                                    <td>
+                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary">Kirim Pesan</a>
+                                                        <a href="admin-nonaktifkanUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger">Non-Aktifkan</a>
+                                                    </td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -231,7 +251,7 @@ $namaAdmin = $_SESSION['username'];
                                                         <span class="badge bg-danger">Non-Aktif</span>
                                                     </td>
                                                     <td>
-                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success">Aktifkan</a>
+                                                        <a href="admin-aktifkanUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success">Aktifkan</a>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>
@@ -247,8 +267,8 @@ $namaAdmin = $_SESSION['username'];
 
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-user-slash me-2"></i>User yang Dilaporkan</h5>
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Aktif Terbaru</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -259,29 +279,31 @@ $namaAdmin = $_SESSION['username'];
                                             <th>Username</th>
                                             <th>Role</th>
                                             <th>Status</th>
-                                            <th>Kategori Laporan</th>
+                                            <th>Isi Laporan</th>
                                             <th>Tgl Dibuat</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($tbUserNonAktifResult->num_rows > 0): ?>
+                                        <?php if ($tbUserDilaporkanResult->num_rows > 0): ?>
                                             <?php $user_counter = 1; ?>
-                                            <?php while ($user = $tbUserNonAktifResult->fetch_assoc()): ?>
+                                            <?php while ($user = $tbUserDilaporkanResult->fetch_assoc()): ?>
                                                 <tr>
                                                     <th><?= $user_counter++ ?></th>
                                                     <td><?= htmlspecialchars($user['username']) ?></td>
                                                     <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
+                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($user['status'])) ?></span></td>
+                                                    <td><?= htmlspecialchars($user['keterangan_report']) ?></td>
+                                                    <td><?= (new DateTime($user['tgl_dibuat']))->format('d M Y') ?></td>
                                                     <td>
-                                                        <span class="badge bg-danger">Non-Aktif</span>
+                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary">Kirim Pesan</a>
+                                                        <a href="admin-nonaktifkanUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger">Non-Aktifkan</a>
                                                     </td>
-                                                    <td>
-                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success">Aktifkan</a>
-                                                    </td>
+                                                    
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada user non-aktif.</td></tr>
+                                            <tr><td colspan="7" class="text-center text-muted p-3">Tidak ada data.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -289,7 +311,6 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-
             </div>
             
             </div>
