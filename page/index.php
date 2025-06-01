@@ -86,7 +86,11 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-    
+        
+        .testimonial-card {
+            padding: 20px;
+            text-align: center;
+        }
         
         .partner-logo {
             height: 60px;
@@ -230,7 +234,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                     c.nama_kategori AS category,
                     k.nama_kelas AS title,
                     CONCAT(u.first_name, ' ', u.last_name) AS instructor,
-                    k.jumlah_peserta AS views,
+                    0 AS views,
                     COALESCE(SUM(rev.bintang_review) / COUNT(rev.id_review), 0) AS avg_rating,
                     COUNT(rev.id_review) AS comments,
                     k.harga AS price,
@@ -299,26 +303,26 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                                     </p>
                                     
                                     <div class="d-flex align-items-center mb-3" style="font-size: 0.8rem; color: #666;">
-                                        <span class="me-3">
-                                            <i class="fas fa-user-graduate me-1"></i><?php echo number_format($views); ?> Peserta
-                                        </span>
-                                        <span class="me-3">
-                                            <i class="fas fa-comment me-1"></i><?php echo $comments; ?> Ulasan
-                                        </span>
-                                        <span class="d-flex align-items-center">
-                                            <?php
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                if ($i <= floor($avg_rating)) {
-                                                    echo '<i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>';
-                                                } elseif ($i - $avg_rating < 1) {
-                                                    echo '<i class="fas fa-star-half-alt text-warning" style="font-size: 0.7rem;"></i>';
-                                                } else {
-                                                    echo '<i class="far fa-star text-warning" style="font-size: 0.7rem;"></i>';
-                                                }
-                                            }
-                                            ?>
-                                            <span class="ms-1"><?php echo $avg_rating; ?></span>
-                                        </span>
+                <span class="me-3">
+                    <i class="fas fa-user-graduate me-1"></i>0 Peserta
+                </span>
+                <span class="me-3">
+                    <i class="fas fa-comment me-1"></i><?php echo $comments; ?> Ulasan
+                </span>
+                <span class="d-flex align-items-center">
+                    <?php
+                    for ($i = 1; $i <= 5; $i++) {
+                        if ($i <= floor($avg_rating)) {
+                            echo '<i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                        } elseif ($i - $avg_rating < 1) {
+                            echo '<i class="fas fa-star-half-alt text-warning" style="font-size: 0.7rem;"></i>';
+                        } else {
+                            echo '<i class="far fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                        }
+                    }
+                    ?>
+                    <span class="ms-1"><?php echo $avg_rating; ?></span>
+                </span>
                                     </div>
                                     
                                     <div class="mt-auto">
@@ -428,7 +432,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 </section>
 
 <?php 
-include_once(__DIR__ . "/../Views/footerbootsrap.php"); 
+include_once(_DIR_ . "/../Views/footerbootsrap.php"); 
 $conn->close(); // Tutup koneksi database setelah semua query selesai
 ?>
 
