@@ -1,124 +1,148 @@
 <?php
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+include "db.php";
 
-// Cek login
-if (!isset($_SESSION['id_user'])) {
-    $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-    header("Location: /Kelas-Kita/page/HalamanSignIn.php");
-    exit();
-}
+// Simulasi login
+$id_user = 1;
+$id_kelas = $_GET['id_kelas'] ?? 1;
 
-// Koneksi database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "kelasKita_baru";
+// Ambil info user & kelas
+$query_info = "
+    SELECT u.first_name, u.last_name, k.nama_kelas 
+    FROM tb_user u 
+    JOIN tb_review r ON u.id_user = r.id_user 
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas 
+    WHERE u.id_user = $id_user AND k.id_kelas = $id_kelas
+    LIMIT 1
+";
+$result_info = $conn->query($query_info);
+$info = $result_info->fetch_assoc();
+$nama_user = $info ? $info['first_name'] . ' ' . $info['last_name'] : 'Peserta';
+$nama_kelas = $info ? $info['nama_kelas'] : 'Kelas';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+// Proses form
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $bintang = $_POST['bintang'];
+    $isi_review = $conn->real_escape_string($_POST['isi_review']);
 
-$id_user = $_SESSION['id_user'];
-
-// Ambil id_kelas dari GET
-if (!isset($_GET['id_kelas'])) {
-    echo "Kelas tidak ditemukan.";
-    exit();
-}
-$id_kelas = (int)$_GET['id_kelas'];
-
-// Cek apakah user sudah membeli kelas dan transaksi selesai
-$cekTransaksi = $conn->query("SELECT * FROM tb_transaksi WHERE id_user = $id_user AND id_kelas = $id_kelas AND status = 'Completed'");
-
-$pesan = "";
-
-// Proses kirim review
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cekTransaksi->num_rows > 0) {
-    $bintang_review = $_POST['bintang_review'];
-    $isi_review = substr(trim($_POST['isi_review']), 0, 100);
-
-    // Cek apakah user sudah memberi review untuk kelas ini
-    $cek = $conn->query("SELECT * FROM tb_review WHERE id_user = $id_user AND id_kelas = $id_kelas");
-    if ($cek->num_rows > 0) {
-        $pesan = "<p class='text-red-500 text-center mb-4'>Anda sudah memberikan review untuk kelas ini.</p>";
+    $sql = "INSERT INTO tb_review (bintang_review, isi_review, id_user, id_kelas)
+            VALUES ('$bintang', '$isi_review', $id_user, $id_kelas)";
+    if ($conn->query($sql) === TRUE) {
+        header("Location: review.php?id_kelas=$id_kelas&success=1");
+        exit;
     } else {
-        $stmt = $conn->prepare("INSERT INTO tb_review (bintang_review, isi_review, id_user, id_kelas) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssii", $bintang_review, $isi_review, $id_user, $id_kelas);
-        if ($stmt->execute()) {
-            $pesan = "<p class='text-green-500 text-center mb-4'>Review berhasil ditambahkan.</p>";
-        } else {
-            $pesan = "<p class='text-red-500 text-center mb-4'>Gagal menambahkan review.</p>";
-        }
-        $stmt->close();
+        $error = "Error: " . $conn->error;
     }
 }
 
-// Ambil semua review kelas ini
-$getReview = $conn->query("SELECT r.*, u.first_name, u.last_name FROM tb_review r
-    JOIN tb_user u ON r.id_user = u.id_user
-    WHERE r.id_kelas = $id_kelas ORDER BY r.tgl_review DESC");
-
+$review_query = "
+    SELECT r.*, u.first_name, u.last_name 
+    FROM tb_review r 
+    JOIN tb_user u ON r.id_user = u.id_user 
+    WHERE r.id_kelas = $id_kelas
+    ORDER BY r.tgl_review DESC
+";
+$review_result = $conn->query($review_query);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Review Kelas</title>
+    <meta charset="UTF-8">
+    <title>Review Kelas - <?= htmlspecialchars($nama_kelas) ?> | Kelas Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
-    <div class="max-w-3xl w-full bg-white rounded shadow p-6 mt-10">
-        <h1 class="text-3xl font-bold mb-6 text-center">Review Kelas</h1>
 
-        <?php if (!empty($pesan)) echo $pesan; ?>
+<body class="bg-gray-50">
 
-        <?php if ($cekTransaksi->num_rows > 0): ?>
-            <form action="" method="POST" class="mb-8">
-                <label for="bintang_review" class="block mb-2 font-semibold">Rating:</label>
-                <select name="bintang_review" id="bintang_review" required class="w-full p-2 border rounded mb-4">
-                    <option value="">Pilih rating</option>
-                    <option value="1">1 - Buruk</option>
-                    <option value="2">2 - Kurang</option>
-                    <option value="3">3 - Cukup</option>
-                    <option value="4">4 - Baik</option>
-                    <option value="5">5 - Sangat Baik</option>
-                </select>
+    <!-- Header Utama -->
+    <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-8 flex justify-between items-center">
+        <a href="detailKelas.php?id_kelas=<?= $id_kelas ?>" class="text-3xl font-bold text-blue-600 hover:underline">
+            KelasKita
+        </a>
+    </div>
+</header>
 
-                <label for="isi_review" class="block mb-2 font-semibold">Tulis review (maks. 100 karakter):</label>
-                <textarea id="isi_review" name="isi_review" maxlength="100" required
-                    class="w-full p-2 border rounded mb-4" rows="4" placeholder="Tulis review Anda..."></textarea>
 
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded transition">
+    <!-- Konten Utama -->
+    <main class="max-w-3xl mx-auto p-6 bg-white mt-6 rounded shadow pb-10 mb-10">
+        <h2 class="text-2xl font-bold mb-4">
+            Review untuk Kelas: <span class="text-blue-600"><?= htmlspecialchars($nama_kelas) ?>WebProgramming</span>
+        </h2>
+
+        <p class="mb-6 text-gray-600">Reviewer: <strong><?= htmlspecialchars($nama_user) ?></strong></p>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">Review berhasil dikirim!</div>
+        <?php elseif (isset($error)): ?>
+            <div class="mb-4 p-3 bg-red-100 text-red-700 rounded"><?= $error ?></div>
+        <?php endif; ?>
+
+        <!-- Form Review -->
+        <form method="POST" class="mb-8 space-y-4">
+            <div>
+                <label class="block mb-1 font-semibold">Rating (Bintang):</label>
+                <style>
+                    .star-rating input[type="radio"] {
+                        display: none;
+                    }
+
+                    .star-rating label {
+                        font-size: 2rem;
+                        color: #ddd;
+                        cursor: pointer;
+                        transition: color 0.2s;
+                    }
+
+                    .star-rating input[type="radio"]:checked~label,
+                    .star-rating label:hover,
+                    .star-rating label:hover~label {
+                        color: #facc15;
+                    }
+                </style>
+
+                <div class="star-rating flex flex-row-reverse justify-end">
+                    <?php for ($i = 5; $i >= 1; $i--): ?>
+                        <input type="radio" id="star<?= $i ?>" name="bintang" value="<?= $i ?>" required>
+                        <label for="star<?= $i ?>">&#9733;</label>
+                    <?php endfor; ?>
+                </div>
+            </div>
+
+            <div>
+                <label class="block mb-1 font-semibold">Ulasan:</label>
+                <textarea name="isi_review" rows="4" class="w-full border rounded p-2" placeholder="Tulis pendapatmu..." required></textarea>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                     Kirim Review
                 </button>
-            </form>
-        <?php else: ?>
-            <p class="text-center text-red-500 font-semibold mb-6">Anda belum membeli kelas ini, tidak bisa memberikan review.</p>
-        <?php endif; ?>
+            </div>
+        </form>
 
-        <hr class="my-6" />
-
-        <h2 class="text-2xl font-semibold mb-4 text-center">Semua Review</h2>
-
-        <?php if ($getReview->num_rows > 0): ?>
-            <?php while ($review = $getReview->fetch_assoc()): ?>
-                <div class="mb-5 p-4 border rounded shadow-sm bg-gray-100">
-                    <div class="font-semibold text-lg mb-1">
-                        <?= htmlspecialchars($review['first_name'] . ' ' . $review['last_name']) ?>
+        <!-- List Review -->
+        <h2 class="text-xl font-bold mb-3">Ulasan dari Peserta Lain</h2>
+        <div class="space-y-4">
+            <?php if ($review_result && $review_result->num_rows > 0): ?>
+                <?php while ($rev = $review_result->fetch_assoc()): ?>
+                    <div class="border p-4 rounded bg-gray-50">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold"><?= htmlspecialchars($rev['first_name'] . ' ' . $rev['last_name']) ?></span>
+                            <span class="text-yellow-500"><?= str_repeat('⭐', (int)$rev['bintang_review']) ?></span>
+                        </div>
+                        <p class="text-gray-700"><?= htmlspecialchars($rev['isi_review']) ?></p>
+                        <p class="text-sm text-gray-500"><?= date('d M Y H:i', strtotime($rev['tgl_review'])) ?></p>
                     </div>
-                    <div class="text-yellow-500 mb-2">Rating: <?= htmlspecialchars($review['bintang_review']) ?>/5</div>
-                    <p class="text-gray-800"><?= htmlspecialchars($review['isi_review']) ?></p>
-                    <small class="text-gray-500"><?= htmlspecialchars($review['tgl_review']) ?></small>
-                </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p class="text-center text-gray-500">Belum ada review untuk kelas ini.</p>
-        <?php endif; ?>
-    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p class="text-gray-600">Belum ada ulasan untuk kelas ini.</p>
+            <?php endif; ?>
+        </div>
+    </main>
+
+    <?php include "../Views/footer.php"; ?>
 </body>
+
 </html>
