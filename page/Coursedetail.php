@@ -1,132 +1,149 @@
 <?php
 session_start();
-// Database connection
+
+// --- Konfigurasi Database ---
 $host = "localhost";
 $username = "root";
 $password = "";
 $database = "KelasKita_baru";
+$site_name = "KelasKita_baru"; // Digunakan untuk footer atau judul situs
 
-
-// Create connection
+// Buat koneksi database
 $conn = new mysqli($host, $username, $password, $database);
 
-$site_name = "KelasKita_baru"; // Define site name for footer usage
-
-// Check connection
+// Periksa koneksi
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Koneksi database gagal: " . $conn->connect_error);
 }
 
-$course_id = isset($_GET['id']) ? $_GET['id'] : '';
+// --- Fungsi Helper ---
 
-// Validasi ID kursus
-if (!is_numeric($course_id)) {
-    echo "ID Kursus tidak valid";
-    exit;
-}
-
-// Fungsi untuk memformat harga
+/**
+ * Memformat angka menjadi format Rupiah.
+ * @param mixed $angka Angka yang akan diformat (bisa string atau numerik).
+ * @return string Format Rupiah, cth: "Rp 100.000".
+ */
 function formatRupiah($angka) {
-    // Memastikan angka adalah numerik
-    if (is_string($angka) && strpos($angka, 'Rp') !== false) {
-        // Jika string sudah mengandung 'Rp', hilangkan dan bersihkan formatnya
-        $angka = str_replace('Rp', '', $angka);
-        $angka = str_replace('.', '', $angka);
-        $angka = str_replace(',', '', $angka);
+    // Bersihkan string dari format Rupiah yang mungkin ada
+    if (is_string($angka)) {
+        $angka = str_replace(['Rp', '.', ','], '', $angka);
         $angka = trim($angka);
     }
     
-    // Memastikan angka adalah numerik
+    // Konversi ke float untuk memastikan numerik
     $angka = floatval($angka);
     
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }
 
-function checkExistingTables($conn) {
-    $tables = [];
-    $result = $conn->query("SHOW TABLES");
-    if ($result) {
-        while ($row = $result->fetch_array()) {
-            $tables[] = $row[0];
-        }
-    }
-    return $tables;
-}
+// --- Ambil ID Kursus dari URL ---
+$course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
-$existing_tables = checkExistingTables($conn);
-
-$course_table = 'tb_kelas';
-
-$sql = "SELECT * FROM $course_table WHERE id_kelas = ?";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $course_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $course = $result->fetch_assoc();
-} else {
-    echo "Kursus tidak ditemukan";
+// Validasi ID kursus
+if (!is_numeric($course_id) || $course_id <= 0) {
+    echo "ID Kursus tidak valid.";
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
-    // Debug: Add to cart POST request received
-    // error_log("Add to cart POST request received for course ID: " . $course_id);
+// --- Ambil Data Kursus ---
+$course = null;
+$sql_course = "SELECT * FROM tb_kelas WHERE id_kelas = ?";
+$stmt_course = $conn->prepare($sql_course);
 
+if ($stmt_course === false) {
+    die("Error preparing statement for course: " . $conn->error);
+}
+
+$stmt_course->bind_param("i", $course_id);
+$stmt_course->execute();
+$result_course = $stmt_course->get_result();
+
+if ($result_course->num_rows > 0) {
+    $course = $result_course->fetch_assoc();
+} else {
+    echo "Kursus tidak ditemukan.";
+    exit;
+}
+$stmt_course->close();
+
+// --- Logika Tambah ke Keranjang ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
-    // Check if course already in cart
-    $found = false;
+
+    $found_in_cart = false;
     foreach ($_SESSION['cart'] as &$item) {
         if ($item['id'] == $course_id) {
             $item['quantity'] += 1;
-            $found = true;
+            $found_in_cart = true;
             break;
         }
     }
-    if (!$found) {
-        // Add new item - menggunakan kolom yang benar
+
+    if (!$found_in_cart) {
+        // Tambahkan item baru ke keranjang
         $new_item = [
-            'id' => $course['id_kelas'],
-            'name' => $course['judul'] ?? 'Kursus',
-            'price' => floatval(str_replace(['Rp', '.', ','], '', formatRupiah($course['harga'] ?? 0))),
+            'id'       => $course['id_kelas'],
+            'name'     => $course['judul'] ?? 'Kursus Tanpa Judul',
+            // Pastikan harga adalah numerik sebelum disimpan di sesi
+            'price'    => floatval(str_replace(['Rp', '.', ','], '', $course['harga'] ?? 0)),
             'quantity' => 1,
-            'image' => $course['gambar'] ?? '',
+            'image'    => $course['gambar'] ?? '',
             'category' => $course['kategori'] ?? ''
         ];
         $_SESSION['cart'][] = $new_item;
     }
-    header("Location: cart.php");
+    
+    header("Location: cart.php"); // Arahkan ke halaman keranjang
     exit;
 }
 
-// Query untuk mengambil materi kursus - menggunakan nama tabel yang benar
+// --- Ambil Materi Kursus ---
 $sql_materi = "SELECT * FROM tb_materi WHERE id_kelas = ? ORDER BY urutan ASC";
 $stmt_materi = $conn->prepare($sql_materi);
+
+if ($stmt_materi === false) {
+    die("Error preparing statement for materi: " . $conn->error);
+}
+
 $stmt_materi->bind_param("i", $course['id_kelas']);
 $stmt_materi->execute();
 $result_materi = $stmt_materi->get_result();
+$stmt_materi->close();
 
-// Query untuk mengambil ulasan kursus
-$sql_ulasan = "SELECT u.*, CONCAT(p.first_name, ' ', p.last_name) AS nama, p.fotoProfil AS foto 
-               FROM tb_ulasan u 
-               JOIN tb_user p ON u.pelajar_id = p.id_user 
-               WHERE u.kursus_id = ? 
-               ORDER BY u.tanggal DESC
+// --- Ambil Ulasan Kursus ---
+$sql_ulasan = "SELECT u.id_review, u.bintang_review, u.isi_review, u.tgl_review, CONCAT(p.first_name, ' ', p.last_name) AS nama, p.fotoProfil AS foto 
+               FROM tb_review u 
+               JOIN tb_user p ON u.id_user = p.id_user 
+               WHERE u.id_kelas = ? 
+               ORDER BY u.tgl_review DESC
                LIMIT 5";
 $stmt_ulasan = $conn->prepare($sql_ulasan);
+
+if ($stmt_ulasan === false) {
+    die("Error preparing statement for ulasan: " . $conn->error);
+}
+
 $stmt_ulasan->bind_param("i", $course_id);
 $stmt_ulasan->execute();
 $result_ulasan = $stmt_ulasan->get_result();
+$stmt_ulasan->close();
 
+// --- Ambil Data Instruktur ---
 $instruktur = null;
-$mentor_id = $course['instruktur_id'] ?? $course['id_mentor'] ?? null;
+$mentor_id = $course['instruktur_id'] ?? $course['id_mentor'] ?? null; // Prioritaskan instruktur_id, fallback ke id_mentor
+
 if ($mentor_id) {
-    $sql_instruktur = "SELECT *, CONCAT(first_name, ' ', last_name) AS nama FROM tb_user WHERE id_user = ? AND role = 'mentor'";
+    $sql_instruktur = "SELECT *, CONCAT(first_name, ' ', last_name) AS nama, fotoProfil AS foto 
+                       FROM tb_user 
+                       WHERE id_user = ? AND role = 'mentor'";
     $stmt_instruktur = $conn->prepare($sql_instruktur);
+
+    if ($stmt_instruktur === false) {
+        die("Error preparing statement for instructor: " . $conn->error);
+    }
+
     $stmt_instruktur->bind_param("i", $mentor_id);
     $stmt_instruktur->execute();
     $result_instruktur = $stmt_instruktur->get_result();
@@ -134,9 +151,6 @@ if ($mentor_id) {
     $stmt_instruktur->close();
 }
 
-$stmt->close();
-$stmt_materi->close();
-$stmt_ulasan->close();
 ?>
 
 <!DOCTYPE html>
@@ -145,9 +159,7 @@ $stmt_ulasan->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($course['judul'] ?? 'Detail Kursus'); ?> - Detail Kursus | KelasKita</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -173,18 +185,9 @@ $stmt_ulasan->close();
             font-weight: bold;
             text-transform: uppercase;
         }
-        .category-primary {
-            background-color: #0d6efd;
-            color: white;
-        }
-        .category-warning {
-            background-color: #ffc107;
-            color: #343a40;
-        }
-        .category-success {
-            background-color: #198754;
-            color: white;
-        }
+        .category-primary { background-color: #0d6efd; color: white; }
+        .category-warning { background-color: #ffc107; color: #343a40; }
+        .category-success { background-color: #198754; color: white; }
         .rating-stars {
             color: #ffc107;
         }
@@ -195,11 +198,15 @@ $stmt_ulasan->close();
             padding: 2rem;
             margin-bottom: 2rem;
         }
-        .instructor-img {
-            width: 100px;
-            height: 100px;
+        .instructor-img, .review-img {
+            width: 100px; /* Adjusted for consistency */
+            height: 100px; /* Adjusted for consistency */
             border-radius: 50%;
             object-fit: cover;
+        }
+        .review-img {
+            width: 50px; /* Smaller for reviews */
+            height: 50px; /* Smaller for reviews */
         }
         .course-material {
             background-color: #f8f9fa;
@@ -213,12 +220,6 @@ $stmt_ulasan->close();
         }
         .review-item:last-child {
             border-bottom: none;
-        }
-        .review-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
         }
         .course-button {
             display: inline-block;
@@ -239,136 +240,117 @@ $stmt_ulasan->close();
 </head>
 <body>
 
-<?php include_once("../Views/navbarbootstrap.php"); ?>
+<?php 
+// Pastikan path ke navbarbootstrap.php sudah benar
+include_once(__DIR__ . "/../Views/navbarbootstrap.php"); 
 
-    <!-- Course Header -->
+// Tutup koneksi database di akhir skrip setelah navbarbootstrap.php digunakan
+$conn->close();
+?>
+
     <div class="course-header">
         <div class="container">
-            <div class="mb-3">
-            </div>
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <div class="mb-3">
                         <?php
-                    $kategori = $course['kategori'] ?? 'primary';
-                    $categoryClass = '';
-                    switch ($kategori) {
-                        case 'primary':
-                            $categoryClass = 'category-primary';
-                            break;
-                        case 'warning':
-                            $categoryClass = 'category-warning';
-                            break;
-                        case 'success':
-                            $categoryClass = 'category-success';
-                            break;
-                        default:
-                            $categoryClass = 'category-primary';
-                    }
-                    ?>
-                    <span class="course-category <?php echo $categoryClass; ?>">
-                        <?php 
-                        $kategori_label = '';
+                        $kategori = $course['kategori'] ?? 'primary';
+                        $categoryClass = '';
                         switch ($kategori) {
                             case 'SQL':
-                                $kategori_label = 'SQL';
+                                $categoryClass = 'category-primary';
                                 break;
                             case 'Design':
-                                $kategori_label = 'Design';
+                                $categoryClass = 'category-warning';
                                 break;
                             case 'Java':
-                                $kategori_label = 'Java';
+                                $categoryClass = 'category-success';
                                 break;
                             case 'Web Development':
-                                $kategori_label = 'Web Development';
+                                $categoryClass = 'category-primary'; // Contoh
                                 break;
                             case 'Bisnis':
-                                $kategori_label = 'Bisnis';
+                                $categoryClass = 'category-warning'; // Contoh
                                 break;
                             case 'Ekonomi':
-                                $kategori_label = 'Ekonomi';
+                                $categoryClass = 'category-success'; // Contoh
                                 break;
                             case 'Psikologi':
-                                $kategori_label = 'Psikologi';
+                                $categoryClass = 'category-primary'; // Contoh
                                 break;
                             case 'IT':
-                                $kategori_label = 'IT';
+                                $categoryClass = 'category-warning'; // Contoh
                                 break;
                             case 'Python':
-                                $kategori_label = 'Python';
+                                $categoryClass = 'category-success'; // Contoh
                                 break;
                             default:
-                                $kategori_label = $kategori;
-                        }
-                        echo htmlspecialchars($kategori_label); 
-                        ?>
-                    </span>
-                </div>
-                <h1 class="mb-3"><?php echo htmlspecialchars($course['nama_kelas'] ?? 'Judul Kursus'); ?></h1>
-                <p class="mb-2"><?php echo htmlspecialchars($course['description'] ?? 'Deskripsi singkat kursus tidak tersedia.'); ?></p>
-                <div class="d-flex align-items-center mt-3">
-                    <div class="rating-stars me-2">
-                        <?php
-                        $rating = $course['rating'] ?? 0;
-                        for ($i = 1; $i <= 5; $i++) {
-                            if ($i <= $rating) {
-                                echo '<i class="fas fa-star"></i>';
-                            } elseif ($i - 0.5 <= $rating) {
-                                echo '<i class="fas fa-star-half-alt"></i>';
-                            } else {
-                                echo '<i class="far fa-star"></i>';
-                            }
+                                $categoryClass = 'category-primary'; // Default jika kategori tidak dikenal
                         }
                         ?>
+                        <span class="course-category <?php echo $categoryClass; ?>">
+                            <?php echo htmlspecialchars($kategori); ?>
+                        </span>
                     </div>
-                    <span class="me-3"><?php echo number_format(floatval($course['rating']), 1) ?? '0'; ?> (<?php echo $course['jumlah_ulasan'] ?? '0'; ?> ulasan)</span>
-                    <span class="me-3"><i class="fas fa-user-graduate me-1"></i> <?php echo intval($course['jumlah_peserta']) ?? '0'; ?> peserta</span>
-                    <span><i class="fas fa-clock me-1"></i> <?php echo $course['durasi'] ?? '0'; ?> jam</span>
+                    <h1 class="mb-3"><?php echo htmlspecialchars($course['nama_kelas'] ?? 'Judul Kursus'); ?></h1>
+                    <p class="mb-2"><?php echo htmlspecialchars($course['description'] ?? 'Deskripsi singkat kursus tidak tersedia.'); ?></p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="rating-stars me-2">
+                            <?php
+                            $rating = floatval($course['rating'] ?? 0);
+                            for ($i = 1; $i <= 5; $i++) {
+                                if ($i <= $rating) {
+                                    echo '<i class="fas fa-star"></i>';
+                                } elseif ($i - 0.5 <= $rating) {
+                                    echo '<i class="fas fa-star-half-alt"></i>';
+                                } else {
+                                    echo '<i class="far fa-star"></i>';
+                                }
+                            }
+                            ?>
+                        </div>
+                        <span class="me-3"><?php echo number_format($rating, 1); ?> (<?php echo intval($course['jumlah_ulasan'] ?? '0'); ?> ulasan)</span>
+                        <span class="me-3"><i class="fas fa-user-graduate me-1"></i> <?php echo intval($course['jumlah_peserta'] ?? '0'); ?> peserta</span>
+                        <span><i class="fas fa-clock me-1"></i> <?php echo htmlspecialchars($course['durasi'] ?? '0'); ?> jam</span>
+                    </div>
+                    <div class="mt-3">
+                        <p class="mb-0">
+                            <i class="fas fa-calendar-alt me-1"></i> Terakhir diperbarui: 
+                            <?php 
+                            $tanggal_update = $course['tanggal_rilis'] ?? '';
+                            echo $tanggal_update ? date('d M Y', strtotime($tanggal_update)) : 'Tidak tersedia';
+                            ?>
+                        </p>
+                        <?php if ($instruktur): ?>
+                        <p class="mb-0">
+                            <i class="fas fa-user-tie me-1"></i> Instruktur: <?php echo htmlspecialchars($instruktur['nama'] ?? 'Tidak tersedia'); ?>
+                        </p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div class="mt-3">
-                    <p class="mb-0">
-                        <i class="fas fa-calendar-alt me-1"></i> Terakhir diperbarui: 
-                        <?php 
-                        $tanggal_update = $course['tanggal_rilis'] ?? '';
-                        echo $tanggal_update ? date('d M Y', strtotime($tanggal_update)) : 'Tidak tersedia';
-                        ?>
-                    </p>
-                    <?php if ($instruktur): ?>
-                    <p class="mb-0">
-                        <i class="fas fa-user-tie me-1"></i> Instruktur: <?php echo htmlspecialchars($instruktur['nama'] ?? 'Tidak tersedia'); ?>
-                    </p>
-                    <?php endif; ?>
+                <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
+                    <div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
+                        <?php echo formatRupiah($course['harga'] ?? 0); ?>
+                    </div>
+                    <form method="post" action="Coursedetail.php?id=<?php echo htmlspecialchars($course['id_kelas']); ?>">
+                        <input type="hidden" name="add_to_cart" value="1">
+                        <button type="submit" class="course-button">Daftar Sekarang</button>
+                    </form>
                 </div>
             </div>
-<div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
-    <?php
-$price = intval($course['harga']);
-?>
-<div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
-    Rp <?php echo number_format($price, 0, ',', '.'); ?>
-</div>
-    <form method="post" action="Coursedetail.php?id=<?php echo $course['id_kelas']; ?>">
-        <input type="hidden" name="add_to_cart" value="1">
-        <button type="submit" class="course-button">Daftar Sekarang</button>
-    </form>
-</div>
         </div>
     </div>
-</div>
 
-    <!-- Course Content -->
     <div class="container py-5">
         <div class="row">
             <div class="col-lg-8">
-                <!-- Course Description -->
                 <div class="course-content">
                     <h3 class="mb-4">Deskripsi Kursus</h3>
                     <div>
-                        <?php echo $course['deskripsi'] ?? 'Deskripsi lengkap tidak tersedia.'; ?>
+                        <?php echo nl2br(htmlspecialchars($course['deskripsi'] ?? 'Deskripsi lengkap tidak tersedia.')); // nl2br untuk baris baru ?>
                     </div>
                 </div>
 
-                <!-- Course Material -->
                 <div class="course-content">
                     <h3 class="mb-4">Materi Pembelajaran</h3>
                     <div class="accordion" id="accordionMaterial">
@@ -381,7 +363,7 @@ $price = intval($course['harga']);
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="heading<?php echo $counter; ?>">
                                         <button class="accordion-button <?php echo ($counter > 1) ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $counter; ?>" aria-expanded="<?php echo ($counter == 1) ? 'true' : 'false'; ?>" aria-controls="collapse<?php echo $counter; ?>">
-                                            <strong>Materi <?php echo $counter; ?>: <?php echo htmlspecialchars($materi['judul_materi'] ?? 'Judul Materi'); ?></strong>
+                                            <strong>Materi <?php echo $materi['urutan'] ?? $counter; ?>: <?php echo htmlspecialchars($materi['judul_materi'] ?? 'Judul Materi'); ?></strong>
                                         </button>
                                     </h2>
                                     <div id="collapse<?php echo $counter; ?>" class="accordion-collapse collapse <?php echo ($counter == 1) ? 'show' : ''; ?>" aria-labelledby="heading<?php echo $counter; ?>" data-bs-parent="#accordionMaterial">
@@ -396,6 +378,9 @@ $price = intval($course['harga']);
                                                         <span class="badge bg-secondary">Materi ke-<?php echo $materi['urutan'] ?? $counter; ?></span>
                                                     </div>
                                                 </div>
+                                                <p class="mt-2 mb-0 text-muted">
+                                                    <?php echo nl2br(htmlspecialchars($materi['deskripsi_materi'] ?? 'Deskripsi materi tidak tersedia.')); ?>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -409,7 +394,6 @@ $price = intval($course['harga']);
                     </div>
                 </div>
 
-                <!-- Reviews -->
                 <div class="course-content">
                     <h3 class="mb-4">Ulasan Pelajar</h3>
                     <?php
@@ -418,14 +402,14 @@ $price = intval($course['harga']);
                             ?>
                             <div class="review-item">
                                 <div class="d-flex align-items-start">
-                                    <img src="<?php echo isset($ulasan['foto']) && !empty($ulasan['foto']) ? $ulasan['foto'] : 'img/pelajar/default.jpg'; ?>" alt="<?php echo htmlspecialchars($ulasan['nama'] ?? 'Pelajar'); ?>" class="review-img me-3">
+                                    <img src="<?php echo htmlspecialchars(isset($ulasan['foto']) && !empty($ulasan['foto']) ? $ulasan['foto'] : 'img/pelajar/default.jpg'); ?>" alt="<?php echo htmlspecialchars($ulasan['nama'] ?? 'Pelajar'); ?>" class="review-img me-3">
                                     <div class="w-100">
                                         <div class="d-flex justify-content-between mb-2">
                                             <div>
                                                 <h5 class="mb-0"><?php echo htmlspecialchars($ulasan['nama'] ?? 'Pelajar'); ?></h5>
                                                 <div class="rating-stars">
                                                     <?php
-                                                    $ulasan_rating = $ulasan['rating'] ?? 0;
+                                                    $ulasan_rating = floatval($ulasan['rating'] ?? 0);
                                                     for ($i = 1; $i <= 5; $i++) {
                                                         if ($i <= $ulasan_rating) {
                                                             echo '<i class="fas fa-star"></i>';
@@ -443,7 +427,7 @@ $price = intval($course['harga']);
                                                 ?>
                                             </small>
                                         </div>
-                                        <p class="mb-0"><?php echo htmlspecialchars($ulasan['komentar'] ?? 'Tidak ada komentar.'); ?></p>
+                                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($ulasan['komentar'] ?? 'Tidak ada komentar.')); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -453,32 +437,33 @@ $price = intval($course['harga']);
                         echo "<p>Belum ada ulasan untuk kursus ini.</p>";
                     }
                     ?>
-                    <a href="all-reviews.php?id=<?php echo $course_id; ?>" class="btn btn-outline-primary mt-3">Lihat Semua Ulasan</a>
+                    <a href="all-reviews.php?id=<?php echo htmlspecialchars($course_id); ?>" class="btn btn-outline-primary mt-3">Lihat Semua Ulasan</a>
                 </div>
             </div>
             
             <div class="col-lg-4">
-                <!-- Course Image -->
-                <div class="course-content mb-4">
-                    <img src="<?php echo $course['gambar'] ?? 'img/courses/default.jpg'; ?>" alt="<?php echo htmlspecialchars($course['judul'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
-                    <a href="Coursedetail.php?id=<?php echo $course['id_kelas']; ?>&add_to_cart=1" class="btn btn-primary btn-lg w-100">Daftar Sekarang</a>
+                <div class="course-content mb-4 text-center">
+                    <img src="<?php echo htmlspecialchars($course['gambar'] ?? 'img/courses/default.jpg'); ?>" alt="<?php echo htmlspecialchars($course['judul'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
+                    <form method="post" action="Coursedetail.php?id=<?php echo htmlspecialchars($course['id_kelas']); ?>">
+                        <input type="hidden" name="add_to_cart" value="1">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 course-button">Daftar Sekarang</button>
+                    </form>
                 </div>
                 
-                <!-- Course Features -->
                 <div class="course-content mb-4">
                     <h4 class="mb-3">Fitur Kursus</h4>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span><i class="fas fa-film me-2"></i> Jumlah Video</span>
-                            <span><?php echo $course['jumlah_video'] ?? '0'; ?></span>
+                            <span><?php echo intval($course['jumlah_video'] ?? '0'); ?></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <span><i class="fas fa-file-alt me-2"></i> Materi</span>
-                            <span><?php echo $course['jumlah_materi'] ?? '0'; ?></span>
+                            <span><i class="fas fa-file-alt me-2"></i> Jumlah Materi</span>
+                            <span><?php echo intval($course['jumlah_materi'] ?? '0'); ?></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span><i class="fas fa-download me-2"></i> Resources</span>
-                            <span><?php echo $course['jumlah_resource'] ?? '0'; ?></span>
+                            <span><?php echo intval($course['jumlah_resource'] ?? '0'); ?></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span><i class="fas fa-infinity me-2"></i> Akses</span>
@@ -491,12 +476,11 @@ $price = intval($course['harga']);
                     </ul>
                 </div>
                 
-                <!-- Instructor Info -->
                 <?php if ($instruktur) : ?>
                 <div class="course-content">
-                    <h4 class="mb-3">Instruktur</h4>
+                    <h4 class="mb-3">Tentang Instruktur</h4>
                     <div class="d-flex align-items-center mb-3">
-                        <img src="<?php echo $instruktur['foto'] ?? 'img/instruktur/default.jpg'; ?>" alt="<?php echo htmlspecialchars($instruktur['nama'] ?? 'Instruktur'); ?>" class="instructor-img me-3">
+                        <img src="<?php echo htmlspecialchars($instruktur['foto'] ?? 'img/instruktur/default.jpg'); ?>" alt="<?php echo htmlspecialchars($instruktur['nama'] ?? 'Instruktur'); ?>" class="instructor-img me-3">
                         <div>
                             <h5 class="mb-1"><?php echo htmlspecialchars($instruktur['nama'] ?? 'Instruktur'); ?></h5>
                             <p class="mb-0 text-muted"><?php echo htmlspecialchars($instruktur['bidang'] ?? 'Belum tersedia'); ?></p>
@@ -505,23 +489,22 @@ $price = intval($course['harga']);
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-star text-warning me-2"></i>
-                            <span><?php echo $instruktur['rating'] ?? '0'; ?> Rating</span>
+                            <span><?php echo floatval($instruktur['rating'] ?? '0'); ?> Rating</span>
                         </div>
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-user-graduate me-2"></i>
-                            <span><?php echo $instruktur['jumlah_pelajar'] ?? '0'; ?> Pelajar</span>
+                            <span><?php echo intval($instruktur['jumlah_pelajar'] ?? '0'); ?> Pelajar</span>
                         </div>
                         <div class="d-flex align-items-center">
                             <i class="fas fa-play-circle me-2"></i>
-                            <span><?php echo $instruktur['jumlah_kursus'] ?? '0'; ?> Kursus</span>
+                            <span><?php echo intval($instruktur['jumlah_kursus'] ?? '0'); ?> Kursus</span>
                         </div>
                     </div>
-                    <p class="mb-0"><?php echo htmlspecialchars($instruktur['bio_singkat'] ?? 'Informasi instruktur belum tersedia.'); ?></p>
-                    <a href="instructor-profile.php?id=<?php echo $instruktur['id']; ?>" class="btn btn-outline-secondary mt-3 w-100">Lihat Profil</a>
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($instruktur['bio_singkat'] ?? 'Informasi instruktur belum tersedia.')); ?></p>
+                    <a href="instructor-profile.php?id=<?php echo htmlspecialchars($instruktur['id_user'] ?? ''); ?>" class="btn btn-outline-secondary mt-3 w-100">Lihat Profil</a>
                 </div>
                 <?php endif; ?>
                 
-                <!-- Related Courses -->
                 <div class="course-content">
                     <h4 class="mb-3">Butuh Bantuan?</h4>
                     <p>Jika Anda memiliki pertanyaan tentang kursus ini, jangan ragu untuk menghubungi kami:</p>
@@ -537,8 +520,10 @@ $price = intval($course['harga']);
             </div>
         </div>
     </div>
-    <?php include_once("../Views/footerbootsrap.php"); ?>
-    <!-- Bootstrap JS Bundle with Popper -->
+<?php 
+// Pastikan path ke footerbootsrap.php sudah benar
+include_once(__DIR__ . "/../Views/footerbootsrap.php"); 
+?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
