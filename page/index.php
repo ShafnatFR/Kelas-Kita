@@ -232,92 +232,84 @@ $sql_featured_courses = "
                         $instructor = htmlspecialchars($course['instructor']);
                         $title = htmlspecialchars($course['title']);
                         $image = htmlspecialchars($course['image']);
-                        $price = intval($course['price']);
-                        $original_price = intval($course['original_price'] ?? $price * 2);
-                        $type = strtoupper($course['type'] ?? 'VIDEO');
-                        $discount = round((($original_price - $price) / $original_price) * 100);
-                        ?>
-                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                                <div class="position-relative">
-                                    <img src="<?php echo $image; ?>" class="card-img-top" alt="<?php echo $title; ?>" style="height: 200px; object-fit: cover;">
-                                    
-                                    <!-- Duration Badge -->
-                                    <div class="position-absolute top-0 end-0 m-2">
-                                        <span class="badge bg-dark px-2 py-1" style="font-size: 0.75rem; border-radius: 6px;">
-                                            <?php echo $duration; ?>
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- Category and Type Badges -->
-                                    <div class="position-absolute top-0 start-0 m-2">
-                                        <span class="badge bg-primary me-1 px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
-                                            <?php echo strtoupper($category); ?>
-                                        </span>
-                                        <span class="badge bg-secondary px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
-                                            <?php echo $type; ?>
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-body p-3 d-flex flex-column">
-                                    <!-- Course Title -->
-                                    <a href="<?php echo $detail_url; ?>" class="text-decoration-none text-dark">
-                                        <h6 class="card-title fw-bold mb-2" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                                            <?php echo $title; ?>
-                                        </h6>
-                                    </a>
-                                    
-                                    <!-- Instructor -->
-                                    <p class="mb-2 text-muted" style="font-size: 0.85rem;">
-                                        <?php echo $instructor; ?>
-                                    </p>
-                                    
-                                    <!-- Stats (Views, Comments, Rating) -->
-                                    <div class="d-flex align-items-center mb-3" style="font-size: 0.8rem; color: #666;">
-                                        <span class="me-3">
-                                            <i class="fas fa-eye me-1"></i><?php echo number_format($views); ?>
-                                        </span>
-                                        <span class="me-3">
-                                            <i class="fas fa-comment me-1"></i><?php echo $comments; ?>
-                                        </span>
-                                        <span class="d-flex align-items-center">
-                                            <?php
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                if ($i <= floor($avg_rating)) {
-                                                    echo '<i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>';
-                                                } elseif ($i - $avg_rating < 1) {
-                                                    echo '<i class="fas fa-star-half-alt text-warning" style="font-size: 0.7rem;"></i>';
-                                                } else {
-                                                    echo '<i class="far fa-star text-warning" style="font-size: 0.7rem;"></i>';
-                                                }
-                                            }
-                                            ?>
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- Price Section -->
-                                    <div class="mt-auto">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-<span class="badge bg-primary" style="font-size: 0.7rem;">
-    <?php echo $discount; ?>%
-</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">
-                                                    Rp <?php echo number_format($original_price, 0, ',', '.'); ?>
-                                                </div>
+$price = intval($course['price']);
+$type = strtoupper($course['type'] ?? 'VIDEO');
+?>
+<div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+    <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+        <div class="position-relative">
+            <img src="<?php echo $image; ?>" class="card-img-top" alt="<?php echo $title; ?>" style="height: 200px; object-fit: cover;">
+            
+            <!-- Duration Badge -->
+            <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-dark px-2 py-1" style="font-size: 0.75rem; border-radius: 6px;">
+                    <?php echo $duration; ?>
+                </span>
+            </div>
+            
+            <!-- Category and Type Badges -->
+            <div class="position-absolute top-0 start-0 m-2">
+                <span class="badge bg-primary me-1 px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
+                    <?php echo strtoupper($category); ?>
+                </span>
+                <span class="badge bg-secondary px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
+                    <?php echo $type; ?>
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body p-3 d-flex flex-column">
+            <!-- Course Title -->
+            <a href="<?php echo $detail_url; ?>" class="text-decoration-none text-dark">
+                <h6 class="card-title fw-bold mb-2" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    <?php echo $title; ?>
+                </h6>
+            </a>
+            
+            <!-- Instructor -->
+            <p class="mb-2 text-muted" style="font-size: 0.85rem;">
+                <?php echo $instructor; ?>
+            </p>
+            
+            <!-- Stats (Views, Comments, Rating) -->
+            <div class="d-flex align-items-center mb-3" style="font-size: 0.8rem; color: #666;">
+                <span class="me-3">
+                    <i class="fas fa-eye me-1"></i><?php echo number_format($views); ?>
+                </span>
+                <span class="me-3">
+                    <i class="fas fa-comment me-1"></i><?php echo $comments; ?>
+                </span>
+                <span class="d-flex align-items-center">
+                    <?php
+                    for ($i = 1; $i <= 5; $i++) {
+                        if ($i <= floor($avg_rating)) {
+                            echo '<i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                        } elseif ($i - $avg_rating < 1) {
+                            echo '<i class="fas fa-star-half-alt text-warning" style="font-size: 0.7rem;"></i>';
+                        } else {
+                            echo '<i class="far fa-star text-warning" style="font-size: 0.7rem;"></i>';
+                        }
+                    }
+                    ?>
+                </span>
+            </div>
+            
+            <!-- Price Section -->
+            <div class="mt-auto">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                    </div>
+                    <div class="text-end">
 <div class="fw-bold text-primary" style="font-size: 1.1rem;">
     Rp <?php echo number_format($price, 0, ',', '.'); ?>
 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a href="<?php echo $detail_url; ?>" class="btn btn-outline-primary mt-3 w-100">Lihat Detail</a>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="<?php echo $detail_url; ?>" class="btn btn-outline-primary mt-3 w-100">Lihat Detail</a>
+        </div>
+    </div>
+</div>
                         <?php
                     }
                 } else {

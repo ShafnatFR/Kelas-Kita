@@ -74,7 +74,7 @@ function updateDatabaseCart($user_id, $conn) {
         $stmt = $conn->prepare($sql);
         
         foreach ($_SESSION['cart'] as $item) {
-            $stmt->bind_param("iid", $user_id, $item['id'], $item['price']);
+            $stmt->bind_param("ii", $user_id, $item['id']);
             $stmt->execute();
         }
     }
