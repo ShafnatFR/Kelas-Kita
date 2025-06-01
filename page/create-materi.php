@@ -124,6 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="mb-3">
+                                <label for="deskripsi_m" class="form-label">Deskripsi</label>
+                                <textarea class="form-control" id="deskripsi_m" name="deskripsi_m" rows="4" placeholder="Jelaskan secara singkat isi dari materi ini..." required></textarea>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="urutan" class="form-label">Urutan</label>
                                 <input type="number" class="form-control" id="urutan" name="urutan" value="1" min="1" required>
                             </div>
