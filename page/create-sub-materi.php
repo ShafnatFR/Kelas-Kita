@@ -51,16 +51,66 @@ if ($id_materi_preselected > 0) {
     $stmt_materi->close();
 }
 
+// Function to validate and convert video URL to embed format
+function processVideoUrl($url) {
+    if (empty($url)) {
+        return null;
+    }
+    
+    $url = trim($url);
+    
+    // YouTube URL patterns
+    if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        return 'https://www.youtube.com/embed/' . $matches[1];
+    }
+    
+    // Vimeo URL patterns  
+    if (preg_match('/vimeo\.com\/(\d+)/', $url, $matches)) {
+        return 'https://player.vimeo.com/video/' . $matches[1];
+    }
+    
+    // Google Drive sharing link
+    if (preg_match('/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        return 'https://drive.google.com/file/d/' . $matches[1] . '/preview';
+    }
+    
+    // If already an embed URL or other video platform, return as is
+    if (strpos($url, 'embed') !== false || strpos($url, 'player') !== false) {
+        return $url;
+    }
+    
+    return null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_materi = trim($_POST['id_materi']);
     $judul_sub_materi = trim($_POST['judul_sub_materi']);
     $urutan = trim($_POST['urutan']);
+    $video_url = trim($_POST['video_url']);
 
     $id_dokumen = null; // Default NULL
-    $id_video = null;   // Default NULL
+    $id_video = null; // Default NULL
+
+    // --- Proses Video URL ---
+    if (!empty($video_url)) {
+        $video_embed_url = processVideoUrl($video_url);
+        if ($video_embed_url === null) {
+            $message = "URL video tidak valid. Gunakan link dari YouTube, Vimeo, atau Google Drive.";
+        } else {
+            // Simpan URL embed ke tb_video menggunakan kolom file_path_video
+            $insert_video_stmt = $conn->prepare("INSERT INTO tb_video (file_path_video) VALUES (?)");
+            $insert_video_stmt->bind_param("s", $video_embed_url);
+            if ($insert_video_stmt->execute()) {
+                $id_video = $insert_video_stmt->insert_id;
+            } else {
+                $message = "Gagal menyimpan info video ke database: " . $insert_video_stmt->error;
+            }
+            $insert_video_stmt->close();
+        }
+    }
 
     // --- Proses Upload Dokumen ---
-    if (isset($_FILES['dokumen_file']) && $_FILES['dokumen_file']['error'] === UPLOAD_ERR_OK) {
+    if (empty($message) && isset($_FILES['dokumen_file']) && $_FILES['dokumen_file']['error'] === UPLOAD_ERR_OK) {
         $file_tmp_name_d = $_FILES['dokumen_file']['tmp_name'];
         $file_name_d = basename($_FILES['dokumen_file']['name']);
         $file_size_d = $_FILES['dokumen_file']['size'];
@@ -76,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "Ukuran file dokumen terlalu besar. Maksimal 20MB.";
         } else {
             if (move_uploaded_file($file_tmp_name_d, $file_path_dokumen)) {
-                // Simpan info ke database (tanpa deskripsi_d)
+                // Simpan info ke database
                 $insert_doc_stmt = $conn->prepare("INSERT INTO tb_dokumen (file_path_dokumen) VALUES (?)");
                 $insert_doc_stmt->bind_param("s", $file_path_dokumen);
                 if ($insert_doc_stmt->execute()) {
@@ -94,42 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Kesalahan upload dokumen: " . $_FILES['dokumen_file']['error'];
     }
 
-    // --- Proses Upload Video (Hanya jika tidak ada error dari dokumen dan belum ada pesan error) ---
-    if (empty($message) && isset($_FILES['video_file']) && $_FILES['video_file']['error'] === UPLOAD_ERR_OK) {
-        $file_tmp_name_v = $_FILES['video_file']['tmp_name'];
-        $file_name_v = basename($_FILES['video_file']['name']);
-        $file_size_v = $_FILES['video_file']['size'];
-        $file_type_v = $_FILES['video_file']['type'];
-
-        $upload_dir_v = '../uploads/video/';
-        $file_path_video = $upload_dir_v . uniqid() . '_' . $file_name_v;
-
-        $allowed_types_v = ['video/mp4', 'video/webm', 'video/ogg'];
-        if (!in_array($file_type_v, $allowed_types_v)) {
-            $message = "Tipe file video tidak diizinkan. Hanya MP4, WEBM, OGG.";
-        } elseif ($file_size_v > 100 * 1024 * 1024) { // Batas 100MB
-            $message = "Ukuran file video terlalu besar. Maksimal 100MB.";
-        } else {
-            if (move_uploaded_file($file_tmp_name_v, $file_path_video)) {
-                // Simpan info ke database (tanpa deskripsi_v)
-                $insert_video_stmt = $conn->prepare("INSERT INTO tb_video (file_path_video) VALUES (?)");
-                $insert_video_stmt->bind_param("s", $file_path_video);
-                if ($insert_video_stmt->execute()) {
-                    $id_video = $insert_video_stmt->insert_id;
-                } else {
-                    $message = "Gagal menyimpan info video ke database: " . $insert_video_stmt->error;
-                    unlink($file_path_video);
-                }
-                $insert_video_stmt->close();
-            } else {
-                $message = "Gagal memindahkan file video yang diunggah.";
-            }
-        }
-    } elseif (empty($message) && isset($_FILES['video_file']) && $_FILES['video_file']['error'] !== UPLOAD_ERR_NO_FILE) {
-        $message = "Kesalahan upload video: " . $_FILES['video_file']['error'];
-    }
-
-    // --- Validasi dan Insert Sub-Materi (Hanya jika tidak ada error dari upload file) ---
+    // --- Validasi dan Insert Sub-Materi ---
     if (empty($message)) {
         // Validasi input dasar
         if (empty($id_materi) || empty($judul_sub_materi)) {
@@ -154,19 +169,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $materi_info_for_redirect = $materi_owner_result->fetch_assoc();
                 $id_kelas_for_redirect = $materi_info_for_redirect['id_kelas'];
 
-                // Masukkan data sub-materi ke database (tanpa deskripsi_sm)
-                $insert_stmt = $conn->prepare("INSERT INTO tb_sub_materi (id_materi, judul_sub_materi, id_dokumen, id_video, urutan) VALUES (?, ?, ?, ?, ?)");
-                
-                // Parameter: i (id_materi), s (judul_sub_materi), i (id_dokumen), i (id_video), i (urutan)
-                $insert_stmt->bind_param("isiii", $id_materi, $judul_sub_materi, $id_dokumen, $id_video, $urutan);
+                if (empty($message)) {
+                    // Masukkan data sub-materi ke database
+                    $insert_stmt = $conn->prepare("INSERT INTO tb_sub_materi (id_materi, judul_sub_materi, id_dokumen, id_video, urutan) VALUES (?, ?, ?, ?, ?)");
+                    
+                    // Parameter: i (id_materi), s (judul_sub_materi), i (id_dokumen), i (id_video), i (urutan)
+                    $insert_stmt->bind_param("isiii", $id_materi, $judul_sub_materi, $id_dokumen, $id_video, $urutan);
+
+                    if ($insert_stmt->execute()) {
+                        header("Location: kelola-materi.php?id_kelas=" . $id_kelas_for_redirect . "&id_materi=" . $id_materi . "&msg=" . urlencode("Sub-materi '{$judul_sub_materi}' berhasil ditambahkan!"));
+                        exit();
+                    } else {
+                        $message = "Gagal menambahkan sub-materi: " . $insert_stmt->error;
+                        // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen/tb_video jika sudah terupload
+                    }
+                    $insert_stmt->close();
+                }
 
                 if ($insert_stmt->execute()) {
                     header("Location: kelola-materi.php?id_kelas=" . $id_kelas_for_redirect . "&id_materi=" . $id_materi . "&msg=" . urlencode("Sub-materi '{$judul_sub_materi}' berhasil ditambahkan!"));
                     exit();
                 } else {
                     $message = "Gagal menambahkan sub-materi: " . $insert_stmt->error;
-                    // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen/tb_video jika sudah terupload
-                    // Ini butuh logic DELETE dari tb_dokumen/tb_video dan unlink file dari server
+                    // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen jika sudah terupload
                 }
                 $insert_stmt->close();
             }
@@ -220,7 +245,8 @@ if ($id_materi_preselected === 0 && $id_mentor > 0) {
                             </div>
                         <?php endif; ?>
 
-                        <form method="POST" enctype="multipart/form-data"> <div class="mb-3">
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
                                 <label for="id_materi" class="form-label">Pilih Materi Induk</label>
                                 <select class="form-select" id="id_materi" name="id_materi" required
                                     <?= ($id_materi_preselected > 0) ? 'disabled' : '' ?>>
@@ -256,12 +282,26 @@ if ($id_materi_preselected === 0 && $id_mentor > 0) {
                             </div>
 
                             <hr>
-                            <h5>Unggah Video (Opsional)</h5>
+                            <h5>Tambahkan Video (Opsional)</h5>
                             <div class="mb-3">
-                                <label for="video_file" class="form-label">Pilih File Video</label>
-                                <input type="file" class="form-control" id="video_file" name="video_file" accept="video/mp4,video/webm,video/ogg">
-                                <div class="form-text">Maksimal 100MB. Format: MP4, WEBM, OGG. (Sesuaikan batas ini di php.ini jika perlu)</div>
+                                <label for="video_url" class="form-label">Link Video</label>
+                                <input type="url" class="form-control" id="video_url" name="video_url" placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="form-text">
+                                    <strong>Platform yang didukung:</strong><br>
+                                    • YouTube: https://www.youtube.com/watch?v=... atau https://youtu.be/...<br>
+                                    • Vimeo: https://vimeo.com/...<br>
+                                    • Google Drive: https://drive.google.com/file/d/.../view
+                                </div>
                             </div>
+                            
+                            <!-- Preview Video -->
+                            <div class="mb-3" id="video-preview" style="display: none;">
+                                <label class="form-label">Preview Video:</label>
+                                <div class="ratio ratio-16x9">
+                                    <iframe id="preview-iframe" src="" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            
                             <hr>
                             
                             <div class="mb-3">
@@ -285,6 +325,54 @@ if ($id_materi_preselected === 0 && $id_mentor > 0) {
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Video URL preview functionality
+        document.getElementById('video_url').addEventListener('input', function() {
+            const url = this.value.trim();
+            const previewDiv = document.getElementById('video-preview');
+            const iframe = document.getElementById('preview-iframe');
+            
+            if (url) {
+                let embedUrl = processVideoUrlJS(url);
+                if (embedUrl) {
+                    iframe.src = embedUrl;
+                    previewDiv.style.display = 'block';
+                } else {
+                    previewDiv.style.display = 'none';
+                }
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        });
+
+        function processVideoUrlJS(url) {
+            // YouTube patterns
+            let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+            if (match) {
+                return 'https://www.youtube.com/embed/' + match[1];
+            }
+            
+            // Vimeo patterns
+            match = url.match(/vimeo\.com\/(\d+)/);
+            if (match) {
+                return 'https://player.vimeo.com/video/' + match[1];
+            }
+            
+            // Google Drive patterns
+            match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (match) {
+                return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+            }
+            
+            // If already embed URL
+            if (url.includes('embed') || url.includes('player')) {
+                return url;
+            }
+            
+            return null;
+        }
+    </script>
 </body>
 </html>
