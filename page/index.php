@@ -86,11 +86,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
-        .testimonial-card {
-            padding: 20px;
-            text-align: center;
-        }
+    
         
         .partner-logo {
             height: 60px;
