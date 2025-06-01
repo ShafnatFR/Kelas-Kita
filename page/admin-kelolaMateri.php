@@ -41,6 +41,8 @@ $totalMateriPending = $conn->prepare("
     SELECT tk.id_kelas, tk.nama_kelas, tk.status_publikasi AS status_kelas, tm.id_materi, tm.judul_materi, tm.tgl_dibuat_materi, tm.status AS status_materi
     FROM tb_kelas tk
     JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
+    WHERE x LIKE 'pending'
+    ORDER BY tgl_dibuat DESC
 ");
 $totalMateriPending->execute();
 $totalMateriPendingResult = $totalMateriPending->get_result();
@@ -194,7 +196,6 @@ $namaAdmin = $_SESSION['username'];
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Kelas</th>
-                                            <th>Status Kelas</th>
                                             <th>Judul Materi</th>
                                             <th>tgl_dibuat_materi</th>
                                             <th>Status Materi</th>
@@ -208,7 +209,6 @@ $namaAdmin = $_SESSION['username'];
                                                 <tr>
                                                     <th><?= $user_counter++ ?></th>
                                                     <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
-                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_kelas'])) ?></span></td>
                                                     <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
                                                     <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
