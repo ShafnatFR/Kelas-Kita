@@ -229,7 +229,7 @@ if ($user_id > 0) {
         <?php endforeach; ?>
 
     </div>
-
+<?php include_once(__DIR__ .'/../Views/footerbootsrap.php');?>
 </body>
 
 </html>
