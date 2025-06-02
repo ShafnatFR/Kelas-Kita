@@ -1,5 +1,6 @@
 <?php
 session_start();
+$site_name = "Kelas Kita";
 
 // Database connection
 $host = "localhost";
@@ -216,6 +217,9 @@ if (!empty($course_id)) {
             <li class="nav-item">
                 <a class="nav-link" href="report.php">Report</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="review.php?id_kelas=<?= $course_data['id_kelas'] ?>">Rating</a>
+            </li>
         </ul>
 
         <!-- Content Section -->
@@ -253,6 +257,8 @@ if (!empty($course_id)) {
             </div>
         </div>
     </div>
+
+    <?php include_once(__DIR__ . "/../Views/footerbootsrap.php"); ?>
 </body>
 
 </html>
