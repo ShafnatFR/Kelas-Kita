@@ -78,7 +78,7 @@ if (isset($user['role'])) {
                 <small class="text-muted text-truncate d-block" style="max-width: 160px;"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></small>
             </div>
         </li>
-        <li><a class="dropdown-item" href="setting-profil.php">KelasKu</a></li>
+        <li><a class="dropdown-item" href="kelasku.php">KelasKu</a></li>
         <?php if ($_SESSION['role'] !== 'mentor'): ?>
             <!-- Menampilkan opsi "Instruktur" hanya jika role pengguna adalah peserta -->
             <li><a class="dropdown-item" href="become-mentor.php">Instruktur</a></li>

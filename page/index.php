@@ -247,7 +247,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                 LEFT JOIN tb_review rev ON k.id_kelas = rev.id_kelas
                 WHERE k.status_publikasi = 'approved'
                 GROUP BY k.id_kelas
-                ORDER BY k.tanggal_rilis DESC
+                ORDER BY k.tgl_dibuat DESC
                 LIMIT 8
             ";
             
