@@ -38,38 +38,60 @@ $laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
 
 // Query untuk mengambil 10 user aktif terbaru
 $totalMateriPending = $conn->prepare("
-    SELECT tk.id_kelas, tk.nama_kelas, tk.status_publikasi AS status_kelas, tm.id_materi, tm.judul_materi, tm.tgl_dibuat_materi, tm.status AS status_materi
+    SELECT
+        tk.id_kelas,
+        tk.nama_kelas,
+        tk.status_publikasi AS status_kelas,
+        tm.id_materi,
+        tm.judul_materi,
+        tm.tgl_dibuat_materi,
+        tm.status AS status_materi
     FROM tb_kelas tk
     JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE x LIKE 'pending'
-    ORDER BY tgl_dibuat DESC
+    WHERE tm.status LIKE 'pending'
+    ORDER BY tm.tgl_dibuat_materi DESC
+    
 ");
 $totalMateriPending->execute();
 $totalMateriPendingResult = $totalMateriPending->get_result();
 
-// Query untuk mengambil 10 user non-aktif terbaru
-$tbKelasNonAktif = $conn->prepare("
-    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
-    FROM tb_kelas
-    WHERE status_publikasi LIKE 'non-aktif'
-    ORDER BY tgl_dibuat DESC
+// Query untuk mengambil 10 user aktif terbaru
+$totalMateriAktif = $conn->prepare("
+    SELECT
+        tk.id_kelas,
+        tk.nama_kelas,
+        tk.status_publikasi AS status_kelas,
+        tm.id_materi,
+        tm.judul_materi,
+        tm.tgl_dibuat_materi,
+        tm.status AS status_materi
+    FROM tb_kelas tk
+    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
+    WHERE tm.status LIKE 'aktif'
+    ORDER BY tm.tgl_dibuat_materi DESC
     LIMIT 10
 ");
-$tbKelasNonAktif->execute();
-$tbKelasNonAktifResult = $tbKelasNonAktif->get_result();
+$totalMateriAktif->execute();
+$totalMateriAktifResult = $totalMateriAktif->get_result();
 
-// Query untuk mengambil 10 user non-aktif terbaru
-$tbKelasAktif = $conn->prepare("
-    SELECT k.id_kelas, k.nama_kelas, k.status_publikasi, u.username, k.tgl_dibuat
-    FROM tb_kelas k
-    JOIN tb_mentor m ON k.id_mentor=m.id_mentor
-    JOIN tb_user u ON m.id_user=u.id_user
-    WHERE status_publikasi LIKE 'aktif'
-    ORDER BY tgl_dibuat DESC
+// Query untuk mengambil 10 user aktif terbaru
+$totalMateriNonaktif = $conn->prepare("
+    SELECT
+        tk.id_kelas,
+        tk.nama_kelas,
+        tk.status_publikasi AS status_kelas,
+        tm.id_materi,
+        tm.judul_materi,
+        tm.tgl_dibuat_materi,
+        tm.status AS status_materi
+    FROM tb_kelas tk
+    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
+    WHERE tm.status LIKE 'non-aktif'
+    ORDER BY tm.tgl_dibuat_materi DESC
     LIMIT 10
 ");
-$tbKelasAktif->execute();
-$tbKelasAktifResult = $tbKelasAktif->get_result();
+$totalMateriNonaktif->execute();
+$totalMateriNonaktifResult = $totalMateriNonaktif->get_result();
 
 // Data untuk statistik cards
 $stats = array(
@@ -183,11 +205,11 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="row mb-5 gy-4"> 
-                
+
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi</h5>
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Pending</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -197,7 +219,7 @@ $namaAdmin = $_SESSION['username'];
                                             <th>#</th>
                                             <th>Nama Kelas</th>
                                             <th>Judul Materi</th>
-                                            <th>tgl_dibuat_materi</th>
+                                            <th>Tgl Dibuat</th>
                                             <th>Status Materi</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -226,10 +248,97 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Aktif</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Judul Materi</th>
+                                            <th>Tgl Dibuat</th>
+                                            <th>Status Materi</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if ($totalMateriAktifResult->num_rows > 0): ?>
+                                            <?php $user_counter = 1; ?>
+                                            <?php while ($materi = $totalMateriAktifResult->fetch_assoc()): ?>
+                                                <tr>
+                                                    <th><?= $user_counter++ ?></th>
+                                                    <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
+                                                    <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
+                                                    <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
+                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
+                                                    <td>
+                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-danger">Non-Aktifkan</a>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Non-Aktif</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Judul Materi</th>
+                                            <th>Tgl Dibuat</th>
+                                            <th>Status Materi</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if ($totalMateriNonaktifResult->num_rows > 0): ?>
+                                            <?php $user_counter = 1; ?>
+                                            <?php while ($materi = $totalMateriNonaktifResult->fetch_assoc()): ?>
+                                                <tr>
+                                                    <th><?= $user_counter++ ?></th>
+                                                    <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
+                                                    <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
+                                                    <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
+                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
+                                                    <td>
+                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-danger">Hapus</a>
+                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-primary">Aktifkan</a>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-            
-            </div>
-    </div>
+        </div>
+    </div>  
 </body>
 </html>
 

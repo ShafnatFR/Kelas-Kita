@@ -268,7 +268,7 @@ $namaAdmin = $_SESSION['username'];
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Aktif Terbaru</h5>
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Laporan</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
