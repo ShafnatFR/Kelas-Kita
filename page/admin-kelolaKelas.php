@@ -64,7 +64,7 @@ $tbKelasAktif = $conn->prepare("
     FROM tb_kelas k
     JOIN tb_mentor m ON k.id_mentor=m.id_mentor
     JOIN tb_user u ON m.id_user=u.id_user
-    WHERE status_publikasi LIKE 'aktif'
+    WHERE status_publikasi LIKE 'approved'
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");

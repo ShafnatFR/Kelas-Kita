@@ -23,7 +23,7 @@ $kelasId = (int)$_GET['id']; // Ambil ID kelas dan pastikan integer
 $stmt = null;
 try {
     // Mengubah status publikasi menjadi 'aktif' (atau 'approved' jika itu standar Anda)
-    $stmt = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'aktif' WHERE id_kelas = ?");
+    $stmt = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'approved' WHERE id_kelas = ?");
     if ($stmt === false) {
         // Gagal prepare statement
         $_SESSION['error_message'] = "Gagal mempersiapkan statement: " . $conn->error;
