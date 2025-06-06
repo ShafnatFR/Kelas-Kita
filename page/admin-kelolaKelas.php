@@ -98,10 +98,17 @@ $tbKelasNonAktifResult = fetchData($conn, "
 $tbKelasAktifResult = fetchData($conn, "
     SELECT k.id_kelas, k.nama_kelas, k.status_publikasi, u.username AS mentor_username, k.tgl_dibuat
     FROM tb_kelas k
+<<<<<<< HEAD
     JOIN tb_mentor m ON k.id_mentor = m.id_mentor
     JOIN tb_user u ON m.id_user = u.id_user
     WHERE k.status_publikasi = 'aktif'
     ORDER BY k.tgl_dibuat DESC
+=======
+    JOIN tb_mentor m ON k.id_mentor=m.id_mentor
+    JOIN tb_user u ON m.id_user=u.id_user
+    WHERE status_publikasi LIKE 'approved'
+    ORDER BY tgl_dibuat DESC
+>>>>>>> 20e67d865377f14837315d81814d3a1eb751b56a
     LIMIT 10
 ");
 

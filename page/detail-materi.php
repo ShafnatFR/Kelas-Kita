@@ -266,7 +266,7 @@ if (!empty($sub_materi_id)) {
 
 
     </div>
-
+    <?php include_once(__DIR__ . "/../Views/footerbootsrap.php"); ?>
 </body>
 
 </html>
