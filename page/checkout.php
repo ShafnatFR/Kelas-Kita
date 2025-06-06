@@ -139,6 +139,9 @@ if (isset($_POST['confirm_payment'])) {
     $_SESSION['cart'] = [];
     unset($_SESSION['applied_coupon']);
     unset($_SESSION['pending_order']);
+
+    // Redirect to success page
+    header('Location: kelasku.php');
 }
 
 // Check for success parameter

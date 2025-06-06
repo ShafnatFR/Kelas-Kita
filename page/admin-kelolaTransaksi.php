@@ -38,11 +38,8 @@ $laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
 
 // Query untuk mengambil 10 user aktif terbaru
 $totalKelasPending = $conn->prepare("
-    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
-    FROM tb_kelas
-    WHERE status_publikasi LIKE 'pending'
-    ORDER BY tgl_dibuat DESC
-    LIMIT 10
+    SELECT bukti_transaksi, tgl_transaksi, status
+    FROM tb_transaksi;
 ");
 $totalKelasPending->execute();
 $totalKelasPendingResult = $totalKelasPending->get_result();
