@@ -1,8 +1,7 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan sudah menghubungkan ke database
+require 'db.php';
 
-// Pastikan pengguna sudah login dan memiliki role sebagai admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     header("Location: adminLogin.php");
     exit();
@@ -12,95 +11,111 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// --- PERBAIKAN: QUERY UNTUK STATS KELAS ---
-// Query untuk total kelas dengan berbagai status
-$kelas_stats_query = $conn->prepare("
+function fetchData(mysqli $conn, string $sql, string $types = '', array $params = []) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $conn->error . " for query: " . $sql);
+        return false;
+    }
+
+    if (!empty($params) && !empty($types)) {
+        $bind_params = [];
+        $bind_params[] = &$types;
+        foreach ($params as &$param) {
+            $bind_params[] = &$param;
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result === false) {
+        error_log("Error getting result: " . $stmt->error . " for query: " . $sql);
+        $stmt->close();
+        return false;
+    }
+    
+    if (strpos(strtoupper($sql), 'COUNT(') !== false || strpos(strtoupper($sql), 'SUM(') !== false ||
+        strpos(strtoupper($sql), 'MAX(') !== false || strpos(strtoupper($sql), 'MIN(') !== false) {
+        $data = $result->fetch_assoc();
+    } else {
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    return $data;
+}
+
+$kelas_stats_data = fetchData($conn, "
     SELECT
         COUNT(CASE WHEN status_publikasi = 'approved' THEN 1 END) AS total_aktif,
         COUNT(CASE WHEN status_publikasi = 'pending' THEN 1 END) AS total_pending,
-        COUNT(CASE WHEN status_publikasi = 'rejected' OR status_publikasi = 'draft' THEN 1 END) AS total_nonaktif
+        COUNT(CASE WHEN status_publikasi IN ('rejected', 'draft') THEN 1 END) AS total_nonaktif
     FROM tb_kelas
 ");
-$kelas_stats_query->execute();
-$kelas_stats_result = $kelas_stats_query->get_result();
-$kelas_stats_data = $kelas_stats_result->fetch_assoc();
 
-
-// Query untuk mengambil total user
-$totalUser_stmt = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
-$totalUser_stmt->execute();
-$userData = $totalUser_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil total laporan
-$totalLaporan_stmt = $conn->prepare("SELECT COUNT(*) as total_laporan FROM tb_laporan");
-$totalLaporan_stmt->execute();
-$laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil 10 user aktif terbaru
-$totalMateriPending = $conn->prepare("
+$totalMateriPendingResult = fetchData($conn, "
     SELECT
         tk.id_kelas,
         tk.nama_kelas,
-        tk.status_publikasi AS status_kelas,
+        tk.status_publikasi AS status_kelas_publikasi,
         tm.id_materi,
         tm.judul_materi,
         tm.tgl_dibuat_materi,
         tm.status AS status_materi
     FROM tb_kelas tk
     JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE tm.status LIKE 'pending'
-    ORDER BY tm.tgl_dibuat_materi DESC
-    
-");
-$totalMateriPending->execute();
-$totalMateriPendingResult = $totalMateriPending->get_result();
-
-// Query untuk mengambil 10 user aktif terbaru
-$totalMateriAktif = $conn->prepare("
-    SELECT
-        tk.id_kelas,
-        tk.nama_kelas,
-        tk.status_publikasi AS status_kelas,
-        tm.id_materi,
-        tm.judul_materi,
-        tm.tgl_dibuat_materi,
-        tm.status AS status_materi
-    FROM tb_kelas tk
-    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE tm.status LIKE 'aktif'
+    WHERE tm.status = 'pending'
     ORDER BY tm.tgl_dibuat_materi DESC
     LIMIT 10
 ");
-$totalMateriAktif->execute();
-$totalMateriAktifResult = $totalMateriAktif->get_result();
 
-// Query untuk mengambil 10 user aktif terbaru
-$totalMateriNonaktif = $conn->prepare("
+$totalMateriAktifResult = fetchData($conn, "
     SELECT
         tk.id_kelas,
         tk.nama_kelas,
-        tk.status_publikasi AS status_kelas,
+        tk.status_publikasi AS status_kelas_publikasi,
         tm.id_materi,
         tm.judul_materi,
         tm.tgl_dibuat_materi,
         tm.status AS status_materi
     FROM tb_kelas tk
     JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE tm.status LIKE 'non-aktif'
+    WHERE tm.status = 'aktif'
     ORDER BY tm.tgl_dibuat_materi DESC
     LIMIT 10
 ");
-$totalMateriNonaktif->execute();
-$totalMateriNonaktifResult = $totalMateriNonaktif->get_result();
 
-// Data untuk statistik cards
-$stats = array(
+$totalMateriNonaktifResult = fetchData($conn, "
+    SELECT
+        tk.id_kelas,
+        tk.nama_kelas,
+        tk.status_publikasi AS status_kelas_publikasi,
+        tm.id_materi,
+        tm.judul_materi,
+        tm.tgl_dibuat_materi,
+        tm.status AS status_materi
+    FROM tb_kelas tk
+    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
+    WHERE tm.status = 'non-aktif'
+    ORDER BY tm.tgl_dibuat_materi DESC
+    LIMIT 10
+");
+
+$userData = fetchData($conn, "SELECT COUNT(*) as total_users FROM tb_user");
+$laporanData = fetchData($conn, "SELECT COUNT(*) as total_laporan FROM tb_laporan");
+
+
+$stats = [
     'total_users' => $userData['total_users'] ?? 0,
     'total_kelas_aktif' => $kelas_stats_data['total_aktif'] ?? 0,
     'total_kelas_pending' => $kelas_stats_data['total_pending'] ?? 0,
     'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0,
     'total_laporan' => $laporanData['total_laporan'] ?? 0
-);
+];
 
 $namaAdmin = $_SESSION['username'];
 ?>
@@ -110,7 +125,7 @@ $namaAdmin = $_SESSION['username'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola User</title>
+    <title>Kelola Materi - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -123,7 +138,7 @@ $namaAdmin = $_SESSION['username'];
         .content-wrapper {
             padding: 20px;
             flex: 1;
-            margin-left: 250px; /* Sesuaikan dengan lebar sidebar */
+            margin-left: 250px;
         }
         .stat-card {
             border-left: 4px solid;
@@ -132,11 +147,11 @@ $namaAdmin = $_SESSION['username'];
         .stat-card:hover {
             transform: translateY(-2px);
         }
-        .stat-card.primary { border-left-color: #0d6efd; }
-        .stat-card.success { border-left-color: #198754; }
-        .stat-card.info { border-left-color: #0dcaf0; }
-        .stat-card.warning { border-left-color: #ffc107; }
-        .stat-card.danger { border-left-color: #dc3545; }
+        .stat-card.primary { border-left-color: var(--bs-primary); }
+        .stat-card.success { border-left-color: var(--bs-success); }
+        .stat-card.info { border-left-color: var(--bs-info); }
+        .stat-card.warning { border-left-color: var(--bs-warning); }
+        .stat-card.danger { border-left-color: var(--bs-danger); }
     </style>
 </head>
 <body class="bg-light">
@@ -147,7 +162,7 @@ $namaAdmin = $_SESSION['username'];
             <div class="row mb-4">
                 <div class="col-12">
                     <h2 class="text-primary">
-                        <i class="fas fa-tachometer-alt me-2"></i>
+                        <i class="fas fa-book-reader me-2"></i>
                         Kelola Materi
                     </h2>
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
@@ -205,11 +220,10 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="row mb-5 gy-4"> 
-
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Pending</h5>
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Tabel Materi Pending</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -225,22 +239,37 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($totalMateriPendingResult->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($materi = $totalMateriPendingResult->fetch_assoc()): ?>
+                                        <?php if (!empty($totalMateriPendingResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($totalMateriPendingResult as $materi): ?>
                                                 <tr>
-                                                    <th><?= $user_counter++ ?></th>
+                                                    <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
                                                     <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
-                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
                                                     <td>
-                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-primary">Aktifkan</a>
+                                                        <?php
+                                                        $status_materi_badge_class = 'badge ';
+                                                        if ($materi['status_materi'] === 'pending') {
+                                                            $status_materi_badge_class .= 'bg-info';
+                                                        } else {
+                                                            $status_materi_badge_class .= 'bg-secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-approveMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-success" title="Approve Materi">
+                                                            <i class="fas fa-check"></i> Approve
+                                                        </a>
+                                                        <a href="admin-rejectMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-danger" title="Reject Materi" onclick="return confirm('Apakah Anda yakin ingin menolak materi ini?');">
+                                                            <i class="fas fa-times"></i> Reject
+                                                        </a>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data materi pending.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -251,8 +280,8 @@ $namaAdmin = $_SESSION['username'];
 
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Aktif</h5>
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Tabel Materi Aktif</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -268,22 +297,34 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($totalMateriAktifResult->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($materi = $totalMateriAktifResult->fetch_assoc()): ?>
+                                        <?php if (!empty($totalMateriAktifResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($totalMateriAktifResult as $materi): ?>
                                                 <tr>
-                                                    <th><?= $user_counter++ ?></th>
+                                                    <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
                                                     <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
-                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
                                                     <td>
-                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-danger">Non-Aktifkan</a>
+                                                        <?php
+                                                        $status_materi_badge_class = 'badge ';
+                                                        if ($materi['status_materi'] === 'aktif') {
+                                                            $status_materi_badge_class .= 'bg-success';
+                                                        } else {
+                                                            $status_materi_badge_class .= 'bg-secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-deactivateMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Materi" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan materi ini?');">
+                                                            <i class="fas fa-times-circle"></i> Non-Aktifkan
+                                                        </a>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data materi aktif.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -295,7 +336,7 @@ $namaAdmin = $_SESSION['username'];
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tabel Materi Non-Aktif</h5>
+                            <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Tabel Materi Non-Aktif</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -311,23 +352,37 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($totalMateriNonaktifResult->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($materi = $totalMateriNonaktifResult->fetch_assoc()): ?>
+                                        <?php if (!empty($totalMateriNonaktifResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($totalMateriNonaktifResult as $materi): ?>
                                                 <tr>
-                                                    <th><?= $user_counter++ ?></th>
+                                                    <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
                                                     <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
-                                                    <td><span class="badge bg-success"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span></td>
                                                     <td>
-                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-danger">Hapus</a>
-                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $materi['id_kelas'] ?>" class="btn btn-sm btn-primary">Aktifkan</a>
+                                                        <?php
+                                                        $status_materi_badge_class = 'badge ';
+                                                        if ($materi['status_materi'] === 'non-aktif') {
+                                                            $status_materi_badge_class .= 'bg-danger';
+                                                        } else {
+                                                            $status_materi_badge_class .= 'bg-secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-activateMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-success" title="Aktifkan Materi">
+                                                            <i class="fas fa-check-circle"></i> Aktifkan
+                                                        </a>
+                                                        <a href="admin-deleteMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-warning text-dark" title="Hapus Materi" onclick="return confirm('Apakah Anda yakin ingin menghapus materi ini?');">
+                                                            <i class="fas fa-trash-alt"></i> Hapus
+                                                        </a>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data.</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data materi non-aktif.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -335,23 +390,15 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-
             </div>
-        </div>
-    </div>  
+        </div> 
+    </div>  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
-
-
 <?php
-// --- PERBAIKAN: Close statements dan connection ---
-if (isset($kelas_stats_query)) $kelas_stats_query->close();
-if (isset($totalUser_stmt)) $totalUser_stmt->close();
-if (isset($totalLaporan_stmt)) $totalLaporan_stmt->close();
-if (isset($recent_users_query)) $recent_users_query->close();
-if (isset($tbUserNonAktif_stmt)) $tbUserNonAktif_stmt->close();
-if (isset($latest_classes_table_query)) $latest_classes_table_query->close();
-
-if ($conn) $conn->close();
+if ($conn) {
+    $conn->close();
+}
 ?>
