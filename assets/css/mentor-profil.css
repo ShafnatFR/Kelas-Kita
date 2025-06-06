@@ -1,5 +1,5 @@
  .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #66a4ea 0%, #4b69a2 100%);
             color: white;
             padding: 2rem 0;
         }
@@ -24,7 +24,7 @@
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #667eea;
+            color: #6a9ce3;
         }
         .social-links a {
             display: inline-block;
@@ -52,7 +52,7 @@
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #669fea 0%, #4b67a2 100%);
             border: none;
             border-radius: 10px;
             padding: 12px 30px;

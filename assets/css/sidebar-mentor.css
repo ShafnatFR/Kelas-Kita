@@ -1,6 +1,6 @@
 /* Mengatur tampilan dasar sidebar */
 .sidebar {
-    background: linear-gradient(180deg, #2c3e50, #3498db); /* Gradasi warna biru gelap ke terang */
+    background: linear-gradient(180deg, #1c61a5, #3498db); /* Gradasi warna biru gelap ke terang */
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); /* Memberi efek bayangan agar terkesan melayang */
     height: 100vh; /* Tinggi sidebar selalu 100% dari tinggi layar */
     color: #ecf0f1; /* Warna teks default di sidebar */
