@@ -329,9 +329,9 @@ $conn->close();
                     </div>
                 </div>
                 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
-                    <div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
-                        <?php echo formatRupiah($course['harga'] ?? 0); ?>
-                    </div>
+<div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
+    <?php echo 'Rp ' . number_format(intval($course['harga'] ?? 0), 0, ',', '.'); ?>
+</div>
                     <form method="post" action="Coursedetail.php?id=<?php echo htmlspecialchars($course['id_kelas']); ?>">
                         <input type="hidden" name="add_to_cart" value="1">
                         <button type="submit" class="course-button">Daftar Sekarang</button>

@@ -86,7 +86,11 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-    
+        
+        .testimonial-card {
+            padding: 20px;
+            text-align: center;
+        }
         
         .partner-logo {
             height: 60px;
@@ -243,7 +247,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                 LEFT JOIN tb_review rev ON k.id_kelas = rev.id_kelas
                 WHERE k.status_publikasi = 'approved'
                 GROUP BY k.id_kelas
-                ORDER BY k.tanggal_rilis DESC
+                ORDER BY k.tgl_dibuat DESC
                 LIMIT 8
             ";
             

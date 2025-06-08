@@ -1,4 +1,15 @@
 <?php
+// Create a new mysqli connection inside navbarbootstrap.php to avoid dependency on external connection
+$servername = "localhost";
+$username_db = "root";
+$password_db = "";
+$dbname = "KelasKita_baru";
+
+$conn = new mysqli($servername, $username_db, $password_db, $dbname);
+if ($conn->connect_error) {
+    die("Koneksi gagal di navbarbootstrap.php: " . $conn->connect_error);
+}
+
 // Pastikan ada session yang sudah login
 
 // session_start();  // Removed session_start from navbarbootstrap.php as per user request
@@ -100,5 +111,3 @@ if (isset($user['role'])) {
 
 <!-- Tambahkan link ke Bootstrap JS jika belum ada -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
