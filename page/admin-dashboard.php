@@ -57,6 +57,12 @@ $transaksiData = fetchData($conn, "
     WHERE tk.status = 'acc'
 ");
 
+    SELECT k.harga AS total_transaksi
+    FROM tb_kelas k
+    INNER JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
+    INNER JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
+    WHERE tk.status = 'acc'
+
 if ($transaksiData === false) {
     $transaksiData = ['total_transaksi' => 0];
 }
