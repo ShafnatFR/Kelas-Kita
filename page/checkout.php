@@ -227,129 +227,54 @@ if (isset($_POST['proceed_to_payment'])) {
     }
 }
 
-// PERBAIKAN 5: Handle form submission untuk upload bukti transfer dengan validasi yang lebih ketat
-if (isset($_POST['upload_proof']) && isset($_SESSION['pending_order_data'])) {
-    $pending_order = $_SESSION['pending_order_data'];
-    $order_id = $pending_order['id'];
-    $total_bayar = $pending_order['total'];
-    $metode_bayar = "BCA Virtual Account";
-
-    // PERBAIKAN 6: Validasi ulang user_id sebelum melanjutkan
-    checkAndReconnect($conn, $servername, $username, $password, $dbname);
-    $stmt_revalidate_user = $conn->prepare("SELECT id_user, username FROM tb_user WHERE id_user = ?");
-    if ($stmt_revalidate_user) {
-        $stmt_revalidate_user->bind_param("i", $user_id);
-        $stmt_revalidate_user->execute();
-        $result_revalidate = $stmt_revalidate_user->get_result();
-        
-        if ($result_revalidate->num_rows === 0) {
-            $payment_error = "Sesi login Anda tidak valid. Silakan login kembali.";
-            $stmt_revalidate_user->close();
-            
-            // Redirect ke halaman login dengan pesan
-            session_unset();
-            session_destroy();
-            header('Location: HalamanSignIn.php?error=invalid_session&message=' . urlencode($payment_error));
-            exit;
-        }
-        $stmt_revalidate_user->close();
-    } else {
-        error_log("Failed to prepare statement for user revalidation: " . $conn->error);
-        $payment_error = "Terjadi kesalahan sistem. Silakan coba lagi.";
-        $current_page_status = 'qr_payment';
-    }
-
-    // Proses upload file jika validasi user berhasil
-    if (empty($payment_error)) {
-        $bukti_transfer_path = null;
-        if (isset($_FILES['proof_image']) && $_FILES['proof_image']['error'] == UPLOAD_ERR_OK) {
-            $file_tmp_name = $_FILES['proof_image']['tmp_name'];
-            $file_name = uniqid() . '_' . basename($_FILES['proof_image']['name']);
-            $upload_dir = 'uploads/proofs/';
-            $bukti_transfer_path = $upload_dir . $file_name;
-
-            // Buat direktori jika belum ada
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-
-            // Validasi tipe file
-            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
-            $file_type = mime_content_type($file_tmp_name);
-            if (!in_array($file_type, $allowed_types)) {
-                $payment_error = "Format file tidak didukung. Gunakan JPG atau PNG.";
-            }
-            // Validasi ukuran file (max 2MB)
-            elseif ($_FILES['proof_image']['size'] > 2 * 1024 * 1024) {
-                $payment_error = "Ukuran file terlalu besar. Maksimal 2MB.";
-            }
-            // Upload file
-            elseif (!move_uploaded_file($file_tmp_name, $bukti_transfer_path)) {
-                $payment_error = "Gagal mengunggah bukti transfer.";
-                $bukti_transfer_path = null;
-            }
-        } else {
-            $payment_error = "Harap unggah bukti transfer.";
-        }
-
-        // Simpan ke database jika upload berhasil
-        if ($bukti_transfer_path && empty($payment_error)) {
-            checkAndReconnect($conn, $servername, $username, $password, $dbname);
-            $stmt_insert_pembayaran = $conn->prepare("INSERT INTO tb_pembayaran (order_id, id_user, total_bayar, metode_bayar, nomor_va, bukti_transfer, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')");
-            if ($stmt_insert_pembayaran) {
-                $stmt_insert_pembayaran->bind_param("sidsss", $order_id, $user_id, $total_bayar, $metode_bayar, $qr_virtual_account_number, $bukti_transfer_path);
-                if ($stmt_insert_pembayaran->execute()) {
-                    // Hapus dari keranjang database
-                    $stmt_delete_cart_entry = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ? AND id_kelas IN (" . implode(',', array_fill(0, count($pending_order['items']), '?')) . ")");
-                    if ($stmt_delete_cart_entry && !empty($pending_order['items'])) {
-                        $types = 'i' . str_repeat('i', count($pending_order['items']));
-                        $class_ids = array_map(function($item) { return $item['id']; }, $pending_order['items']);
-                        $stmt_delete_cart_entry->bind_param($types, $user_id, ...$class_ids);
-                        $stmt_delete_cart_entry->execute();
-                        $stmt_delete_cart_entry->close();
-                    }
-
-                    // Bersihkan session
-                    unset($_SESSION['cart']);
-                    unset($_SESSION['applied_coupon']);
-                    unset($_SESSION['pending_order_data']);
-
-                // Redirect ke konfirmasi
-                // After successful payment, redirect to lihat-kelas.php for the first purchased class
-                $first_class_id = 0;
-                if (!empty($pending_order['items'])) {
-                    $first_class_id = $pending_order['items'][0]['id'] ?? 0;
-                }
-                if ($first_class_id > 0) {
-                    header("Location: lihat-kelas.php?id=" . urlencode($first_class_id));
-                } else {
-                    header("Location: checkout.php?order_id=" . urlencode($order_id));
-                }
-                exit;
-
-                } else {
-                    $payment_error = "Gagal menyimpan data pembayaran: " . $stmt_insert_pembayaran->error;
-                }
-                $stmt_insert_pembayaran->close();
-            } else {
-                $payment_error = "Gagal menyiapkan statement untuk pembayaran: " . $conn->error;
-            }
-        }
-    }
+// Handle payment confirmation
+if (isset($_POST['confirm_payment'])) {
+    $payment_success = true;
     
-    if (!empty($payment_error)) {
-        $current_page_status = 'qr_payment';
+    // Save order to database
+    $user_id = $_SESSION['id'];
+    $pending_order = $_SESSION['pending_order'];
+    $date = date('Y-m-d');
+    
+    // Insert each cart item as a transaction record in tb_transaksi
+    foreach ($_SESSION['cart'] as $item) {
+        $id_kelas = $item['id'];
+        $quantity = isset($item['quantity']) ? $item['quantity'] : 1;
+
+        // Get id_keranjang for this user and kelas
+        $stmt_keranjang = $conn->prepare("SELECT id_keranjang FROM tb_keranjang WHERE id_user = ? AND id_kelas = ? LIMIT 1");
+        $stmt_keranjang->bind_param("ii", $user_id, $id_kelas);
+        $stmt_keranjang->execute();
+        $result_keranjang = $stmt_keranjang->get_result();
+        $row_keranjang = $result_keranjang->fetch_assoc();
+        $id_keranjang = $row_keranjang ? $row_keranjang['id_keranjang'] : 0;
+
+        // For each quantity, insert a transaction record
+        for ($i = 0; $i < $quantity; $i++) {
+            $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status) VALUES (?, ?, ?, 'QR_PAYMENT', ?, 'Completed')");
+            $stmt->bind_param("iiis", $id_kelas, $user_id, $id_keranjang, $date);
+            $stmt->execute();
+        }
     }
+
+    // Clear tb_keranjang entries for the user
+    $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    
+    // Store order details for confirmation
+    $_SESSION['last_order'] = $_SESSION['pending_order'];
+    
+    // Clear cart and coupon
+    $_SESSION['cart'] = [];
+    unset($_SESSION['applied_coupon']);
+    unset($_SESSION['pending_order']);
 }
 
-// Variabel untuk QR code
-$qr_data_string = "AMOUNT:" . $discounted_total . ";VA:" . $qr_virtual_account_number . ";ORDERID:" . ($_SESSION['pending_order_data']['id'] ?? 'N/A');
-$qr_code_image_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($qr_data_string);
-
-// Pastikan $last_order didefinisikan
-if ($current_page_status === 'confirmation_pending' && !isset($last_order)) {
-    $payment_error = "Detail order tidak tersedia untuk konfirmasi.";
-    $current_page_status = 'customer_info';
+// Check for success parameter
+if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['last_order'])) {
+    $payment_success = true;
+    $last_order = $_SESSION['last_order'];
 }
 
 $conn->close();

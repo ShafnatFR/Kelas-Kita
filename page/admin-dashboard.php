@@ -1,156 +1,88 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan sudah menghubungkan ke database
+require 'db.php';
 
-// Pastikan pengguna sudah login dan memiliki role sebagai admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: loginAdmin.php"); // Jika bukan admin, alihkan ke halaman login
+    header("Location: loginAdmin.php");
     exit();
 }
 
-// Cek koneksi database
 if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// Query untuk mengambil total user dengan error handling
-$totalUser = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
-if (!$totalUser) {
-    die("Error preparing statement: " . $conn->error);
-}
-$totalUser->execute();
-$userResult = $totalUser->get_result();
-$userData = $userResult->fetch_assoc();
+function fetchData(mysqli $conn, string $sql, string $types = '', array $params = []) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $conn->error . " for query: " . $sql);
+        return false;
+    }
 
-// Query untuk mengambil total laporan yang ada
-$totalLaporan = $conn->prepare("SELECT COUNT(*) as total_laporan FROM tb_laporan");
-if (!$totalLaporan) {
-    die("Error preparing statement: " . $conn->error);
-}
-$totalLaporan->execute();
-$laporanResult = $totalLaporan->get_result();
-$laporanData = $laporanResult->fetch_assoc();
+    if (!empty($params) && !empty($types)) {
+        $stmt->bind_param($types, ...$params);
+    }
 
-// Query untuk mengambil data user untuk tabel - sesuaikan dengan kolom yang ada
-$tb_user = $conn->prepare("
-    SELECT id_user, 
-           CASE 
-               WHEN first_name IS NOT NULL AND last_name IS NOT NULL 
-               THEN CONCAT(first_name, ' ', last_name)
-               ELSE username
-           END AS fullname, 
-           username
-    FROM tb_user
-    ORDER BY id_user ASC
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result === false) {
+        error_log("Error getting result: " . $stmt->error . " for query: " . $sql);
+        $stmt->close();
+        return false;
+    }
+    
+    if (strpos(strtoupper($sql), 'COUNT(*)') !== false || strpos(strtoupper($sql), 'SUM(') !== false) {
+        $data = $result->fetch_assoc();
+    } else {
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    return $data;
+}
+
+$userData = fetchData($conn, "SELECT COUNT(*) as total_users FROM tb_user");
+
+$laporanData = fetchData($conn, "SELECT COUNT(*) as total_laporan FROM tb_laporan");
+
+$kelasData = fetchData($conn, "SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'aktif'");
+
+$transaksiData = fetchData($conn, "
+    SELECT COALESCE(SUM(k.harga), 0) AS total_transaksi
+    FROM tb_kelas k
+    INNER JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
+    INNER JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
+    WHERE tk.status = 'acc'
 ");
-if (!$tb_user) {
-    die("Error preparing user statement: " . $conn->error);
-}
-$tb_user->execute();
-$tb_userResult = $tb_user->get_result();
-// $tb_userData = $tb_userResult->fetch_all(MYSQLI_ASSOC); // Komentari atau hapus jika tidak digunakan di bagian lain
 
-// Query untuk mengambil 5 user terbaru
-$recent_users_query = $conn->prepare("
+if ($transaksiData === false) {
+    $transaksiData = ['total_transaksi' => 0];
+}
+
+
+$materiData = fetchData($conn, "SELECT COUNT(*) as total_materi FROM tb_materi");
+
+$recent_users = fetchData($conn, "
     SELECT username, role, status, tgl_dibuat
     FROM tb_user
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
-if (!$recent_users_query) {
-    die("Error preparing recent users statement: " . $conn->error);
-}
-$recent_users_query->execute();
-$recent_users_result = $recent_users_query->get_result();
 
-
-//QUERY BUAT KELAS
-$tb_kelas = $conn->prepare("
-    SELECT id_kelas, nama_kelas FROM tb_kelas
-    ORDER BY id_kelas ASC
-");
-if (!$tb_kelas) {
-    die("Error preparing kelas statement: " . $conn->error);
-}
-$tb_kelas->execute();
-$tb_kelasResult = $tb_kelas->get_result();
-// $tb_kelasData = $tb_kelasResult->fetch_all(MYSQLI_ASSOC); // Komentari atau hapus jika tidak digunakan di bagian lain
-
-// Query untuk mengambil total kelas
-$totalKelas = $conn->prepare("SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'aktif'");
-if (!$totalKelas) {
-    die("Error preparing kelas statement: " . $conn->error);
-}
-$totalKelas->execute();
-$kelasResult = $totalKelas->get_result();
-$kelasData = $kelasResult->fetch_assoc();
-
-// Query untuk mengambil total transaksi - disederhanakan jika tabel join bermasalah
-$totalTransaksi = $conn->prepare("
-    SELECT COALESCE(SUM(k.harga), 0) AS total_transaksi
-    FROM tb_kelas k
-    LEFT JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
-    LEFT JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
-    WHERE tk.status = 'acc'
-");
-if (!$totalTransaksi) {
-    // Jika query join gagal, gunakan query sederhana
-    $totalTransaksi = $conn->prepare("SELECT 0 AS total_transaksi"); // Seharusnya ada fallback jika prepare gagal
-    if (!$totalTransaksi) { // Tambahan error handling untuk fallback
-        die("Error preparing fallback transaksi statement: " . $conn->error);
-    }
-}
-$totalTransaksi->execute();
-$transaksiResult = $totalTransaksi->get_result();
-$transaksiData = $transaksiResult->fetch_assoc();
-
-// Query untuk mengambil total materi
-$totalMateri = $conn->prepare("SELECT COUNT(*) as total_materi FROM tb_materi");
-if (!$totalMateri) {
-    die("Error preparing materi statement: " . $conn->error);
-}
-$totalMateri->execute();
-$materiResult = $totalMateri->get_result();
-$materiData = $materiResult->fetch_assoc();
-
-// Query untuk mengambil kelas terbaru
-$recent_classes_query = $conn->prepare("
-    SELECT nama_kelas, kategori, harga 
-    FROM tb_kelas 
-    WHERE status_publikasi = 'aktif' 
-    ORDER BY id_kelas DESC 
-    LIMIT 10
-");
-if (!$recent_classes_query) {
-    die("Error preparing recent classes statement: " . $conn->error);
-}
-$recent_classes_query->execute();
-$recent_classes_result = $recent_classes_query->get_result();
-
-// ... (kode PHP Anda yang sudah ada di atas, setelah $recent_classes_result = $recent_classes_query->get_result();) ...
-
-// Query untuk mengambil 5 kelas terbaru untuk ditampilkan di tabel
-$latest_classes_table_query = $conn->prepare("
+$latest_classes_table = fetchData($conn, "
     SELECT nama_kelas, harga, status_publikasi, tgl_dibuat
     FROM tb_kelas
     ORDER BY tgl_dibuat DESC
     LIMIT 5
 ");
-if (!$latest_classes_table_query) {
-    die("Error preparing latest classes table statement: " . $conn->error);
-}
-$latest_classes_table_query->execute();
-$latest_classes_table_result = $latest_classes_table_query->get_result();
 
-// ... (sisa kode PHP Anda sebelum <!DOCTYPE html>) ...
-
-// --- START: Penambahan untuk Diagram Pie Laporan ---
-// Query untuk mendapatkan jumlah laporan per kategori
 $sql_report_category = "SELECT kategori_report, COUNT(*) AS total FROM tb_laporan GROUP BY kategori_report";
 $result_report_category = $conn->query($sql_report_category);
 
 $report_category_data = [];
-if ($result_report_category && $result_report_category->num_rows > 0) { // Tambahkan pengecekan $result_report_category
+if ($result_report_category && $result_report_category->num_rows > 0) {
     while($row = $result_report_category->fetch_assoc()) {
         $report_category_data[] = [
             'kategori' => $row['kategori_report'],
@@ -158,24 +90,16 @@ if ($result_report_category && $result_report_category->num_rows > 0) { // Tamba
         ];
     }
 } else if (!$result_report_category) {
-    // Handle error jika query gagal, misalnya log error atau tampilkan pesan
-    // error_log("Error fetching report category data: " . $conn->error);
 }
 $json_report_category_data = json_encode($report_category_data);
-// --- END: Penambahan untuk Diagram Pie Laporan ---
 
-$stats = array(
+$stats = [
     'total_users' => $userData['total_users'] ?? 0,
     'total_kelas' => $kelasData['total_kelas'] ?? 0,
     'total_materi' => $materiData['total_materi'] ?? 0,
     'total_transaksi' => $transaksiData['total_transaksi'] ?? 0,
     'total_laporan' => $laporanData['total_laporan'] ?? 0
-);
-
-// $transaksi array tampaknya tidak digunakan, bisa dikomentari atau dihapus jika memang tidak perlu.
-// $transaksi = array(
-//  'total_transaksi' => $transaksiData['total_transaksi'] ?? 0
-// );
+];
 
 $namaAdmin = $_SESSION['username'];
 ?>
@@ -193,26 +117,13 @@ $namaAdmin = $_SESSION['username'];
         body {
             display: flex;
             min-height: 100vh;
-            flex-direction: column; /* Perlu untuk footer jika ada */
+            flex-direction: column;
         }
         .content-wrapper {
-            padding: 20px; /* Sesuaikan padding */
-            flex: 1; /* Membuat content wrapper mengisi sisa ruang */
-             margin-left: 250px; /* Sesuaikan dengan lebar sidebar */
+            padding: 20px;
+            flex: 1;
+            margin-left: 250px;
         }
-        /* Pastikan sidebar.php memiliki style position: fixed atau absolute dan lebar yang tetap */
-        /* Contoh jika sidebar.php punya class .sidebar */
-        /*
-        .sidebar {
-            width: 250px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background-color: #f8f9fa; // contoh warna
-            padding-top: 20px;
-        }
-        */
         .stat-card {
             border-left: 4px solid;
             transition: transform 0.2s;
@@ -220,30 +131,23 @@ $namaAdmin = $_SESSION['username'];
         .stat-card:hover {
             transform: translateY(-2px);
         }
-        .stat-card.primary {
-            border-left-color: #007bff;
-        }
-        .stat-card.success {
-            border-left-color: #28a745;
-        }
-        .stat-card.info {
-            border-left-color: #17a2b8;
-        }
-        .stat-card.warning {
-            border-left-color: #ffc107;
-        }
+        .stat-card.primary { border-left-color: #007bff; }
+        .stat-card.success { border-left-color: #28a745; }
+        .stat-card.info { border-left-color: #17a2b8; }
+        .stat-card.warning { border-left-color: #ffc107; }
         .chart-container {
             position: relative;
-            height: 300px; 
+            height: 300px;
             width: 100%;
         }
     </style>
 </head>
 <body class="bg-light">
-    <?php include "adminSidebar.php"; // Pastikan path ini benar dan sidebar.php ada ?>
+    <?php include "adminSidebar.php"; // Ensure this path is correct ?>
     
     <div class="content-wrapper">
-        <div class="container-fluid"> <div class="row mb-4">
+        <div class="container-fluid">
+            <div class="row mb-4">
                 <div class="col-12">
                     <h2 class="text-primary">
                         <i class="fas fa-tachometer-alt me-2"></i>
@@ -253,12 +157,14 @@ $namaAdmin = $_SESSION['username'];
                 </div>
             </div>
             
-            <div class="row mb-5 gy-4"> <div class="col-xl-3 col-md-6"> <div class="card stat-card primary shadow-sm h-100">
+            <div class="row mb-5 gy-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card primary shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title text-muted">Total Kelas</h6>
-                                    <h3 class="text-primary"><?= $stats['total_kelas'] ?? 0 ?></h3>
+                                    <h3 class="text-primary"><?= $stats['total_kelas'] ?></h3>
                                     <small class="text-muted">Kelas aktif</small>
                                 </div>
                                 <div class="align-self-center">
@@ -275,7 +181,7 @@ $namaAdmin = $_SESSION['username'];
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title text-muted">Total Transaksi</h6>
-                                    <h3 class="text-success">Rp <?= number_format($stats['total_transaksi'] ?? 0, 0, ',', '.') ?></h3>
+                                    <h3 class="text-success">Rp <?= number_format($stats['total_transaksi'], 0, ',', '.') ?></h3>
                                     <small class="text-muted">Jumlah pendapatan</small>
                                 </div>
                                 <div class="align-self-center">
@@ -292,7 +198,8 @@ $namaAdmin = $_SESSION['username'];
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title text-muted">Total User</h6>
-                                    <h3 class="text-info"><?= $stats['total_users'] ?? 0 ?></h3> <small class="text-muted">User keseluruhan</small>
+                                    <h3 class="text-info"><?= $stats['total_users'] ?></h3>
+                                    <small class="text-muted">User keseluruhan</small>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-users fa-2x text-info opacity-50"></i>
@@ -308,7 +215,8 @@ $namaAdmin = $_SESSION['username'];
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title text-muted">Total Laporan</h6>
-                                    <h3 class="text-warning"><?= $stats['total_laporan'] ?? 0 ?></h3> <small class="text-muted">Laporan keseluruhan</small>
+                                    <h3 class="text-warning"><?= $stats['total_laporan'] ?></h3>
+                                    <small class="text-muted">Laporan keseluruhan</small>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-file-alt fa-2x text-warning opacity-50"></i>
@@ -320,14 +228,18 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="row mb-5 gy-4">
-                <div class="col-lg-6"> <div class="card shadow-sm h-100">
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">
                                 <i class="fas fa-users me-2"></i>
                                 User Terbaru
                             </h5>
                         </div>
-                        <div class="card-body p-0"> <div class="table-responsive"> <table class="table table-hover table-striped mb-0"> <thead class="table-light">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
                                         <tr>
                                             <th scope="col">#</th>
                                             <th scope="col">Username</th>
@@ -337,9 +249,9 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($recent_users_result->num_rows > 0): ?>
+                                        <?php if (!empty($recent_users)): ?>
                                             <?php $user_counter = 1; ?>
-                                            <?php while ($user = $recent_users_result->fetch_assoc()): ?>
+                                            <?php foreach ($recent_users as $user): ?>
                                                 <tr>
                                                     <th scope="row"><?= $user_counter++ ?></th>
                                                     <td><?= htmlspecialchars($user['username']) ?></td>
@@ -356,12 +268,12 @@ $namaAdmin = $_SESSION['username'];
                                                             $date = new DateTime($user['tgl_dibuat']);
                                                             echo htmlspecialchars($date->format('d M Y, H:i')); 
                                                         } catch (Exception $e) {
-                                                            echo htmlspecialchars($user['tgl_dibuat']); // Fallback jika format salah
+                                                            echo htmlspecialchars($user['tgl_dibuat']); // Fallback if format is wrong
                                                         }
                                                         ?>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
                                             <tr>
                                                 <td colspan="5" class="text-center text-muted p-3">Tidak ada data user terbaru.</td>
@@ -393,11 +305,13 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="row mb-5 gy-4">
+            <div class="row mb-5 gy-4">
                 <div class="col-lg-12"> 
                     <div class="card shadow-sm h-100">
-                        <div class="card-header bg-info text-white"> <h5 class="mb-0">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
                                 <i class="fas fa-chalkboard-teacher me-2"></i> Daftar Kelas Terbaru
                             </h5>
                         </div>
@@ -414,9 +328,9 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($latest_classes_table_result->num_rows > 0): ?>
+                                        <?php if (!empty($latest_classes_table)): ?>
                                             <?php $class_counter = 1; ?>
-                                            <?php while ($kelas_item = $latest_classes_table_result->fetch_assoc()): ?>
+                                            <?php foreach ($latest_classes_table as $kelas_item): ?>
                                                 <tr>
                                                     <th scope="row"><?= $class_counter++ ?></th>
                                                     <td><?= htmlspecialchars($kelas_item['nama_kelas']) ?></td>
@@ -428,7 +342,7 @@ $namaAdmin = $_SESSION['username'];
                                                         if ($status_publikasi === 'aktif') {
                                                             $status_badge_class .= 'bg-success';
                                                         } elseif ($status_publikasi === 'pending') {
-                                                            $status_badge_class .= 'bg-warning text-dark'; // text-dark agar terbaca di bg kuning
+                                                            $status_badge_class .= 'bg-warning text-dark';
                                                         } elseif ($status_publikasi === 'non-aktif') {
                                                             $status_badge_class .= 'bg-danger';
                                                         } else {
@@ -448,7 +362,7 @@ $namaAdmin = $_SESSION['username'];
                                                         ?>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
                                             <tr>
                                                 <td colspan="5" class="text-center text-muted p-3">Tidak ada data kelas terbaru untuk ditampilkan.</td>
@@ -461,27 +375,24 @@ $namaAdmin = $_SESSION['username'];
                     </div>
                 </div>
             </div>
-
-            </div>
         </div> 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- START: JavaScript untuk Diagram Pie Laporan ---
-        const reportCategoryData = <?php echo $json_report_category_data ?? '[]'; ?>; // Fallback ke array kosong
+        const reportCategoryData = <?php echo $json_report_category_data; ?>; // No need for ?? '[]' after PHP check
 
         if (reportCategoryData.length > 0) {
             const labels = reportCategoryData.map(item => item.kategori);
             const totals = reportCategoryData.map(item => item.total);
 
             const backgroundColors = [
-                'rgba(255, 99, 132, 0.7)',  // Merah
-                'rgba(54, 162, 235, 0.7)', // Biru
-                'rgba(255, 206, 86, 0.7)', // Kuning
-                'rgba(75, 192, 192, 0.7)', // Hijau Teal
-                'rgba(153, 102, 255, 0.7)',// Ungu
-                'rgba(255, 159, 64, 0.7)'  // Oranye
+                'rgba(255, 99, 132, 0.7)',   // Red
+                'rgba(54, 162, 235, 0.7)',  // Blue
+                'rgba(255, 206, 86, 0.7)',  // Yellow
+                'rgba(75, 192, 192, 0.7)',  // Teal Green
+                'rgba(153, 102, 255, 0.7)', // Purple
+                'rgba(255, 159, 64, 0.7)'   // Orange
             ];
             const borderColors = [
                 'rgba(255, 99, 132, 1)',
@@ -494,7 +405,7 @@ $namaAdmin = $_SESSION['username'];
 
             const ctx = document.getElementById('pieChart');
             if (ctx) { 
-                new Chart(ctx, { // Dihilangkan variabel pieChart karena tidak digunakan lagi
+                new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: labels,
@@ -530,26 +441,12 @@ $namaAdmin = $_SESSION['username'];
                 });
             }
         }
-        // --- END: JavaScript untuk Diagram Pie Laporan ---
     </script>
 </body>
 </html>
 
 <?php
-// Close statements dan connection
-if (isset($totalUser) && $totalUser) $totalUser->close();
-if (isset($totalLaporan) && $totalLaporan) $totalLaporan->close();
-if (isset($tb_user) && $tb_user) $tb_user->close();
-if (isset($recent_users_query) && $recent_users_query) $recent_users_query->close();
-if (isset($tb_kelas) && $tb_kelas) $tb_kelas->close();
-if (isset($totalKelas) && $totalKelas) $totalKelas->close();
-if (isset($totalTransaksi) && $totalTransaksi) $totalTransaksi->close();
-if (isset($totalMateri) && $totalMateri) $totalMateri->close();
-if (isset($recent_classes_query) && $recent_classes_query) $recent_classes_query->close();
-if (isset($latest_classes_table_query) && $latest_classes_table_query) $latest_classes_table_query->close();
-
-if (isset($result_report_category) && is_object($result_report_category) && method_exists($result_report_category, 'close')) {
-    $result_report_category->close();
+if ($conn) {
+    $conn->close();
 }
-if ($conn) $conn->close();
 ?>

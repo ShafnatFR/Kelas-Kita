@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 01, 2025 at 10:35 AM
+-- Generation Time: Jun 01, 2025 at 05:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -38,10 +38,12 @@ CREATE TABLE `tb_dokumen` (
 --
 
 INSERT INTO `tb_dokumen` (`id_dokumen`, `file_path_dokumen`, `status`) VALUES
-(0, '../uploads/dokumen/68330a508dcc9_BUKU PANDUAN PKL 2024.pdf', 'pending'),
-(1, 'Pengenalan PHP.pdf', 'pending'),
-(2, 'Variabel dan Tipe Data.pdf', 'pending'),
-(3, 'Control Structure.pdf', 'pending');
+(0, '../uploads/dokumen/DOC000_PENGANTAR_PEMROGRAMAN_WEB.pdf', 'aktif'),
+(1, '../uploads/dokumen/DOC001_MODUL_HTML_DASAR.pdf', 'aktif'),
+(2, '../uploads/dokumen/DOC002_MODUL_CSS_STYLING.pdf', 'aktif'),
+(3, '../uploads/dokumen/DOC003_JS_INTERAKTIF.pdf', 'aktif'),
+(4, '../uploads/dokumen/DOC004_PANDUAN_SQL_BASIC.pdf', 'aktif'),
+(5, '../uploads/dokumen/DOC005_DESAIN_GRAFIS_TOOLS.pdf', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -54,6 +56,18 @@ CREATE TABLE `tb_kategori` (
   `nama_kategori` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tb_kategori`
+--
+
+INSERT INTO `tb_kategori` (`id_kategori`, `nama_kategori`) VALUES
+(1, 'Web Development'),
+(2, 'SQL'),
+(3, 'Design Grafis'),
+(4, 'Python'),
+(5, 'Bisnis Digital'),
+(6, 'Java');
+
 -- --------------------------------------------------------
 
 --
@@ -65,6 +79,17 @@ CREATE TABLE `tb_kategori_kelas` (
   `id_kelas` int(30) NOT NULL,
   `id_kategori` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_kategori_kelas`
+--
+
+INSERT INTO `tb_kategori_kelas` (`id_kategori_kelas`, `id_kelas`, `id_kategori`) VALUES
+(1, 1, 1),
+(2, 2, 2),
+(3, 3, 1),
+(4, 4, 4),
+(5, 5, 3);
 
 -- --------------------------------------------------------
 
@@ -90,11 +115,11 @@ CREATE TABLE `tb_kelas` (
 --
 
 INSERT INTO `tb_kelas` (`id_kelas`, `id_mentor`, `nama_kelas`, `kategori`, `harga`, `profil_kelas`, `badge`, `description`, `status_publikasi`, `tgl_dibuat`) VALUES
-(3, 4, 'Belajar PHP untuk pemula', '', 80000.00, NULL, NULL, 'Kelas belajar php pemula', 'pending', '2025-06-01 04:34:49'),
-(4, 5, 'Kelas Bahasa Inggris (SD, SMP, SMA) 123', '', 100000.00, NULL, NULL, 'kelas bahasa inggris blabla', 'aktif', '2025-06-01 04:34:49'),
-(5, 5, 'Belajar PHP untuk pemula 1', '', 150000.00, NULL, NULL, 'kenfwbwifbuWI', '', '2025-06-01 04:34:49'),
-(6, 5, 'desaign grafis 1', 'Design', 80000.00, NULL, NULL, 'hehe', '', '2025-06-01 04:34:49'),
-(7, 6, 'Belajar PHP untuk pemula', '', 100000.00, NULL, NULL, 'kelas belajar php untuk pemula', 'pending', '2025-06-01 04:34:49');
+(1, 1, 'Dasar Pemrograman Web (HTML, CSS, JS)', 'Web Development', 150000.00, NULL, NULL, 'Pelajari dasar-dasar pembuatan website interaktif dari nol.', 'aktif', '2025-06-01 15:29:17'),
+(2, 2, 'Mastering SQL: Dari Dasar hingga Lanjutan', 'SQL', 120000.00, NULL, NULL, 'Kuasai query SQL untuk manajemen dan analisis data.', 'aktif', '2025-06-01 15:29:17'),
+(3, 1, 'Full-Stack Web Developer dengan PHP & Laravel', 'Web Development', 250000.00, NULL, NULL, 'Menjadi full-stack developer dengan framework PHP populer.', 'aktif', '2025-06-01 15:29:17'),
+(4, 3, 'Analisis Data dengan Python untuk Pemula', 'Python', 180000.00, NULL, NULL, 'Pengenalan analisis data menggunakan bahasa Python dan library terkait.', 'aktif', '2025-06-01 15:29:17'),
+(5, 2, 'Desain Grafis Fundamental dengan Adobe Illustrator', 'Design', 100000.00, NULL, NULL, 'Belajar dasar-dasar desain grafis dan penggunaan Adobe Illustrator.', 'aktif', '2025-06-01 15:29:17');
 
 -- --------------------------------------------------------
 
@@ -108,6 +133,16 @@ CREATE TABLE `tb_keranjang` (
   `id_kelas` int(30) NOT NULL,
   `id_user` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_keranjang`
+--
+
+INSERT INTO `tb_keranjang` (`id_keranjang`, `tgl_keranjang`, `id_kelas`, `id_user`) VALUES
+(1, '2025-06-01', 1, 4),
+(2, '2025-06-01', 2, 4),
+(3, '2025-05-30', 4, 5),
+(4, '2025-06-01', 5, 5);
 
 -- --------------------------------------------------------
 
@@ -137,13 +172,6 @@ CREATE TABLE `tb_laporan` (
   `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tb_laporan`
---
-
-INSERT INTO `tb_laporan` (`id_report`, `kategori_report`, `keterangan_report`, `id_kelas`, `id_user`, `tgl_dibuat`) VALUES
-(3, 'Penggunaan kata kasar', 'ada beberapa kata kasar yang muncul', 1, 1, '2025-06-01 08:20:57');
-
 -- --------------------------------------------------------
 
 --
@@ -155,24 +183,22 @@ CREATE TABLE `tb_materi` (
   `id_kelas` int(30) NOT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_materi` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending'
+  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending',
+  `tgl_dibuat_materi` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tb_materi`
 --
 
-INSERT INTO `tb_materi` (`id_materi`, `id_kelas`, `urutan`, `judul_materi`, `status`) VALUES
-(1, 3, 1, 'Pengenalan PHP', 'pending'),
-(2, 3, 1, 'Pengenalan PHP', 'pending'),
-(3, 3, 1, 'Pengenalan PHP', 'pending'),
-(4, 3, 2, 'Variabel dan Tipe Data', 'pending'),
-(5, 3, 2, 'Variabel dan Tipe Data', 'pending'),
-(6, 3, 3, 'Struktur Kontrol', 'pending'),
-(7, 3, 3, 'Struktur Kontrol', 'pending'),
-(8, 6, 1, 'Belajar Design Grafis pada tools figma', 'pending'),
-(9, 6, 2, 'Variabel dan Tipe Data', 'pending'),
-(10, 7, 1, 'Pengenalan PHP', 'pending');
+INSERT INTO `tb_materi` (`id_materi`, `id_kelas`, `urutan`, `judul_materi`, `status`, `tgl_dibuat_materi`) VALUES
+(1, 1, 1, 'Pengenalan Web & HTML Dasar', 'aktif', '2025-06-01 15:29:17'),
+(2, 1, 2, 'Styling dengan CSS', 'aktif', '2025-06-01 15:29:17'),
+(3, 1, 3, 'Interaktivitas dengan JavaScript', 'pending', '2025-06-01 15:29:17'),
+(4, 2, 1, 'Pengenalan Database dan SQL', 'aktif', '2025-06-01 15:29:17'),
+(5, 2, 2, 'Query Dasar: SELECT, FROM, WHERE', 'aktif', '2025-06-01 15:29:17'),
+(6, 4, 1, 'Setup Lingkungan Python untuk Data', 'aktif', '2025-06-01 15:29:17'),
+(7, 5, 1, 'Pengantar Tools Desain Grafis', 'aktif', '2025-06-01 15:29:17');
 
 -- --------------------------------------------------------
 
@@ -191,12 +217,9 @@ CREATE TABLE `tb_mentor` (
 --
 
 INSERT INTO `tb_mentor` (`id_mentor`, `status`, `id_user`) VALUES
-(1, 'Aktif', 1),
-(2, 'Aktif', 14),
-(3, 'Aktif', 15),
-(4, 'Aktif', 11),
-(5, 'Aktif', 17),
-(6, 'Aktif', 16);
+(1, 'Aktif', 2),
+(2, 'Aktif', 3),
+(3, 'Aktif', 6);
 
 -- --------------------------------------------------------
 
@@ -238,6 +261,14 @@ CREATE TABLE `tb_review` (
   `id_kelas` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tb_review`
+--
+
+INSERT INTO `tb_review` (`id_review`, `bintang_review`, `isi_review`, `tgl_review`, `id_user`, `id_kelas`) VALUES
+(1, '5', 'Kelasnya keren dan sangat membantu pemula seperti saya!', '2025-06-01 15:29:17', 4, 1),
+(2, '4', 'Penjelasan SQLnya cukup detail, tapi mungkin perlu contoh kasus lebih banyak.', '2025-06-01 15:29:17', 4, 2);
+
 -- --------------------------------------------------------
 
 --
@@ -251,15 +282,22 @@ CREATE TABLE `tb_sub_materi` (
   `id_video` int(30) NOT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_sub_materi` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending'
+  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending',
+  `tgl_dibuat_subMateri` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tb_sub_materi`
 --
 
-INSERT INTO `tb_sub_materi` (`id_sub_materi`, `id_materi`, `id_dokumen`, `id_video`, `urutan`, `judul_sub_materi`, `status`) VALUES
-(8, 10, 0, 4, 1, 'Penginstalan Vs Code dan Extensi PHP', 'pending');
+INSERT INTO `tb_sub_materi` (`id_sub_materi`, `id_materi`, `id_dokumen`, `id_video`, `urutan`, `judul_sub_materi`, `status`, `tgl_dibuat_subMateri`) VALUES
+(1, 1, 0, 0, 1, 'Struktur Dasar HTML', 'aktif', '2025-06-01 15:29:17'),
+(2, 1, 1, 1, 2, 'Elemen dan Tag HTML Penting', 'aktif', '2025-06-01 15:29:17'),
+(3, 2, 2, 2, 1, 'Selector dan Properti CSS', 'aktif', '2025-06-01 15:29:17'),
+(4, 4, 4, 4, 1, 'Konsep Relational Database', 'aktif', '2025-06-01 15:29:17'),
+(5, 5, 4, 4, 2, 'Praktik Query SELECT dan WHERE', 'aktif', '2025-06-01 15:29:17'),
+(6, 6, 0, 5, 1, 'Instalasi Anaconda dan Jupyter Notebook', 'aktif', '2025-06-01 15:29:17'),
+(7, 7, 5, 0, 1, 'Mengenal Adobe Illustrator dan Figma', 'aktif', '2025-06-01 15:29:17');
 
 -- --------------------------------------------------------
 
@@ -273,9 +311,18 @@ CREATE TABLE `tb_transaksi` (
   `id_user` int(30) NOT NULL,
   `id_keranjang` int(30) NOT NULL,
   `bukti_transaksi` varchar(50) NOT NULL,
-  `tgl_transaksi` date NOT NULL,
+  `tgl_transaksi` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` enum('pending','acc') NOT NULL DEFAULT 'pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_transaksi`
+--
+
+INSERT INTO `tb_transaksi` (`id_transaksi`, `id_kelas`, `id_user`, `id_keranjang`, `bukti_transaksi`, `tgl_transaksi`, `status`) VALUES
+(1, 1, 4, 1, 'bukti_TRX001.jpg', '2025-06-01 15:29:17', 'acc'),
+(2, 2, 4, 2, 'bukti_TRX002.jpg', '2025-06-01 15:29:17', 'acc'),
+(3, 4, 5, 3, 'bukti_TRX003.jpg', '2025-06-01 15:29:17', 'pending');
 
 -- --------------------------------------------------------
 
@@ -311,17 +358,13 @@ CREATE TABLE `tb_user` (
 --
 
 INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `password`, `role`, `status`, `deskripsi`, `fotoProfil`, `bahasa`, `zona_waktu`, `balasan_ke_komentar`, `komentar_baru`, `notifikasi_postingan_baru`, `email`, `instagram`, `twitter`, `linkdin`, `github`, `tgl_dibuat`) VALUES
-(1, '', '', 'Aliq', '$2y$10$wGIB.sDNJO.rlHnln3.mI.UKwcOQs4bitXDOhnl6vGy3FSJPAg0hy', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(3, '', '', 'Rafi', '$2y$10$djBcFVMmkrJNDQOYE9D2Je/gDtva5uRmn4JonAuvuWa38mRzngi2m', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(11, '', '', 'Saya123', '$2y$10$uvkvgQ7H.cz.C76UrwKAu.S6hUXFTVwfivqdltQ1BdGPqTn1gkT9m', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(12, '', '', 'Kamu123', '$2y$10$l2YdSJBJ8AR3SunZlvm7E.qimAhHVQ5mIcFdFR4IXgxMTcppVEOCC', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(13, '', '', 'Gua123', '$2y$10$xbonLUo2ymeprYB6OAgmQut/fdN18FP5FsFF3rV/FcbauZNjMNnGK', 'murid', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(14, '', '', 'Aliqns', '$2y$10$Uv1iau892wYDCp4i1PuJKeU0YX4nYe.uBbUSK3reYACNYY9EdTWMC', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(15, '', '', 'Galih', '$2y$10$/TPnN4zkLIvY0HMByXcfp.9oh8QdxCkGiSW1TMvbSDsoKaO6PsLIa', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(16, '', '', 'coba db baru', '$2y$10$TW9ZWuqYnaZpmxwk1X9JNeCCepSGDxwBk.4V7oi2JwzAAzBNxjF6O', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(17, '', '', 'blabla', '$2y$10$4imiVUlOZFABSuRzavGqxeghZqhCIFY6JCyfVXRsj0fKWbxqBYQWi', 'mentor', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(18, '', '', 'Shafnat', '$2y$10$sabL.S4yR6gmK7hyhX8x0.QL3GijItt3VxFecaYb3FKdVmqJOfURO', 'admin', 'aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:15:51'),
-(19, '', '', 'Shafnatt', '$2y$10$6By5Ep2F4I71MbNzz4JakuVl7vNmkrNWYmr8dGwgluuZZI1R8qyy2', 'murid', 'non-aktif', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '', '2025-06-01 04:16:42');
+(1, 'Admin', 'Kelaskita', 'admin01', '$2y$10$wGIB.sDNJO.rlHnln3.mI.UKwcOQs4bitXDOhnl6vGy3FSJPAg0hy', 'admin', 'aktif', 'Administrator Utama Website Kelaskita', 'admin_profile.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'admin@kelaskita.com', '', '', '', '', '2025-06-01 15:29:17'),
+(2, 'Budi', 'Santoso', 'budi_mentor', '$2y$10$djBcFVMmkrJNDQOYE9D2Je/gDtva5uRmn4JonAuvuWa38mRzngi2m', 'mentor', 'aktif', 'Mentor Web Development dengan pengalaman 5 tahun.', 'budi_santoso.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'budi.mentor@example.com', '', '', '', '', '2025-06-01 15:29:17'),
+(3, 'Citra', 'Wirawan', 'citra_mentor', '$2y$10$uvkvgQ7H.cz.C76UrwKAu.S6hUXFTVwfivqdltQ1BdGPqTn1gkT9m', 'mentor', 'aktif', 'Ahli Database dan SQL.', 'citra_wirawan.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'citra.mentor@example.com', '', '', '', '', '2025-06-01 15:29:17'),
+(4, 'Dewi', 'Lestari', 'dewi_murid', '$2y$10$l2YdSJBJ8AR3SunZlvm7E.qimAhHVQ5mIcFdFR4IXgxMTcppVEOCC', 'murid', 'aktif', 'Pelajar antusias di bidang teknologi.', 'dewi_lestari.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'dewi.murid@example.com', '', '', '', '', '2025-06-01 15:29:17'),
+(5, 'Eko', 'Prasetyo', 'eko_murid', '$2y$10$xbonLUo2ymeprYB6OAgmQut/fdN18FP5FsFF3rV/FcbauZNjMNnGK', 'murid', 'aktif', 'Tertarik dengan desain grafis dan UI/UX.', 'eko_prasetyo.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'eko.murid@example.com', '', '', '', '', '2025-06-01 15:29:17'),
+(6, 'Fajar', 'Nugraha', 'fajar_mentor', '$2y$10$Uv1iau892wYDCp4i1PuJKeU0YX4nYe.uBbUSK3reYACNYY9EdTWMC', 'mentor', 'aktif', 'Spesialis Python dan Data Science.', 'fajar_nugraha.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'fajar.mentor@example.com', '', '', '', '', '2025-06-01 15:29:17'),
+(7, 'Gina', 'Hardiman', 'gina_murid', '$2y$10$/TPnN4zkLIvY0HMByXcfp.9oh8QdxCkGiSW1TMvbSDsoKaO6PsLIa', 'murid', 'non-aktif', 'Sedang non-aktif.', 'gina_hardiman.jpg', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, 'gina.murid@example.com', '', '', '', '', '2025-06-01 15:29:17');
 
 -- --------------------------------------------------------
 
@@ -340,10 +383,12 @@ CREATE TABLE `tb_video` (
 --
 
 INSERT INTO `tb_video` (`id_video`, `file_path_video`, `status`) VALUES
-(1, 'Video Pengenalan PHP.mp4', 'pending'),
-(2, 'Video Variabel PHP.mp4', 'pending'),
-(3, 'Video Control Structure.mp4', 'pending'),
-(4, '../uploads/video/68330a508fd51_lv_7392906537750072583_20240905064053.mp4', 'pending');
+(0, '../uploads/video/VID000_INTRO_WEB.mp4', 'aktif'),
+(1, '../uploads/video/VID001_HTML_TAGS.mp4', 'aktif'),
+(2, '../uploads/video/VID002_CSS_SELECTORS.mp4', 'aktif'),
+(3, '../uploads/video/VID003_JS_DOM_MANIPULATION.mp4', 'aktif'),
+(4, '../uploads/video/VID004_SQL_JOINS.mp4', 'aktif'),
+(5, '../uploads/video/VID005_PYTHON_PANDAS.mp4', 'aktif');
 
 --
 -- Indexes for dumped tables
@@ -477,13 +522,13 @@ ALTER TABLE `tb_sub_materi`
 -- AUTO_INCREMENT for table `tb_user`
 --
 ALTER TABLE `tb_user`
-  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `tb_video`
 --
 ALTER TABLE `tb_video`
-  MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables

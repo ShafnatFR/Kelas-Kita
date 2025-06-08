@@ -1,0 +1,62 @@
+/* Mengatur tampilan dasar sidebar */
+.sidebar {
+    background: linear-gradient(180deg, #1c61a5, #3498db); /* Gradasi warna biru gelap ke terang */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); /* Memberi efek bayangan agar terkesan melayang */
+    height: 100vh; /* Tinggi sidebar selalu 100% dari tinggi layar */
+    color: #ecf0f1; /* Warna teks default di sidebar */
+}
+
+/* Mengatur bagian header sidebar (logo dan judul) */
+.sidebar .sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Garis pemisah transparan */
+}
+
+.sidebar .sidebar-header a {
+    text-decoration: none; /* Menghapus garis bawah pada link di header */
+    color: #ffffff; /* Warna teks putih untuk judul */
+    transition: opacity 0.3s;
+}
+
+.sidebar .sidebar-header a:hover {
+    opacity: 0.9; /* Efek sedikit transparan saat disentuh kursor */
+}
+
+.sidebar .sidebar-header h3 {
+    margin-top: 15px;
+    font-size: 1.2rem; /* Ukuran font yang pas untuk judul */
+    font-weight: 600;
+}
+
+/* Mengatur tampilan link navigasi */
+.sidebar .nav-link {
+    color: #ecf0f1; /* Warna teks link */
+    padding: 12px 20px; /* Menambah spasi di dalam link agar lebih lega */
+    margin-bottom: 5px;
+    border-radius: 8px; /* Membuat sudut link sedikit melengkung */
+    transition: background-color 0.3s, color 0.3s; /* Efek transisi yang halus */
+    font-weight: 500;
+}
+
+/* Efek saat kursor mouse berada di atas link */
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15); /* Latar belakang sedikit terang */
+    color: #ffffff; /* Teks menjadi putih terang */
+}
+
+/* Style khusus untuk link yang sedang aktif */
+.sidebar .nav-link.active {
+    background-color: #ffffff; /* Latar belakang putih */
+    color: #2c3e50; /* Warna teks biru gelap, sesuai dengan warna gradasi atas */
+    font-weight: 700; /* Teks lebih tebal untuk menandakan halaman aktif */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Sedikit perbaikan untuk link logout */
+.sidebar .nav-item a.nav-link[href="logout.php"],
+.sidebar .nav a.nav-link[href="logout.php"] {
+    color: #f1c40f; /* Warna khusus untuk logout agar lebih menonjol */
+}
+.sidebar .nav a.nav-link[href="logout.php"]:hover {
+    background-color: #c0392b; /* Warna merah saat hover untuk logout */
+    color: #ffffff;
+}

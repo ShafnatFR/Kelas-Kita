@@ -151,6 +151,29 @@ if ($mentor_id) {
     $stmt_instruktur->close();
 }
 
+
+// Cek apakah kursus ini sudah dibeli oleh user
+if (isset($_SESSION['id'])) {
+    $isBuy = false;
+    $user_id = $_SESSION['id'];
+    $sql_check_purchase = "SELECT * FROM tb_transaksi WHERE id_kelas = ? AND id_user = ? AND status = ?";
+    $stmt_check_purchase = $conn->prepare($sql_check_purchase);
+
+    if ($stmt_check_purchase === false) {
+        die("Error preparing statement for purchase check: " . $conn->error);
+    }
+
+    $status = 'Completed'; // Misalnya, kita cek hanya yang sudah selesai
+    $stmt_check_purchase->bind_param("iis", $course_id, $user_id, $status);
+    $stmt_check_purchase->execute();
+    $result_purchase = $stmt_check_purchase->get_result();
+    
+    if ($result_purchase->num_rows > 0) {
+        $isBuy = true; // Kursus sudah dibeli
+    }
+
+    $stmt_check_purchase->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -328,6 +351,14 @@ $conn->close();
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php if ($isBuy): ?>
+                <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
+                    <div class="course-price fw-bold text-success" style="font-size: 1.1rem;">
+                        Sudah Dibeli
+                    </div>
+                    <a href="my-courses.php" class="course-button">Lihat Kursus Saya</a>
+                </div>
+                <?php else: ?>
                 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">
 <div class="course-price fw-bold text-primary" style="font-size: 1.1rem;">
     <?php echo 'Rp ' . number_format(intval($course['harga'] ?? 0), 0, ',', '.'); ?>
@@ -337,6 +368,7 @@ $conn->close();
                         <button type="submit" class="course-button">Daftar Sekarang</button>
                     </form>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -347,7 +379,7 @@ $conn->close();
                 <div class="course-content">
                     <h3 class="mb-4">Deskripsi Kursus</h3>
                     <div>
-                        <?php echo nl2br(htmlspecialchars($course['deskripsi'] ?? 'Deskripsi lengkap tidak tersedia.')); // nl2br untuk baris baru ?>
+                        <?php echo nl2br(htmlspecialchars($course['description'] ?? 'Deskripsi lengkap tidak tersedia.')); // nl2br untuk baris baru ?>
                     </div>
                 </div>
 
@@ -443,11 +475,16 @@ $conn->close();
             
             <div class="col-lg-4">
                 <div class="course-content mb-4 text-center">
+                    <?php if ($isBuy): ?>
+                        <h3 class="mb-3">Kursus Sudah Dibeli</h3>
+                        <p class="text-success">Anda sudah terdaftar di kursus ini.</p>
+                    <?php else: ?>
                     <img src="<?php echo htmlspecialchars($course['gambar'] ?? 'img/courses/default.jpg'); ?>" alt="<?php echo htmlspecialchars($course['judul'] ?? 'Kursus'); ?>" class="img-fluid rounded mb-3">
                     <form method="post" action="Coursedetail.php?id=<?php echo htmlspecialchars($course['id_kelas']); ?>">
                         <input type="hidden" name="add_to_cart" value="1">
                         <button type="submit" class="btn btn-primary btn-lg w-100 course-button">Daftar Sekarang</button>
                     </form>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="course-content mb-4">

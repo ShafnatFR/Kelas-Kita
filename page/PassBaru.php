@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="card">
             <div class="card-body">
                 <h2 class="text-center mb-2">Masukkan Password Baru</h2>
-                <p class="mb-3">Silakan masukkan password baru Anda</p>
+                <p class="mb-3">Silakan masukkan password baru minimal 8 Karakter dan termasuk karakter khusus</p>
                 <?php if ($pesan): ?>
                     <div style="color: red;"><?= $pesan ?></div>
                 <?php endif; ?>

@@ -4,69 +4,108 @@ require 'db.php'; // Pastikan sudah menghubungkan ke database
 
 // Pastikan pengguna sudah login dan memiliki role sebagai admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: loginAdmin.php");
+    header("Location: adminLogin.php");
     exit();
 }
 
+// Pastikan koneksi database berhasil
 if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// --- PERBAIKAN: QUERY UNTUK STATS KELAS ---
-// Query untuk total kelas dengan berbagai status
-$kelas_stats_query = $conn->prepare("
+/**
+ * Fungsi untuk mengeksekusi prepared statement dengan aman dan mengambil data.
+ * Fungsi ini menangani persiapan, eksekusi, pengambilan hasil, dan penutupan statement.
+ * @param mysqli $conn Objek koneksi database.
+ * @param string $sql String kueri SQL.
+ * @param string $types Tipe parameter untuk bind_param (misalnya, 's', 'i').
+ * @param array $params Array parameter untuk di-bind.
+ * @return array|false Mengembalikan array asosiatif (untuk COUNT/SUM) atau array dari array asosiatif (untuk SELECT), atau false jika gagal.
+ */
+function fetchData(mysqli $conn, string $sql, string $types = '', array $params = []) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $conn->error . " for query: " . $sql);
+        return false;
+    }
+
+    if (!empty($params) && !empty($types)) {
+        $bind_params = [];
+        $bind_params[] = &$types;
+        foreach ($params as &$param) {
+            $bind_params[] = &$param;
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result === false) {
+        error_log("Error getting result: " . $stmt->error . " for query: " . $sql);
+        $stmt->close();
+        return false;
+    }
+    
+    // Deteksi apakah kueri adalah COUNT/SUM/MAX/MIN untuk mengambil satu baris saja
+    if (strpos(strtoupper($sql), 'COUNT(') !== false || strpos(strtoupper($sql), 'SUM(') !== false ||
+        strpos(strtoupper($sql), 'MAX(') !== false || strpos(strtoupper($sql), 'MIN(') !== false) {
+        $data = $result->fetch_assoc();
+    } else { // Untuk kueri SELECT biasa yang mengembalikan banyak baris
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+    
+    $stmt->close(); // Tutup statement setelah use
+    return $data;
+}
+
+// Gabungkan kueri untuk jumlah pengguna (aktif, non-aktif, 10 terbaru secara keseluruhan)
+$userCountsData = fetchData($conn, "
     SELECT
-        COUNT(CASE WHEN status_publikasi = 'approved' THEN 1 END) AS total_aktif,
-        COUNT(CASE WHEN status_publikasi = 'pending' THEN 1 END) AS total_pending,
-        COUNT(CASE WHEN status_publikasi = 'rejected' OR status_publikasi = 'draft' THEN 1 END) AS total_nonaktif
-    FROM tb_kelas
+        COUNT(CASE WHEN status = 'aktif' THEN 1 END) AS total_users_aktif,
+        COUNT(CASE WHEN status = 'non-aktif' THEN 1 END) AS total_users_nonaktif,
+        (SELECT COUNT(*) FROM tb_user ORDER BY tgl_dibuat DESC LIMIT 10) AS total_user_terbaru_count
+    FROM tb_user
 ");
-$kelas_stats_query->execute();
-$kelas_stats_result = $kelas_stats_query->get_result();
-$kelas_stats_data = $kelas_stats_result->fetch_assoc();
 
+// Kueri untuk total laporan
+$laporanData = fetchData($conn, "SELECT COUNT(*) as total_laporan FROM tb_laporan");
 
-// Query untuk mengambil total user
-$totalUser_stmt = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
-$totalUser_stmt->execute();
-$userData = $totalUser_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil total laporan
-$totalLaporan_stmt = $conn->prepare("SELECT COUNT(*) as total_laporan FROM tb_laporan");
-$totalLaporan_stmt->execute();
-$laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil 10 user aktif terbaru
-$recent_users_query = $conn->prepare("
-    SELECT username, role, status, tgl_dibuat
+// Kueri untuk mengambil 10 pengguna aktif terbaru
+$tbUserAktifResult = fetchData($conn, "
+    SELECT id_user, username, role, status, tgl_dibuat
     FROM tb_user
     WHERE status = 'aktif'
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
-$recent_users_query->execute();
-$recent_users_result = $recent_users_query->get_result();
 
-// --- PERBAIKAN: QUERY USER NON-AKTIF ---
-// Query untuk mengambil 10 user non-aktif terbaru
-$tbUserNonAktif_stmt = $conn->prepare("
+// Kueri untuk mengambil 10 pengguna non-aktif terbaru
+$tbUserNonAktifResult = fetchData($conn, "
     SELECT id_user, username, role, status, tgl_dibuat
     FROM tb_user
     WHERE status = 'non-aktif'
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
-$tbUserNonAktif_stmt->execute();
-$tbUserNonAktifResult = $tbUserNonAktif_stmt->get_result();
 
-// Data untuk statistik cards
-$stats = array(
-    'total_users' => $userData['total_users'] ?? 0,
-    'total_kelas_aktif' => $kelas_stats_data['total_aktif'] ?? 0,
-    'total_kelas_pending' => $kelas_stats_data['total_pending'] ?? 0,
-    'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0,
-    'total_laporan' => $laporanData['total_laporan'] ?? 0
-);
+// Kueri untuk pengguna yang dilaporkan
+$tbUserDilaporkanResult = fetchData($conn, "
+    SELECT u.id_user, u.username, u.role, u.status, l.keterangan_report, l.tgl_dibuat AS tgl_laporan
+    FROM tb_user u
+    JOIN tb_laporan l ON u.id_user = l.id_user
+    ORDER BY l.tgl_dibuat DESC;
+");
+
+// Data untuk kartu statistik
+$stats = [
+    'total_user_aktif'          => $userCountsData['total_users_aktif'] ?? 0,
+    'total_user_dinonaktifkan'  => $userCountsData['total_users_nonaktif'] ?? 0,
+    'total_user_terbaru'        => $userCountsData['total_user_terbaru_count'] ?? 0,
+    'total_laporan'             => $laporanData['total_laporan'] ?? 0
+];
 
 $namaAdmin = $_SESSION['username'];
 ?>
@@ -76,7 +115,7 @@ $namaAdmin = $_SESSION['username'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola User</title>
+    <title>Kelola Pengguna - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -98,11 +137,18 @@ $namaAdmin = $_SESSION['username'];
         .stat-card:hover {
             transform: translateY(-2px);
         }
-        .stat-card.primary { border-left-color: #0d6efd; }
-        .stat-card.success { border-left-color: #198754; }
-        .stat-card.info { border-left-color: #0dcaf0; }
-        .stat-card.warning { border-left-color: #ffc107; }
-        .stat-card.danger { border-left-color: #dc3545; }
+        /* Menggunakan variabel CSS Bootstrap untuk konsistensi warna */
+        .stat-card.primary { border-left-color: var(--bs-primary); }
+        .stat-card.success { border-left-color: var(--bs-success); }
+        .stat-card.info { border-left-color: var(--bs-info); }
+        .stat-card.warning { border-left-color: var(--bs-warning); }
+        .stat-card.danger { border-left-color: var(--bs-danger); }
+        
+        /* CSS untuk badge status (jika ingin custom selain default Bootstrap) */
+        .badge-status-aktif { background-color: var(--bs-success); color: #fff; }
+        .badge-status-nonaktif { background-color: var(--bs-danger); color: #fff; }
+        .badge-status-pending { background-color: var(--bs-info); color: #fff; }
+        .badge-status-default { background-color: var(--bs-secondary); color: #fff; }
     </style>
 </head>
 <body class="bg-light">
@@ -113,8 +159,7 @@ $namaAdmin = $_SESSION['username'];
             <div class="row mb-4">
                 <div class="col-12">
                     <h2 class="text-primary">
-                        <i class="fas fa-tachometer-alt me-2"></i>
-                        Dashboard Admin
+                        <i class="fas fa-user-gear me-2"></i> Kelola Pengguna
                     </h2>
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
                 </div>
@@ -125,34 +170,34 @@ $namaAdmin = $_SESSION['username'];
                     <div class="card stat-card success shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Kelas Aktif</h6>
-                                <h3 class="text-success"><?= $stats['total_kelas_aktif'] ?></h3>
+                                <h6 class="card-title text-muted">Total Pengguna Aktif</h6>
+                                <h3 class="text-success"><?= $stats['total_user_aktif'] ?></h3>
                             </div>
-                            <i class="fas fa-book-open fa-2x text-success opacity-50"></i>
+                            <i class="fas fa-user-check fa-2x text-success opacity-50"></i>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-xl-3 col-md-6">
-                    <div class="card stat-card info shadow-sm h-100">
+                    <div class="card stat-card danger shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Kelas Pending</h6>
-                                <h3 class="text-info"><?= $stats['total_kelas_pending'] ?></h3>
+                                <h6 class="card-title text-muted">Total Pengguna Dinonaktifkan</h6>
+                                <h3 class="text-danger"><?= $stats['total_user_dinonaktifkan'] ?></h3>
                             </div>
-                            <i class="fas fa-hourglass-half fa-2x text-info opacity-50"></i>
+                            <i class="fas fa-user-slash fa-2x text-danger opacity-50"></i>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-xl-3 col-md-6">
-                    <div class="card stat-card danger shadow-sm h-100">
+                    <div class="card stat-card info shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Kelas Non-Aktif</h6>
-                                <h3 class="text-danger"><?= $stats['total_kelas_nonaktif'] ?></h3>
+                                <h6 class="card-title text-muted">Total Pengguna Terbaru (10)</h6>
+                                <h3 class="text-info"><?= $stats['total_user_terbaru'] ?></h3>
                             </div>
-                            <i class="fas fa-book-dead fa-2x text-danger opacity-50"></i>
+                            <i class="fas fa-user-plus fa-2x text-info opacity-50"></i>
                         </div>
                     </div>
                 </div>
@@ -161,10 +206,10 @@ $namaAdmin = $_SESSION['username'];
                     <div class="card stat-card warning shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Laporan</h6>
+                                <h6 class="card-title text-muted">Total Laporan Pengguna</h6>
                                 <h3 class="text-warning"><?= $stats['total_laporan'] ?></h3>
                             </div>
-                            <i class="fas fa-file-alt fa-2x text-warning opacity-50"></i>
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning opacity-50"></i>
                         </div>
                     </div>
                 </div>
@@ -173,82 +218,8 @@ $namaAdmin = $_SESSION['username'];
             <div class="row mb-5 gy-4">
                 <div class="col-lg-6">
                     <div class="card shadow-sm h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Aktif Terbaru</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Tgl Dibuat</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if ($recent_users_result->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($user = $recent_users_result->fetch_assoc()): ?>
-                                                <tr>
-                                                    <th><?= $user_counter++ ?></th>
-                                                    <td><?= htmlspecialchars($user['username']) ?></td>
-                                                    <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
-                                                    <td><span class="badge bg-success">Aktif</span></td>
-                                                    <td><?= (new DateTime($user['tgl_dibuat']))->format('d M Y') ?></td>
-                                                </tr>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data.</td></tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-user-slash me-2"></i>User Dinonaktifkan</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if ($tbUserNonAktifResult->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($user = $tbUserNonAktifResult->fetch_assoc()): ?>
-                                                <tr>
-                                                    <th><?= $user_counter++ ?></th>
-                                                    <td><?= htmlspecialchars($user['username']) ?></td>
-                                                    <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
-                                                    <td>
-                                                        <span class="badge bg-danger">Non-Aktif</span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success">Aktifkan</a>
-                                                    </td>
-                                                </tr>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada user non-aktif.</td></tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-user-slash me-2"></i>User yang Dilaporkan</h5>
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Pengguna Aktif Terbaru</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -259,29 +230,84 @@ $namaAdmin = $_SESSION['username'];
                                             <th>Username</th>
                                             <th>Role</th>
                                             <th>Status</th>
-                                            <th>Kategori Laporan</th>
                                             <th>Tgl Dibuat</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($tbUserNonAktifResult->num_rows > 0): ?>
-                                            <?php $user_counter = 1; ?>
-                                            <?php while ($user = $tbUserNonAktifResult->fetch_assoc()): ?>
+                                        <?php if (!empty($tbUserAktifResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($tbUserAktifResult as $user): ?>
                                                 <tr>
-                                                    <th><?= $user_counter++ ?></th>
+                                                    <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($user['username']) ?></td>
                                                     <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
                                                     <td>
-                                                        <span class="badge bg-danger">Non-Aktif</span>
+                                                        <?php 
+                                                            $status_class = ($user['status'] === 'aktif') ? 'badge-status-aktif' : 'badge-status-default';
+                                                            echo '<span class="badge ' . $status_class . '">' . htmlspecialchars(ucfirst($user['status'])) . '</span>';
+                                                        ?>
                                                     </td>
+                                                    <td><?= (new DateTime($user['tgl_dibuat']))->format('d M Y') ?></td>
                                                     <td>
-                                                        <a href="activate_user.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success">Aktifkan</a>
+                                                        <a href="send_message.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary" title="Kirim Pesan">
+                                                            <i class="fas fa-envelope"></i> Pesan
+                                                        </a>
+                                                        <a href="admin-deactivateUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Pengguna" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pengguna ini?');">
+                                                            <i class="fas fa-user-times"></i> Non-Aktifkan
+                                                        </a>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada user non-aktif.</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data pengguna aktif terbaru.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-user-slash me-2"></i>Pengguna Dinonaktifkan</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th><th>Username</th><th>Role</th><th>Status</th><th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($tbUserNonAktifResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($tbUserNonAktifResult as $user): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($user['username']) ?></td>
+                                                    <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
+                                                    <td>
+                                                        <?php 
+                                                            $status_class = ($user['status'] === 'non-aktif') ? 'badge-status-nonaktif' : 'badge-status-default';
+                                                            echo '<span class="badge ' . $status_class . '">' . htmlspecialchars(ucfirst($user['status'])) . '</span>';
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-activateUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success" title="Aktifkan Pengguna">
+                                                            <i class="fas fa-user-check"></i> Aktifkan
+                                                        </a>
+                                                        <a href="admin-deleteUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-warning text-dark" title="Hapus Pengguna" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                                            <i class="fas fa-trash-alt"></i> Hapus
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada pengguna non-aktif.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -290,21 +316,75 @@ $namaAdmin = $_SESSION['username'];
                     </div>
                 </div>
 
+                <div class="col-lg-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="fas fa-flag me-2"></i>Laporan Pengguna</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Isi Laporan</th>
+                                            <th>Tgl Laporan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($tbUserDilaporkanResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($tbUserDilaporkanResult as $user): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($user['username']) ?></td>
+                                                    <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $status_user_badge_class = 'badge ';
+                                                        if ($user['status'] === 'aktif') {
+                                                            $status_user_badge_class .= 'badge-status-aktif';
+                                                        } else {
+                                                            $status_user_badge_class .= 'badge-status-nonaktif';
+                                                        }
+                                                        ?>
+                                                        <span class="<?= $status_user_badge_class ?>"><?= htmlspecialchars(ucfirst($user['status'])) ?></span>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($user['keterangan_report']) ?></td>
+                                                    <td><?= (new DateTime($user['tgl_laporan']))->format('d M Y, H:i') ?></td>
+                                                    <td>
+                                                        <a href="send_message.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary" title="Kirim Pesan">
+                                                            <i class="fas fa-envelope"></i> Pesan
+                                                        </a>
+                                                        <a href="admin-nonaktifkanUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Pengguna" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pengguna ini?');">
+                                                            <i class="fas fa-user-times"></i> Non-Aktifkan
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="7" class="text-center text-muted p-3">Tidak ada data laporan pengguna.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            </div>
+        </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
 <?php
-// --- PERBAIKAN: Close statements dan connection ---
-if (isset($kelas_stats_query)) $kelas_stats_query->close();
-if (isset($totalUser_stmt)) $totalUser_stmt->close();
-if (isset($totalLaporan_stmt)) $totalLaporan_stmt->close();
-if (isset($recent_users_query)) $recent_users_query->close();
-if (isset($tbUserNonAktif_stmt)) $tbUserNonAktif_stmt->close();
-if (isset($latest_classes_table_query)) $latest_classes_table_query->close();
-
-if ($conn) $conn->close();
+// Tutup koneksi database utama
+if ($conn) {
+    $conn->close();
+}
 ?>

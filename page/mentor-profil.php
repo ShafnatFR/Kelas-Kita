@@ -47,11 +47,11 @@ $stats = $stats_query->get_result()->fetch_assoc();
 
 // Ambil kelas terbaru
 $recent_classes_query = $conn->prepare("
-    SELECT k.id_kelas, k.nama_kelas, k.kategori, k.tanggal_rilis, k.harga, k.status_publikasi
+    SELECT k.id_kelas, k.nama_kelas, k.kategori, k.tgl_dibuat, k.harga, k.status_publikasi
     FROM tb_kelas k
     INNER JOIN tb_mentor m ON k.id_mentor = m.id_mentor
     WHERE m.id_user = ?
-    ORDER BY k.tanggal_rilis DESC
+    ORDER BY k.tgl_dibuat DESC
     LIMIT 3
 ");
 $recent_classes_query->bind_param("i", $user_id);
@@ -291,7 +291,7 @@ if (isset($_GET['msg'])) {
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="badge-category"><?php echo htmlspecialchars($class['kategori']); ?></span>
                                             <small class="text-muted">
-                                                <?php echo $class['tanggal_rilis'] ? date('d M Y', strtotime($class['tanggal_rilis'])) : 'Belum dirilis'; ?>
+                                                <?php echo $class['tgl_dibuat'] ? date('d M Y', strtotime($class['tgl_dibuat'])) : 'Belum dirilis'; ?>
                                             </small>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
