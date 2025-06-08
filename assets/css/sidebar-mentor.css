@@ -1,9 +1,18 @@
 /* Mengatur tampilan dasar sidebar */
 .sidebar {
+    width: 280px;
     background: linear-gradient(180deg, #1c61a5, #3498db); /* Gradasi warna biru gelap ke terang */
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); /* Memberi efek bayangan agar terkesan melayang */
     height: 100vh; /* Tinggi sidebar selalu 100% dari tinggi layar */
     color: #ecf0f1; /* Warna teks default di sidebar */
+}
+
+/* /assets/css/sidebar-mentor.css */
+
+/* Aturan baru untuk wrapper konten */
+.main-content {
+    margin-left: 280px; /* HARUS SAMA DENGAN LEBAR SIDEBAR */
+    padding: 2rem; /* Memberi jarak di dalam konten */
 }
 
 /* Mengatur bagian header sidebar (logo dan judul) */
