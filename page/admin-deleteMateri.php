@@ -39,19 +39,30 @@ function executeStatement(mysqli $conn, string $sql, string $types = '', array $
 }
 
 if (isset($_GET['id'])) {
-    $id_kelas = $_GET['id'];
+    $id_materi = $_GET['id'];
 
-    // Update status_publikasi menjadi 'non-aktif'
-    $sql = "UPDATE tb_kelas SET status_publikasi = 'non-aktif' WHERE id_kelas = ?";
-    if (executeStatement($conn, $sql, 'i', [$id_kelas])) {
-        $_SESSION['message'] = "Kelas berhasil dinonaktifkan.";
-        $_SESSION['message_type'] = "success";
+    // Hapus sub_materi yang terkait dengan materi ini terlebih dahulu
+    // Berdasarkan skema SQL, tb_sub_materi memiliki foreign key ke tb_materi.
+    // Dokumen dan video tidak dihapus karena bisa digunakan oleh sub_materi lain.
+    $sql_delete_sub_materi = "DELETE FROM tb_sub_materi WHERE id_materi = ?";
+    $success_delete_sub_materi = executeStatement($conn, $sql_delete_sub_materi, 'i', [$id_materi]);
+
+    if ($success_delete_sub_materi) {
+        // Kemudian hapus materi itu sendiri
+        $sql_delete_materi = "DELETE FROM tb_materi WHERE id_materi = ?";
+        if (executeStatement($conn, $sql_delete_materi, 'i', [$id_materi])) {
+            $_SESSION['message'] = "Materi dan sub-materi terkait berhasil dihapus permanen.";
+            $_SESSION['message_type'] = "success";
+        } else {
+            $_SESSION['message'] = "Gagal menghapus materi.";
+            $_SESSION['message_type'] = "danger";
+        }
     } else {
-        $_SESSION['message'] = "Gagal menonaktifkan kelas.";
+        $_SESSION['message'] = "Gagal menghapus sub-materi terkait materi.";
         $_SESSION['message_type'] = "danger";
     }
 } else {
-    $_SESSION['message'] = "ID Kelas tidak ditemukan.";
+    $_SESSION['message'] = "ID Materi tidak ditemukan.";
     $_SESSION['message_type'] = "danger";
 }
 
@@ -60,6 +71,6 @@ if ($conn) {
     $conn->close();
 }
 
-header("Location: admin-kelolaKelas.php"); // Kembali ke halaman kelola kelas
+header("Location: admin-kelolaMateri.php"); // Kembali ke halaman kelola materi
 exit();
 ?>

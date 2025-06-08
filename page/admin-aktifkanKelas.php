@@ -1,58 +1,65 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan sudah menghubungkan ke database
+require 'db.php'; // Pastikan koneksi database sudah terjalin
 
-// Pastikan pengguna sudah login dan memiliki role sebagai admin
+// Periksa apakah pengguna masuk dan memiliki peran admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    // Jika belum login atau bukan admin, redirect ke halaman login
-    $_SESSION['error_message'] = "Anda harus login sebagai admin untuk mengakses halaman ini.";
-    header("Location: adminLogin.php"); 
+    header("Location: adminLogin.php");
     exit();
 }
 
-// PERBAIKAN DI SINI: Hanya periksa parameter 'id'
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    $_SESSION['error_message'] = "ID kelas tidak valid atau tidak ditemukan.";
-    header("Location: admin-kelolaKelas.php"); 
-    exit();
+// Pastikan koneksi database berhasil
+if (!$conn) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-$kelasId = (int)$_GET['id']; // Ambil ID kelas dan pastikan integer
-
-// Persiapkan dan jalankan query untuk mengaktifkan/menyetujui kelas
-$stmt = null;
-try {
-    // Mengubah status publikasi menjadi 'aktif' (atau 'approved' jika itu standar Anda)
-    $stmt = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'approved' WHERE id_kelas = ?");
-    if ($stmt === false) {
-        // Gagal prepare statement
-        $_SESSION['error_message'] = "Gagal mempersiapkan statement: " . $conn->error;
-        header("Location: admin-kelolaKelas.php");
-        exit();
+// Fungsi untuk mengeksekusi prepared statement dengan aman
+function executeStatement(mysqli $conn, string $sql, string $types = '', array $params = []) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $conn->error . " for query: " . $sql);
+        return false;
     }
-    
-    $stmt->bind_param("i", $kelasId);
 
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
-            $_SESSION['success_message'] = "Kelas berhasil diaktifkan/disetujui.";
-        } else {
-            $_SESSION['error_message'] = "Tidak ada kelas yang diubah. ID mungkin tidak ditemukan atau status sudah sesuai.";
+    if (!empty($params) && !empty($types)) {
+        $bind_params = [];
+        $bind_params[] = &$types;
+        foreach ($params as &$param) {
+            $bind_params[] = &$param;
         }
-    } else {
-        $_SESSION['error_message'] = "Gagal mengaktifkan kelas: " . $stmt->error;
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
-} catch (mysqli_sql_exception $e) {
-    $_SESSION['error_message'] = "Terjadi kesalahan database: " . $e->getMessage();
-} finally {
-    if ($stmt) {
-        $stmt->close();
+
+    $success = $stmt->execute();
+    if (!$success) {
+        error_log("Error executing statement: " . $stmt->error . " for query: " . $sql);
     }
-    if ($conn) {
-        $conn->close();
-    }
-    // Selalu redirect kembali ke halaman kelola kelas
-    header("Location: admin-kelolaKelas.php"); 
-    exit();
+    $stmt->close();
+    return $success;
 }
+
+if (isset($_GET['id'])) {
+    $id_kelas = $_GET['id'];
+
+    // Update status_publikasi menjadi 'aktif'
+    $sql = "UPDATE tb_kelas SET status_publikasi = 'aktif' WHERE id_kelas = ?";
+    if (executeStatement($conn, $sql, 'i', [$id_kelas])) {
+        $_SESSION['message'] = "Kelas berhasil diaktifkan kembali!";
+        $_SESSION['message_type'] = "success";
+    } else {
+        $_SESSION['message'] = "Gagal mengaktifkan kelas.";
+        $_SESSION['message_type'] = "danger";
+    }
+} else {
+    $_SESSION['message'] = "ID Kelas tidak ditemukan.";
+    $_SESSION['message_type'] = "danger";
+}
+
+// Tutup koneksi database
+if ($conn) {
+    $conn->close();
+}
+
+header("Location: admin-kelolaKelas.php"); // Kembali ke halaman kelola kelas
+exit();
 ?>

@@ -20,7 +20,7 @@ if (!$conn) {
  * @param string $sql String kueri SQL.
  * @param string $types Tipe parameter untuk bind_param (misalnya, 's', 'i').
  * @param array $params Array parameter untuk di-bind.
- * @return array|false Mengembalikan array asosiatif (untuk COUNT/SUM) atau array dari array asosiatif (untuk SELECT), atau false jika gagal.
+ * @return array|false Mengembalikan array asosiatif (untuk COUNT/SUM) atau array dari array asosiatif (untuk SELECT), atau array dari array asosiatif (untuk SELECT), atau false jika gagal.
  */
 function fetchData(mysqli $conn, string $sql, string $types = '', array $params = []) {
     $stmt = $conn->prepare($sql);
@@ -45,7 +45,7 @@ function fetchData(mysqli $conn, string $sql, string $types = '', array $params 
         $stmt->close();
         return false;
     }
-    
+
     // Detect if the query is a COUNT/SUM/MAX/MIN to fetch a single row
     if (strpos(strtoupper($sql), 'COUNT(') !== false || strpos(strtoupper($sql), 'SUM(') !== false ||
         strpos(strtoupper($sql), 'MAX(') !== false || strpos(strtoupper($sql), 'MIN(') !== false) {
@@ -56,7 +56,7 @@ function fetchData(mysqli $conn, string $sql, string $types = '', array $params 
             $data[] = $row;
         }
     }
-    
+
     $stmt->close(); // Close the statement after use
     return $data;
 }
@@ -85,30 +85,37 @@ $totalKelasPendingResult = fetchData($conn, "
     LIMIT 10
 ");
 
-// Query for 10 latest non-active/rejected/draft classes
-$tbKelasNonAktifResult = fetchData($conn, "
+// --- START: Query Baru untuk Kelas Ditolak ---
+// Query for 10 latest rejected classes
+$tbKelasRejectedResult = fetchData($conn, "
     SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
     FROM tb_kelas
-    WHERE status_publikasi IN ('non-aktif', 'rejected', 'draft')
+    WHERE status_publikasi = 'rejected'
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
+// --- END: Query Baru untuk Kelas Ditolak ---
+
+// Query for 10 latest non-active/rejected/draft classes (Note: 'rejected' is now handled separately, consider if you still want it here or adjust)
+// For clarity, I'm keeping 'rejected' here for total count, but the specific table below will focus on 'non-aktif' and 'draft' if desired.
+// For this request, I will adjust this query to only show 'non-aktif' and 'draft' in this specific table, as 'rejected' will have its own.
+$tbKelasNonAktifResult = fetchData($conn, "
+    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
+    FROM tb_kelas
+    WHERE status_publikasi IN ('non-aktif', 'draft') -- Modified to exclude 'rejected' from this specific table
+    ORDER BY tgl_dibuat DESC
+    LIMIT 10
+");
+
 
 // Query for 10 latest active classes
 $tbKelasAktifResult = fetchData($conn, "
     SELECT k.id_kelas, k.nama_kelas, k.status_publikasi, u.username AS mentor_username, k.tgl_dibuat
     FROM tb_kelas k
-<<<<<<< HEAD
     JOIN tb_mentor m ON k.id_mentor = m.id_mentor
     JOIN tb_user u ON m.id_user = u.id_user
     WHERE k.status_publikasi = 'aktif'
     ORDER BY k.tgl_dibuat DESC
-=======
-    JOIN tb_mentor m ON k.id_mentor=m.id_mentor
-    JOIN tb_user u ON m.id_user=u.id_user
-    WHERE status_publikasi LIKE 'approved'
-    ORDER BY tgl_dibuat DESC
->>>>>>> 20e67d865377f14837315d81814d3a1eb751b56a
     LIMIT 10
 ");
 
@@ -117,7 +124,7 @@ $stats = [
     'total_users' => $userData['total_users'] ?? 0,
     'total_kelas_aktif' => $kelas_stats_data['total_aktif'] ?? 0,
     'total_kelas_pending' => $kelas_stats_data['total_pending'] ?? 0,
-    'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0,
+    'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0, // This still includes 'rejected' for the total count
     'total_laporan' => $laporanData['total_laporan'] ?? 0
 ];
 
@@ -129,7 +136,7 @@ $namaAdmin = $_SESSION['username'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Kelas</title>
+    <title>Kelola Kelas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -162,12 +169,13 @@ $namaAdmin = $_SESSION['username'];
         .badge-status-aktif { background-color: var(--bs-success); color: #fff; }
         .badge-status-pending { background-color: var(--bs-info); color: #fff; }
         .badge-status-nonaktif { background-color: var(--bs-danger); color: #fff; }
+        .badge-status-rejected { background-color: var(--bs-warning); color: #fff; } /* New badge color */
         .badge-status-default { background-color: var(--bs-secondary); color: #fff; } /* Fallback */
     </style>
 </head>
 <body class="bg-light">
     <?php include "adminSidebar.php"; ?>
-    
+
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="row mb-4">
@@ -178,7 +186,20 @@ $namaAdmin = $_SESSION['username'];
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
                 </div>
             </div>
-            
+
+            <?php
+            // Tampilkan pesan notifikasi jika ada
+            if (isset($_SESSION['message'])) {
+                $message_type = $_SESSION['message_type'] ?? 'info'; // Default to info
+                echo '<div class="alert alert-' . $message_type . ' alert-dismissible fade show" role="alert">';
+                echo htmlspecialchars($_SESSION['message']);
+                echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                echo '</div>';
+                unset($_SESSION['message']); // Hapus pesan setelah ditampilkan
+                unset($_SESSION['message_type']); // Hapus tipe pesan juga
+            }
+            ?>
+
             <div class="row mb-5 gy-4">
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card success shadow-sm h-100">
@@ -191,7 +212,7 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card info shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -215,7 +236,7 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card warning shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -230,7 +251,7 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="row mb-5 gy-4">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-info text-white">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Kelas Pending Terbaru</h5>
@@ -244,14 +265,14 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if (!empty($totalKelasPendingResult)): ?>
+                                        <?php if (!empty($totalKelasPendingResult)): /* cite: 2 */ ?>
                                             <?php $counter = 1; ?>
-                                            <?php foreach ($totalKelasPendingResult as $kelas): ?>
+                                            <?php foreach ($totalKelasPendingResult as $kelas): /* cite: 2 */ ?>
                                                 <tr>
                                                     <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
                                                     <td>
-                                                        <?php 
+                                                        <?php
                                                             $status_badge_class = ($kelas['status_publikasi'] === 'pending') ? 'badge-status-pending' : 'badge-status-default';
                                                             echo '<span class="badge ' . $status_badge_class . '">' . htmlspecialchars(ucfirst($kelas['status_publikasi'])) . '</span>';
                                                         ?>
@@ -279,6 +300,56 @@ $namaAdmin = $_SESSION['username'];
 
                 <div class="col-lg-6">
                     <div class="card shadow-sm h-100">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Kelas Ditolak Terbaru</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Status Publikasi</th>
+                                            <th>Tanggal Dibuat</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($tbKelasRejectedResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($tbKelasRejectedResult as $kelas): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
+                                                    <td>
+                                                        <?php
+                                                            $status_badge_class = ($kelas['status_publikasi'] === 'rejected') ? 'badge-status-rejected' : 'badge-status-default';
+                                                            echo '<span class="badge ' . $status_badge_class . '">' . htmlspecialchars(ucfirst($kelas['status_publikasi'])) . '</span>';
+                                                        ?>
+                                                    </td>
+                                                    <td><?= (new DateTime($kelas['tgl_dibuat']))->format('d M Y') ?></td>
+                                                    <td>
+                                                        <a href="admin-approveKelas.php?id=<?= $kelas['id_kelas'] ?>" class="btn btn-sm btn-success" title="Approve Kelas">
+                                                            <i class="fas fa-check"></i> Approve
+                                                        </a>
+                                                        <a href="admin-deleteKelas.php?id=<?= $kelas['id_kelas'] ?>" class="btn btn-sm btn-danger" title="Hapus Kelas" onclick="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
+                                                            <i class="fas fa-trash-alt"></i> Hapus
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data kelas ditolak.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
                         <div class="card-header bg-danger text-white">
                             <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Kelas Dinonaktifkan Terbaru</h5>
                         </div>
@@ -291,15 +362,16 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if (!empty($tbKelasNonAktifResult)): ?>
+                                        <?php if (!empty($tbKelasNonAktifResult)): /* cite: 2 */ ?>
                                             <?php $counter = 1; ?>
-                                            <?php foreach ($tbKelasNonAktifResult as $kelas): ?>
+                                            <?php foreach ($tbKelasNonAktifResult as $kelas): /* cite: 2 */ ?>
                                                 <tr>
                                                     <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
                                                     <td>
-                                                        <?php 
-                                                            $status_badge_class = ($kelas['status_publikasi'] === 'non-aktif' || $kelas['status_publikasi'] === 'rejected' || $kelas['status_publikasi'] === 'draft') ? 'badge-status-nonaktif' : 'badge-status-default';
+                                                        <?php
+                                                            // Updated logic for badge class, excluding 'rejected' as it has its own table now
+                                                            $status_badge_class = ($kelas['status_publikasi'] === 'non-aktif' || $kelas['status_publikasi'] === 'draft') ? 'badge-status-nonaktif' : 'badge-status-default';
                                                             echo '<span class="badge ' . $status_badge_class . '">' . htmlspecialchars(ucfirst($kelas['status_publikasi'])) . '</span>';
                                                         ?>
                                                     </td>
@@ -315,7 +387,7 @@ $namaAdmin = $_SESSION['username'];
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data kelas non-aktif.</td></tr>
+                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data kelas non-aktif (atau draft).</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -323,7 +395,7 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-success text-white">
@@ -343,14 +415,14 @@ $namaAdmin = $_SESSION['username'];
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if (!empty($tbKelasAktifResult)): ?>
+                                        <?php if (!empty($tbKelasAktifResult)): /* cite: 2 */ ?>
                                             <?php $counter = 1; ?>
-                                            <?php foreach ($tbKelasAktifResult as $kelas): ?>
+                                            <?php foreach ($tbKelasAktifResult as $kelas): /* cite: 2 */ ?>
                                                 <tr>
                                                     <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
                                                     <td>
-                                                        <?php 
+                                                        <?php
                                                             $status_badge_class = ($kelas['status_publikasi'] === 'aktif') ? 'badge-status-aktif' : 'badge-status-default';
                                                             echo '<span class="badge ' . $status_badge_class . '">' . htmlspecialchars(ucfirst($kelas['status_publikasi'])) . '</span>';
                                                         ?>
