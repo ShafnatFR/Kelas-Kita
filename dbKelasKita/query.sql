@@ -68,6 +68,7 @@ JOIN
   tb_kelas k ON k.id_kelas = r.id_kelas
 WHERE
   r.kategori_report LIKE 'Penggunaan kata kasar';
+  ORDER BY r.tgl_dibuat DESC;
 
 -- Count laporan berdasarkan kategori ('Materi tidak relevan')
 SELECT
