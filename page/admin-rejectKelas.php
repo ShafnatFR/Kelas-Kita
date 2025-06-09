@@ -41,13 +41,13 @@ function executeStatement(mysqli $conn, string $sql, string $types = '', array $
 if (isset($_GET['id'])) {
     $id_kelas = $_GET['id'];
 
-    // Update status_publikasi menjadi 'non-aktif'
-    $sql = "UPDATE tb_kelas SET status_publikasi = 'non-aktif' WHERE id_kelas = ?";
+    // Update status_publikasi menjadi 'rejected'
+    $sql = "UPDATE tb_kelas SET status_publikasi = 'rejected' WHERE id_kelas = ?";
     if (executeStatement($conn, $sql, 'i', [$id_kelas])) {
-        $_SESSION['message'] = "Kelas berhasil dinonaktifkan.";
+        $_SESSION['message'] = "Kelas berhasil di-reject.";
         $_SESSION['message_type'] = "success";
     } else {
-        $_SESSION['message'] = "Gagal menonaktifkan kelas.";
+        $_SESSION['message'] = "Gagal menolak kelas.";
         $_SESSION['message_type'] = "danger";
     }
 } else {

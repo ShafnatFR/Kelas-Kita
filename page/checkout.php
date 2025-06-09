@@ -1,88 +1,217 @@
 <?php
-// checkout.php - Halaman checkout dengan QR Code Payment
-include "db.php";
-// Enable error reporting for debugging
+// checkout.php - Perbaikan untuk masalah User ID validation
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "KelasKita_baru";
+
+// Buat koneksi database
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Memeriksa koneksi
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
+
+// Fungsi untuk memeriksa dan menyambungkan kembali koneksi MySQL
+function checkAndReconnect(&$conn, $servername, $username, $password, $dbname) {
+    if (!$conn->ping()) {
+        $conn->close();
+        $conn = new mysqli($servername, $username, $password, $dbname);
+        if ($conn->connect_error) {
+            die("Koneksi gagal setelah reconnect: " . $conn->connect_error);
+        }
+    }
+}
+
+// Aktifkan pelaporan kesalahan untuk debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Session start untuk mengakses data keranjang
+// Panggil fungsi reconnect saat startup
+checkAndReconnect($conn, $servername, $username, $password, $dbname);
+
+// Mulai sesi untuk mengakses data keranjang dan user
 session_start();
 
-// Cek apakah user sudah login
-if (!isset($_SESSION['username'])) {
-    header('Location: HalamanSignIn.php');
+// DEBUG: Tampilkan informasi sesi untuk debugging
+if (isset($_GET['debug']) && $_GET['debug'] == '1') {
+    echo "<pre>";
+    echo "=== DEBUG SESSION INFO ===\n";
+    echo "Session ID: " . session_id() . "\n";
+    echo "User ID dari session: " . ($_SESSION['id'] ?? 'NOT SET') . "\n";
+    echo "Username dari session: " . ($_SESSION['username'] ?? 'NOT SET') . "\n";
+    echo "Email dari session: " . ($_SESSION['email'] ?? 'NOT SET') . "\n";
+    echo "All session data:\n";
+    print_r($_SESSION);
+    echo "=== END DEBUG ===\n";
+    echo "</pre>";
+}
+
+// PERBAIKAN 1: Cek berbagai kemungkinan key untuk user ID di session
+$user_id = null;
+if (isset($_SESSION['id']) && !empty($_SESSION['id'])) {
+    $user_id = $_SESSION['id'];
+} elseif (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+} elseif (isset($_SESSION['id_user']) && !empty($_SESSION['id_user'])) {
+    $user_id = $_SESSION['id_user'];
+}
+
+// PERBAIKAN 2: Validasi user ID dengan query ke database
+$user_data = null;
+if ($user_id) {
+    checkAndReconnect($conn, $servername, $username, $password, $dbname);
+    
+    // Cek apakah user_id ada di database dan ambil data lengkap
+    $stmt_check_user = $conn->prepare("SELECT id_user, username, email FROM tb_user WHERE id_user = ?");
+    if ($stmt_check_user) {
+        $stmt_check_user->bind_param("i", $user_id);
+        $stmt_check_user->execute();
+        $result_check_user = $stmt_check_user->get_result();
+        
+        if ($result_check_user->num_rows > 0) {
+            $user_data = $result_check_user->fetch_assoc();
+            // Update session dengan data terbaru dari database
+            $_SESSION['id'] = $user_data['id_user'];
+            $_SESSION['username'] = $user_data['username'];
+            $_SESSION['email'] = $user_data['email'];
+        } else {
+            // User ID tidak ditemukan di database
+            $user_id = null;
+            $user_data = null;
+        }
+        $stmt_check_user->close();
+    } else {
+        error_log("Failed to prepare statement for user validation: " . $conn->error);
+        $user_id = null;
+    }
+}
+
+// PERBAIKAN 3: Redirect dengan pesan error yang lebih informatif
+if (!$user_id || !$user_data) {
+    // Bersihkan session yang mungkin rusak
+    session_unset();
+    session_destroy();
+    
+    // Set pesan error di URL
+    header('Location: HalamanSignIn.php?error=session_expired&message=' . urlencode('Sesi Anda telah berakhir. Silakan login kembali.'));
     exit;
 }
 
 // Redirect jika keranjang kosong
 if (empty($_SESSION['cart'])) {
-    header('Location: cart.php');
+    header('Location: cart.php?message=' . urlencode('Keranjang Anda kosong.'));
     exit;
 }
 
-// Hitung total belanja
-$total = 0;
-$discounted_total = 0;
-$discount_amount = 0;
-
-// Calculate cart total
-if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        if (is_array($item) && isset($item['price']) && is_string($item['price']) && !empty($item['price'])) {
-            $price_str = $item['price'];
-            if ($price_str !== null) {
-                $price = floatval(preg_replace('/[^\d.]/', '', $price_str));
-                $total += $price * (isset($item['quantity']) ? (int)$item['quantity'] : 1);
-            }
-        }
+// PERBAIKAN 4: Validasi struktur data keranjang
+$valid_cart = true;
+foreach ($_SESSION['cart'] as $item) {
+    if (!isset($item['id']) || !isset($item['name'])) {
+        $valid_cart = false;
+        break;
     }
-} else {
-    $_SESSION['cart'] = [];
 }
 
-// Check for applied coupon
+if (!$valid_cart) {
+    unset($_SESSION['cart']);
+    header('Location: cart.php?error=invalid_cart&message=' . urlencode('Data keranjang tidak valid. Silakan tambahkan item kembali.'));
+    exit;
+}
+
+// Ambil harga terbaru untuk item di keranjang dari database
+$current_prices = [];
+$item_ids_in_cart = [];
+foreach ($_SESSION['cart'] as $item) {
+    $item_ids_in_cart[] = $item['id'];
+}
+
+if (!empty($item_ids_in_cart)) {
+    $ids_placeholder = implode(',', array_fill(0, count($item_ids_in_cart), '?'));
+    $stmt = $conn->prepare("SELECT id_kelas, harga FROM tb_kelas WHERE id_kelas IN ($ids_placeholder)");
+    if ($stmt) {
+        $types = str_repeat('i', count($item_ids_in_cart));
+        $stmt->bind_param($types, ...$item_ids_in_cart);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $current_prices[$row['id_kelas']] = $row['harga'];
+        }
+        $stmt->close();
+    } else {
+        error_log("Failed to prepare statement for fetching current prices: " . $conn->error);
+    }
+}
+
+// Hitung total belanja menggunakan harga terbaru
+$total = 0;
+foreach ($_SESSION['cart'] as &$item) {
+    $original_price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : (floatval($item['price'] ?? 0));
+    $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+    $total += $original_price * $quantity;
+    $item['price'] = $original_price;
+}
+
+$discount_amount = 0;
+$discounted_total = $total;
+
+// Cek kupon yang diterapkan
 $applied_coupon = null;
 if (isset($_SESSION['applied_coupon'])) {
     $applied_coupon = $_SESSION['applied_coupon'];
-    $discount_amount = $total * ($applied_coupon['discount'] / 100);
+    $discount_percentage = floatval($applied_coupon['discount'] ?? 0);
+    $discount_amount = $total * ($discount_percentage / 100);
     $discounted_total = $total - $discount_amount;
-} else {
-    $discounted_total = $total;
 }
 
-// Format numbers for display
+// Format angka untuk tampilan
 $total_formatted = number_format($total, 0, ',', '.');
 $discounted_total_formatted = number_format($discounted_total, 0, ',', '.');
 $discount_amount_formatted = number_format($discount_amount, 0, ',', '.');
 
-// Handle form submission
-$payment_success = false;
+// Variabel status halaman
+$payment_processed = false;
+$payment_confirmed_pending = false;
 $payment_error = '';
-$show_qr = false;
+$qr_virtual_account_number = "123456789012";
+$current_page_status = 'customer_info';
 
-if (isset($_POST['proceed_to_payment'])) {
-    // Validate form
-    $errors = [];
-    
-    if (empty($_POST['full_name'])) {
-        $errors[] = 'Full name is required';
-    }
-    
-    if (empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Valid email is required';
-    }
-    
-    if (empty($_POST['phone'])) {
-        $errors[] = 'Phone number is required';
-    }
-    
-    // If no errors, show QR code
-    if (empty($errors)) {
-        $show_qr = true;
+// Cek apakah ada order_id di URL
+if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
+    $current_page_status = 'confirmation_pending';
+    $order_id_from_url = $_GET['order_id'];
+    checkAndReconnect($conn, $servername, $username, $password, $dbname);
+    $stmt_fetch_payment = $conn->prepare("SELECT * FROM tb_pembayaran WHERE order_id = ? AND id_user = ?");
+    if ($stmt_fetch_payment) {
+        $stmt_fetch_payment->bind_param("si", $order_id_from_url, $user_id);
+        $stmt_fetch_payment->execute();
+        $result_fetch_payment = $stmt_fetch_payment->get_result();
+        $last_order = $result_fetch_payment->fetch_assoc();
+        $stmt_fetch_payment->close();
         
-        // Generate order ID
+        if (!$last_order) {
+            $payment_error = "Order ID tidak ditemukan atau tidak cocok dengan user.";
+            $current_page_status = 'customer_info';
+        }
+    } else {
+        error_log("Failed to prepare statement for fetching payment: " . $conn->error);
+        $payment_error = "Terjadi kesalahan sistem saat memproses order Anda.";
+        $current_page_status = 'customer_info';
+    }
+}
+
+// Handle form submission: Proceed to Payment
+if (isset($_POST['proceed_to_payment'])) {
+    $errors = [];
+    if (empty($_POST['full_name'])) $errors[] = 'Nama lengkap harus diisi';
+    if (empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Email yang valid harus diisi';
+    if (empty($_POST['phone'])) $errors[] = 'Nomor telepon harus diisi';
+    
+    if (empty($errors)) {
+        $current_page_status = 'qr_payment';
         $order_id = 'ORD-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
-        $_SESSION['pending_order'] = [
+        $_SESSION['pending_order_data'] = [
             'id' => $order_id,
             'full_name' => $_POST['full_name'],
             'email' => $_POST['email'],
@@ -94,6 +223,7 @@ if (isset($_POST['proceed_to_payment'])) {
         ];
     } else {
         $payment_error = implode('<br>', $errors);
+        $current_page_status = 'customer_info';
     }
 }
 
@@ -139,9 +269,6 @@ if (isset($_POST['confirm_payment'])) {
     $_SESSION['cart'] = [];
     unset($_SESSION['applied_coupon']);
     unset($_SESSION['pending_order']);
-
-    // Redirect to success page
-    header('Location: kelasku.php');
 }
 
 // Check for success parameter
@@ -149,6 +276,8 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
     $payment_success = true;
     $last_order = $_SESSION['last_order'];
 }
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -156,7 +285,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $payment_success ? 'Order Confirmation' : 'Checkout'; ?> | Upskill - Online Learning Platform</title>
+    <title><?php echo htmlspecialchars(($current_page_status === 'confirmation_pending') ? 'Payment Confirmation' : (($current_page_status === 'qr_payment') ? 'Complete Payment' : 'Checkout')); ?> | KelasKita</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -166,6 +295,16 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
         }
         
         .step-indicator {
@@ -186,6 +325,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             font-weight: 600;
             margin: 0 10px;
             position: relative;
+            transition: background-color 0.3s ease;
         }
         
         .step.completed {
@@ -205,6 +345,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             width: 60px;
             height: 2px;
             background-color: #10b981;
+            transition: background-color 0.3s ease;
         }
         
         .step-connector.pending {
@@ -250,128 +391,72 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             text-align: center;
             margin-bottom: 1rem;
             font-weight: 600;
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
+        }
+
+        .payment-confirmation-box {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+        }
+        .payment-confirmation-box .icon {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        .payment-confirmation-box h2 {
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .payment-confirmation-box p {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
     <?php include("../Views/navbarbootstrap.php"); ?>
     
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
             
-<?php if ($payment_success && isset($last_order) && $last_order): ?>
-                <!-- Success Page -->
-                <div class="success-animation">
-                    <!-- Progress Steps -->
-                    <div class="step-indicator mb-8">
-                        <div class="step completed">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="step-connector"></div>
-                        <div class="step completed">
-                            <i class="fas fa-credit-card"></i>
-                        </div>
-                        <div class="step-connector"></div>
-                        <div class="step completed">
-                            <i class="fas fa-check"></i>
-                        </div>
+            <!-- DEBUG INFO (hapus setelah masalah teratasi) -->
+            <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
+            <div class="debug-info">
+                <h4>Debug Information:</h4>
+                <p><strong>User ID:</strong> <?php echo htmlspecialchars($user_id ?? 'NULL'); ?></p>
+                <p><strong>User Data:</strong> <?php echo $user_data ? 'Valid' : 'Invalid'; ?></p>
+                <p><strong>Session Username:</strong> <?php echo htmlspecialchars($_SESSION['username'] ?? 'NOT SET'); ?></p>
+                <p><strong>Session Email:</strong> <?php echo htmlspecialchars($_SESSION['email'] ?? 'NOT SET'); ?></p>
+                <p><strong>Cart Items:</strong> <?php echo count($_SESSION['cart'] ?? []); ?></p>
+                <p><strong>Current Page Status:</strong> <?php echo htmlspecialchars($current_page_status); ?></p>
+                <?php if (!empty($payment_error)): ?>
+                <p><strong>Payment Error:</strong> <?php echo htmlspecialchars($payment_error); ?></p>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($current_page_status === 'confirmation_pending'): ?>
+                <div class="payment-confirmation-box success-animation">
+                    <div class="icon">
+                        <i class="fas fa-hourglass-half"></i>
                     </div>
-                    
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-white mb-2">Your booking is confirmed</h1>
-                        <p class="text-blue-100">Thank you for your purchase. Your courses are now available.</p>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Booking Details -->
-                        <div class="card-modern p-6">
-                            <h2 class="text-xl font-bold mb-4 text-gray-800">Booking details</h2>
-                            
-                            <div class="space-y-4">
-                                <div>
-                                    <p class="font-semibold text-gray-800"><?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?></p>
-                                    <div class="grid grid-cols-2 gap-4 mt-2 text-sm text-gray-600">
-                                        <div>
-                                            <p class="font-medium">ORDER ID</p>
-                                            <p><?php echo htmlspecialchars($last_order['id'] ?? ''); ?></p>
-                                        </div>
-                                        <div>
-                                            <p class="font-medium">DATE</p>
-                                            <p><?php echo !empty($last_order['date']) ? date('D, d M Y', strtotime($last_order['date'])) : ''; ?></p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="border-t pt-4">
-                                    <p class="font-medium text-gray-600 mb-2">YOUR COURSES</p>
-                                    <?php if (!empty($last_order['items'])): ?>
-                                        <?php foreach ($last_order['items'] as $item): ?>
-                                            <p class="text-blue-600 font-medium"><?php echo htmlspecialchars($item['title'] ?? $item['name'] ?? 'Unknown Course'); ?></p>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <p>No courses found.</p>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="border-t pt-4">
-                                    <p class="font-medium text-gray-600 mb-2">PHONE</p>
-                                    <p><?php echo htmlspecialchars($last_order['phone'] ?? ''); ?></p>
-                                    <p class="font-medium text-gray-600 mb-2 mt-3">EMAIL</p>
-                                    <p><?php echo htmlspecialchars($last_order['email'] ?? ''); ?></p>
-                                </div>
-                                
-                                <div class="border-t pt-4">
-                                    <p class="font-medium text-gray-600 mb-2">BOOKING NUMBER</p>
-                                    <p class="font-mono text-blue-600">#<?php echo isset($last_order['id']) ? substr($last_order['id'], -8) : ''; ?></p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Order Summary -->
-                        <div class="card-modern p-6">
-                            <h2 class="text-xl font-bold mb-4 text-gray-800">Order summary</h2>
-                            
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span>Courses:</span>
-                                    <span class="font-semibold">Rp<?php echo number_format($last_order['total'] + $last_order['discount'], 0, ',', '.'); ?></span>
-                                </div>
-                                
-                                <?php if ($last_order['discount'] > 0): ?>
-                                <div class="flex justify-between text-green-600">
-                                    <span>Discount:</span>
-                                    <span>-Rp<?php echo number_format($last_order['discount'], 0, ',', '.'); ?></span>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <div class="border-t pt-3 flex justify-between text-lg font-bold">
-                                    <span>Total Price:</span>
-                                    <span class="text-green-600">Rp<?php echo number_format($last_order['total'], 0, ',', '.'); ?></span>
-                                </div>
-                            </div>
-                            
-                            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg mt-6 transition duration-200">
-                                <i class="fas fa-download mr-2"></i>Download Invoice
-                            </button>
-                            
-                            <div class="text-center mt-4">
-                                <p class="text-sm text-gray-500">Powered by UpSkill Inc.</p>
-                            </div>
-                            
-                            <div class="mt-6">
-                                <a href="index.php" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg text-center transition duration-200">
-                                    Back to Dashboard
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <h2>Pembayaran Anda Sedang Diverifikasi!</h2>
+                    <p class="mb-4">Terima kasih telah melakukan pembayaran. Kami telah menerima bukti transfer Anda.</p>
+                    <p class="mb-4">Nomor Order Anda: <strong class="text-blue-600"><?php echo htmlspecialchars($last_order['order_id'] ?? 'N/A'); ?></strong></p>
+                    <p>Proses verifikasi biasanya membutuhkan waktu 1x24 jam kerja. Setelah pembayaran Anda berhasil diverifikasi, Anda akan menerima email konfirmasi dan akses ke kursus Anda.</p>
+                    <p class="mt-4">Untuk pertanyaan lebih lanjut, silakan hubungi dukungan pelanggan kami.</p>
+                    <a href="index.php" class="btn btn-primary mt-4">Kembali ke Beranda</a>
+                    <a href="my_courses.php" class="btn btn-outline-secondary mt-4 ms-2">Lihat Kursus Saya</a>
                 </div>
-                
-            <?php elseif ($show_qr): ?>
-                <!-- QR Code Payment -->
+
+            <?php elseif ($current_page_status === 'qr_payment'): ?>
                 <div>
-                    <!-- Progress Steps -->
                     <div class="step-indicator mb-8">
                         <div class="step completed">
                             <i class="fas fa-user"></i>
@@ -387,52 +472,38 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
                     </div>
                     
                     <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-white mb-2">Complete Your Payment</h1>
-                        <p class="text-blue-100">Scan QR code below to complete your payment</p>
+                        <h1 class="text-3xl font-bold text-white mb-2">Selesaikan Pembayaran Anda</h1>
+                        <p class="text-blue-100">Scan QR code di bawah untuk menyelesaikan pembayaran</p>
                     </div>
                     
+                    <?php if (!empty($payment_error)): ?>
+                        <div class="alert alert-danger text-center mb-4" role="alert">
+                            <?php echo $payment_error; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="grid md:grid-cols-2 gap-6">
-                        <!-- QR Code Section -->
                         <div class="card-modern p-6">
                             <div class="payment-timer">
-                                <i class="fas fa-clock mr-2"></i>Complete payment within 15:00 minutes
+                                <i class="fas fa-clock mr-2"></i>Selesaikan pembayaran dalam 15:00 menit
                             </div>
                             
                             <div class="qr-container">
-                                <div class="w-48 h-48 mx-auto mb-4 bg-white p-4 rounded-lg">
-                                    <!-- QR Code placeholder - in real implementation, generate actual QR -->
-                                    <svg viewBox="0 0 100 100" class="w-full h-full">
-                                        <rect width="100" height="100" fill="white"/>
-                                        <!-- QR Code pattern -->
-                                        <rect x="0" y="0" width="20" height="20" fill="black"/>
-                                        <rect x="25" y="0" width="5" height="5" fill="black"/>
-                                        <rect x="35" y="0" width="5" height="5" fill="black"/>
-                                        <rect x="45" y="0" width="10" height="10" fill="black"/>
-                                        <rect x="80" y="0" width="20" height="20" fill="black"/>
-                                        <rect x="0" y="25" width="5" height="5" fill="black"/>
-                                        <rect x="10" y="25" width="5" height="5" fill="black"/>
-                                        <rect x="25" y="25" width="15" height="5" fill="black"/>
-                                        <rect x="45" y="25" width="5" height="15" fill="black"/>
-                                        <rect x="55" y="25" width="5" height="5" fill="black"/>
-                                        <rect x="65" y="25" width="10" height="10" fill="black"/>
-                                        <rect x="80" y="25" width="5" height="5" fill="black"/>
-                                        <rect x="90" y="25" width="5" height="5" fill="black"/>
-                                        <!-- Add more QR pattern elements -->
-                                        <rect x="0" y="80" width="20" height="20" fill="black"/>
-                                        <rect x="25" y="80" width="15" height="5" fill="black"/>
-                                        <rect x="45" y="80" width="5" height="10" fill="black"/>
-                                        <rect x="55" y="80" width="10" height="15" fill="black"/>
-                                        <rect x="70" y="80" width="5" height="5" fill="black"/>
-                                        <rect x="80" y="80" width="15" height="15" fill="black"/>
-                                    </svg>
+                                <div class="invoice-header text-center mb-4">
+                                    <h4 class="font-bold text-gray-800">Your Invoice</h4>
+                                    <p class="text-sm text-gray-600">Invoice Code: <span class="font-bold"><?php echo htmlspecialchars($_SESSION['pending_order_data']['id'] ?? 'N/A'); ?></span></p>
+                                    <p class="text-sm text-gray-600">Payment by BCA VIRTUAL ACCOUNT</p>
+                                </div>
+                                <div class="w-48 h-48 mx-auto mb-4 bg-white p-2 rounded-lg border border-gray-200">
+                                    <img src="<?php echo htmlspecialchars($qr_code_image_url); ?>" alt="QR Code Pembayaran" class="w-full h-full object-contain">
                                 </div>
                                 
-                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Scan QR Code</h3>
-                                <p class="text-gray-600 mb-4">Use your mobile banking app or e-wallet to scan this QR code</p>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Nomor Virtual Account BCA</h3>
+                                <p class="text-gray-600 mb-4 text-xl font-bold text-blue-700"><?php echo htmlspecialchars($qr_virtual_account_number); ?></p>
                                 
                                 <div class="bg-blue-50 p-3 rounded-lg mb-4">
                                     <p class="text-sm text-blue-800">
-                                        <strong>Amount:</strong> Rp<?php echo $discounted_total_formatted; ?>
+                                        <strong>Jumlah yang harus dibayar:</strong> Rp<?php echo $discounted_total_formatted; ?>
                                     </p>
                                 </div>
                                 
@@ -444,56 +515,84 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
                                 </div>
                             </div>
                             
-                            <form method="POST" class="mt-4">
-                                <button type="submit" name="confirm_payment" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
-                                    <i class="fas fa-check mr-2"></i>I Have Completed the Payment
+                            <form method="POST" enctype="multipart/form-data" class="mt-4">
+                                <div class="mb-3">
+                                    <label for="proof_image" class="form-label text-gray-700">Unggah Bukti Transfer *</label>
+                                    <input class="form-control" type="file" id="proof_image" name="proof_image" accept="image/*" required>
+                                    <small class="text-muted">Format: JPG, PNG. Max size: 2MB.</small>
+                                </div>
+                                <button type="submit" name="upload_proof" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                                    <i class="fas fa-upload mr-2"></i>Unggah & Konfirmasi Pembayaran
                                 </button>
                             </form>
                             
                             <p class="text-xs text-gray-500 text-center mt-3">
-                                Click the button above after you have successfully made the payment
+                                Klik tombol di atas setelah Anda berhasil melakukan pembayaran dan mengunggah bukti.
                             </p>
                         </div>
-                        
-                        <!-- Order Summary -->
                         <div class="card-modern p-6">
-                            <h2 class="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-receipt mr-2 text-blue-500"></i>Ringkasan Pesanan
+                            </h3>
                             
-                            <div class="space-y-3">
-<?php foreach ($_SESSION['cart'] as $item): ?>
-    <div class="flex justify-between border-b pb-2">
-        <span class="text-gray-700"><?php echo htmlspecialchars($item['title'] ?? $item['name'] ?? 'Unknown Course'); ?></span>
-        <span class="font-semibold">Rp<?php echo number_format((float)str_replace(['Rp', ','], '', (string)($item['price'] ?? 0)), 0, ',', '.'); ?></span>
-    </div>
-<?php endforeach; ?>
+                            <div class="space-y-3 mb-4">
+                                <?php foreach ($_SESSION['cart'] as $item): ?>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <div>
+                                        <h5 class="font-medium text-gray-800"><?php echo htmlspecialchars($item['name']); ?></h5>
+                                        <small class="text-gray-500">Qty: <?php echo (int)($item['quantity'] ?? 1); ?></small>
+                                    </div>
+                                    <span class="font-semibold text-gray-700">
+                                        Rp<?php echo number_format($item['price'] * ($item['quantity'] ?? 1), 0, ',', '.'); ?>
+                                    </span>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">Subtotal:</span>
+                                    <span class="font-medium">Rp<?php echo $total_formatted; ?></span>
+                                </div>
                                 
                                 <?php if ($applied_coupon): ?>
-                                <div class="flex justify-between text-green-600">
-                                    <span>Discount (<?php echo $applied_coupon['code']; ?>):</span>
+                                <div class="flex justify-between items-center mb-2 text-green-600">
+                                    <span>Diskon (<?php echo htmlspecialchars($applied_coupon['code']); ?>):</span>
                                     <span>-Rp<?php echo $discount_amount_formatted; ?></span>
                                 </div>
                                 <?php endif; ?>
                                 
-                                <div class="border-t pt-3 flex justify-between text-lg font-bold">
+                                <div class="flex justify-between items-center text-lg font-bold text-gray-800 border-t pt-2">
                                     <span>Total:</span>
-                                    <span class="text-green-600">Rp<?php echo $discounted_total_formatted; ?></span>
+                                    <span class="text-blue-600">Rp<?php echo $discounted_total_formatted; ?></span>
                                 </div>
                             </div>
                             
-                            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                                <h3 class="font-semibold text-gray-800 mb-2">Customer Information</h3>
-                                <p class="text-sm text-gray-600">Name: <?php echo htmlspecialchars($_SESSION['pending_order']['full_name']); ?></p>
-                                <p class="text-sm text-gray-600">Email: <?php echo htmlspecialchars($_SESSION['pending_order']['email']); ?></p>
-                                <p class="text-sm text-gray-600">Phone: <?php echo htmlspecialchars($_SESSION['pending_order']['phone']); ?></p>
+                            <div class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                                <h4 class="font-semibold text-yellow-800 mb-2">
+                                    <i class="fas fa-info-circle mr-2"></i>Instruksi Pembayaran
+                                </h4>
+                                <ol class="text-sm text-yellow-700 space-y-1">
+                                    <li>1. Scan QR code dengan aplikasi mobile banking</li>
+                                    <li>2. Transfer sesuai nominal yang tertera</li>
+                                    <li>3. Screenshot bukti transfer</li>
+                                    <li>4. Upload bukti transfer di form sebelah kiri</li>
+                                    <li>5. Klik "Konfirmasi Pembayaran"</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    <i class="fas fa-shield-alt mr-2"></i>
+                                    Pembayaran Anda aman dan akan diverifikasi dalam 1x24 jam kerja.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-            <?php else: ?>
-                <!-- Customer Information Form -->
+
+            <?php else: // customer_info ?>
                 <div>
-                    <!-- Progress Steps -->
                     <div class="step-indicator mb-8">
                         <div class="step active">
                             <i class="fas fa-user"></i>
@@ -510,85 +609,121 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
                     
                     <div class="text-center mb-6">
                         <h1 class="text-3xl font-bold text-white mb-2">Checkout</h1>
-                        <p class="text-blue-100">Please fill in your information to proceed</p>
+                        <p class="text-blue-100">Lengkapi informasi Anda untuk melanjutkan pembayaran</p>
                     </div>
                     
+                    <?php if (!empty($payment_error)): ?>
+                        <div class="alert alert-danger text-center mb-4" role="alert">
+                            <?php echo $payment_error; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Customer Form -->
                         <div class="card-modern p-6">
-                            <h2 class="text-xl font-bold mb-4 text-gray-800">Customer Information</h2>
-                            
-                            <?php if (!empty($payment_error)): ?>
-                                <div class="bg-red-100 text-red-700 px-4 py-3 rounded mb-4">
-                                    <?php echo $payment_error; ?>
-                                </div>
-                            <?php endif; ?>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-user-edit mr-2 text-blue-500"></i>Informasi Pelanggan
+                            </h3>
                             
                             <form method="POST" class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                                    <input type="text" name="full_name" value="<?php echo isset($_POST['full_name']) ? htmlspecialchars($_POST['full_name']) : ''; ?>" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           placeholder="Enter your full name" required>
+                                    <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap *</label>
+                                    <input type="text" 
+                                           id="full_name" 
+                                           name="full_name" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           value="<?php echo htmlspecialchars($_POST['full_name'] ?? $user_data['username'] ?? ''); ?>" 
+                                           required>
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                                    <input type="email" name="email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           placeholder="Enter your email" required>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                    <input type="email" 
+                                           id="email" 
+                                           name="email" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           value="<?php echo htmlspecialchars($_POST['email'] ?? $user_data['email'] ?? ''); ?>" 
+                                           required>
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                                    <input type="tel" name="phone" value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>" 
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           placeholder="Enter your phone number" required>
+                                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon *</label>
+                                    <input type="tel" 
+                                           id="phone" 
+                                           name="phone" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>" 
+                                           placeholder="08xxxxxxxxxx" 
+                                           required>
                                 </div>
                                 
-                                <button type="submit" name="proceed_to_payment" 
-                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
-                                    <i class="fas fa-arrow-right mr-2"></i>Proceed to Payment
-                                </button>
+                                <div class="pt-4">
+                                    <button type="submit" 
+                                            name="proceed_to_payment" 
+                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105">
+                                        <i class="fas fa-arrow-right mr-2"></i>Lanjut ke Pembayaran
+                                    </button>
+                                </div>
                             </form>
+                            
+                            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-600">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Informasi Anda aman dan hanya digunakan untuk proses pembelian.
+                                </p>
+                            </div>
                         </div>
                         
-                        <!-- Order Summary -->
                         <div class="card-modern p-6">
-                            <h2 class="text-xl font-bold mb-4 text-gray-800">Order Summary</h2>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-shopping-cart mr-2 text-green-500"></i>Ringkasan Pesanan
+                            </h3>
                             
-                            <div class="space-y-3">
+                            <div class="space-y-3 mb-4">
                                 <?php foreach ($_SESSION['cart'] as $item): ?>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span class="text-gray-700"><?php echo htmlspecialchars($item['title']); ?></span>
-                                    <span class="font-semibold">Rp<?php echo number_format((float)str_replace(['Rp', ','], '', (string)($item['price'] ?? 0)), 0, ',', '.'); ?></span>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <div>
+                                        <h5 class="font-medium text-gray-800"><?php echo htmlspecialchars($item['name']); ?></h5>
+                                        <small class="text-gray-500">Qty: <?php echo (int)($item['quantity'] ?? 1); ?></small>
+                                    </div>
+                                    <span class="font-semibold text-gray-700">
+                                        Rp<?php echo number_format($item['price'] * ($item['quantity'] ?? 1), 0, ',', '.'); ?>
+                                    </span>
                                 </div>
                                 <?php endforeach; ?>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">Subtotal:</span>
+                                    <span class="font-medium">Rp<?php echo $total_formatted; ?></span>
+                                </div>
                                 
                                 <?php if ($applied_coupon): ?>
-                                <div class="flex justify-between text-green-600">
-                                    <span>Discount (<?php echo $applied_coupon['code']; ?>):</span>
+                                <div class="flex justify-between items-center mb-2 text-green-600">
+                                    <span>Diskon (<?php echo htmlspecialchars($applied_coupon['code']); ?>):</span>
                                     <span>-Rp<?php echo $discount_amount_formatted; ?></span>
                                 </div>
                                 <?php endif; ?>
                                 
-                                <div class="border-t pt-3 flex justify-between text-lg font-bold">
+                                <div class="flex justify-between items-center text-lg font-bold text-gray-800 border-t pt-2">
                                     <span>Total:</span>
                                     <span class="text-green-600">Rp<?php echo $discounted_total_formatted; ?></span>
                                 </div>
                             </div>
                             
-                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                                <h3 class="font-semibold text-blue-800 mb-2">
-                                    <i class="fas fa-info-circle mr-2"></i>Payment Methods Available
-                                </h3>
-                                <div class="flex justify-center space-x-3">
-                                    <img src="https://via.placeholder.com/50x30/1f65ff/ffffff?text=OVO" alt="OVO" class="rounded">
-                                    <img src="https://via.placeholder.com/50x30/00aa5b/ffffff?text=DANA" alt="DANA" class="rounded">
-                                    <img src="https://via.placeholder.com/50x30/0066cc/ffffff?text=BCA" alt="BCA" class="rounded">
-                                    <img src="https://via.placeholder.com/50x30/e31e24/ffffff?text=Bank" alt="Bank" class="rounded">
-                                </div>
-                                <p class="text-xs text-blue-600 text-center mt-2">Secure payment via QR Code</p>
+                            <div class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                                <h4 class="font-semibold text-blue-800 mb-2">
+                                    <i class="fas fa-credit-card mr-2"></i>Metode Pembayaran
+                                </h4>
+                                <p class="text-sm text-blue-700">BCA Virtual Account</p>
+                                <p class="text-xs text-blue-600 mt-1">Transfer bank yang aman dan mudah</p>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-green-50 rounded-lg">
+                                <p class="text-sm text-green-800">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Akses kursus langsung setelah pembayaran terverifikasi
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -596,13 +731,12 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             <?php endif; ?>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-<?php if ($show_qr): ?>
     <script>
-        // Payment timer countdown
-        let timeLeft = 15 * 60; // 15 minutes in seconds
+        // Timer countdown untuk pembayaran (15 menit)
+        <?php if ($current_page_status === 'qr_payment'): ?>
+        let timeLeft = 15 * 60; // 15 menit dalam detik
         
         function updateTimer() {
             const minutes = Math.floor(timeLeft / 60);
@@ -610,19 +744,94 @@ if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['la
             const timerElement = document.querySelector('.payment-timer');
             
             if (timerElement) {
-                timerElement.innerHTML = `<i class="fas fa-clock mr-2"></i>Complete payment within ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} minutes`;
+                timerElement.innerHTML = `<i class="fas fa-clock mr-2"></i>Selesaikan pembayaran dalam ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} menit`;
             }
             
-            if (timeLeft > 0) {
-                timeLeft--;
-            } else {
-                clearInterval(timerInterval);
-                alert('Payment time expired. Please try again.');
+            if (timeLeft <= 0) {
+                // Timer habis, redirect ke halaman cart
+                alert('Waktu pembayaran telah habis. Silakan coba lagi.');
                 window.location.href = 'cart.php';
+                return;
             }
+            
+            // Ubah warna timer jika waktu tinggal sedikit
+            if (timeLeft <= 300 && timerElement) { // 5 menit terakhir
+                timerElement.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+            }
+            
+            timeLeft--;
         }
         
-        const timerInterval = setInterval(updateTimer, 1000);
-        updateTimer();
+        // Update timer setiap detik
+        setInterval(updateTimer, 1000);
+        updateTimer(); // Panggil sekali untuk inisialisasi
+        <?php endif; ?>
+        
+        // Validasi form sebelum submit
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const requiredFields = form.querySelectorAll('input[required]');
+                    let isValid = true;
+                    
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            isValid = false;
+                            field.classList.add('border-red-500');
+                        } else {
+                            field.classList.remove('border-red-500');
+                        }
+                    });
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Mohon lengkapi semua field yang wajib diisi.');
+                    }
+                });
+            });
+            
+            // Preview image sebelum upload
+            const fileInput = document.getElementById('proof_image');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validasi ukuran file (2MB)
+                        if (file.size > 2 * 1024 * 1024) {
+                            alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                            this.value = '';
+                            return;
+                        }
+                        
+                        // Validasi tipe file
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                        if (!allowedTypes.includes(file.type)) {
+                            alert('Format file tidak didukung. Gunakan JPG atau PNG.');
+                            this.value = '';
+                            return;
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Auto-format nomor telepon
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Hapus semua non-digit
+                
+                // Format nomor telepon Indonesia
+                if (value.startsWith('62')) {
+                    value = '0' + value.substring(2);
+                } else if (!value.startsWith('0') && value.length > 0) {
+                    value = '0' + value;
+                }
+                
+                e.target.value = value;
+            });
+        }
     </script>
-<?php endif; ?>
+</body>
+</html>

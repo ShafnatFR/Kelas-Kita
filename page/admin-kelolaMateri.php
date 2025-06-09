@@ -34,7 +34,7 @@ function fetchData(mysqli $conn, string $sql, string $types = '', array $params 
         $stmt->close();
         return false;
     }
-    
+
     if (strpos(strtoupper($sql), 'COUNT(') !== false || strpos(strtoupper($sql), 'SUM(') !== false ||
         strpos(strtoupper($sql), 'MAX(') !== false || strpos(strtoupper($sql), 'MIN(') !== false) {
         $data = $result->fetch_assoc();
@@ -44,19 +44,21 @@ function fetchData(mysqli $conn, string $sql, string $types = '', array $params 
             $data[] = $row;
         }
     }
-    
+
     $stmt->close();
     return $data;
 }
 
+// Query untuk statistik kelas (tetap ada karena mungkin ini adalah dashboard yang lebih luas)
 $kelas_stats_data = fetchData($conn, "
     SELECT
-        COUNT(CASE WHEN status_publikasi = 'approved' THEN 1 END) AS total_aktif,
+        COUNT(CASE WHEN status_publikasi = 'aktif' THEN 1 END) AS total_aktif,
         COUNT(CASE WHEN status_publikasi = 'pending' THEN 1 END) AS total_pending,
-        COUNT(CASE WHEN status_publikasi IN ('rejected', 'draft') THEN 1 END) AS total_nonaktif
+        COUNT(CASE WHEN status_publikasi IN ('non-aktif', 'rejected', 'draft') THEN 1 END) AS total_nonaktif
     FROM tb_kelas
 ");
 
+// Query untuk materi pending
 $totalMateriPendingResult = fetchData($conn, "
     SELECT
         tk.id_kelas,
@@ -73,6 +75,26 @@ $totalMateriPendingResult = fetchData($conn, "
     LIMIT 10
 ");
 
+// --- START: Query Baru untuk Materi Ditolak/Non-Aktif ---
+// Mengambil materi yang berstatus 'non-aktif'. Ini akan mencakup materi yang ditolak atau dinonaktifkan secara manual.
+$totalMateriRejectedNonAktifResult = fetchData($conn, "
+    SELECT
+        tk.id_kelas,
+        tk.nama_kelas,
+        tk.status_publikasi AS status_kelas_publikasi,
+        tm.id_materi,
+        tm.judul_materi,
+        tm.tgl_dibuat_materi,
+        tm.status AS status_materi
+    FROM tb_kelas tk
+    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
+    WHERE tm.status = 'non-aktif'
+    ORDER BY tm.tgl_dibuat_materi DESC
+    LIMIT 10
+");
+// --- END: Query Baru untuk Materi Ditolak/Non-Aktif ---
+
+// Query untuk materi aktif
 $totalMateriAktifResult = fetchData($conn, "
     SELECT
         tk.id_kelas,
@@ -89,21 +111,10 @@ $totalMateriAktifResult = fetchData($conn, "
     LIMIT 10
 ");
 
-$totalMateriNonaktifResult = fetchData($conn, "
-    SELECT
-        tk.id_kelas,
-        tk.nama_kelas,
-        tk.status_publikasi AS status_kelas_publikasi,
-        tm.id_materi,
-        tm.judul_materi,
-        tm.tgl_dibuat_materi,
-        tm.status AS status_materi
-    FROM tb_kelas tk
-    JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE tm.status = 'non-aktif'
-    ORDER BY tm.tgl_dibuat_materi DESC
-    LIMIT 10
-");
+// Note: totalMateriNonaktifResult tidak lagi digunakan secara terpisah
+// karena 'non-aktif' akan dicakup oleh totalMateriRejectedNonAktifResult.
+// Jika Anda ingin membedakan antara 'rejected' dan 'dinonaktifkan secara manual',
+// Anda perlu menambahkan kolom status baru di tb_materi (misalnya `rejection_reason`) atau mengubah enum status.
 
 $userData = fetchData($conn, "SELECT COUNT(*) as total_users FROM tb_user");
 $laporanData = fetchData($conn, "SELECT COUNT(*) as total_laporan FROM tb_laporan");
@@ -152,11 +163,18 @@ $namaAdmin = $_SESSION['username'];
         .stat-card.info { border-left-color: var(--bs-info); }
         .stat-card.warning { border-left-color: var(--bs-warning); }
         .stat-card.danger { border-left-color: var(--bs-danger); }
+
+        /* Custom badge styles for materi statuses */
+        .badge-status-pending { background-color: var(--bs-info); color: #fff; }
+        .badge-status-aktif { background-color: var(--bs-success); color: #fff; }
+        .badge-status-nonaktif { background-color: var(--bs-danger); color: #fff; }
+        .badge-status-rejected { background-color: var(--bs-warning); color: #fff; } /* Added for rejected/non-aktif */
+        .badge-status-default { background-color: var(--bs-secondary); color: #fff; } /* Fallback */
     </style>
 </head>
 <body class="bg-light">
     <?php include "adminSidebar.php"; ?>
-    
+
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="row mb-4">
@@ -168,7 +186,20 @@ $namaAdmin = $_SESSION['username'];
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
                 </div>
             </div>
-            
+
+            <?php
+            // Tampilkan pesan notifikasi jika ada
+            if (isset($_SESSION['message'])) {
+                $message_type = $_SESSION['message_type'] ?? 'info'; // Default to info
+                echo '<div class="alert alert-' . $message_type . ' alert-dismissible fade show" role="alert">';
+                echo htmlspecialchars($_SESSION['message']);
+                echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                echo '</div>';
+                unset($_SESSION['message']); // Hapus pesan setelah ditampilkan
+                unset($_SESSION['message_type']); // Hapus tipe pesan juga
+            }
+            ?>
+
             <div class="row mb-5 gy-4">
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card success shadow-sm h-100">
@@ -181,7 +212,7 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card info shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -205,7 +236,7 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-xl-3 col-md-6">
                     <div class="card stat-card warning shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -219,7 +250,7 @@ $namaAdmin = $_SESSION['username'];
                 </div>
             </div>
 
-            <div class="row mb-5 gy-4"> 
+            <div class="row mb-5 gy-4">
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-info text-white">
@@ -249,14 +280,9 @@ $namaAdmin = $_SESSION['username'];
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
                                                     <td>
                                                         <?php
-                                                        $status_materi_badge_class = 'badge ';
-                                                        if ($materi['status_materi'] === 'pending') {
-                                                            $status_materi_badge_class .= 'bg-info';
-                                                        } else {
-                                                            $status_materi_badge_class .= 'bg-secondary';
-                                                        }
+                                                        $status_materi_badge_class = ($materi['status_materi'] === 'pending') ? 'badge-status-pending' : 'badge-status-default';
+                                                        echo '<span class="badge ' . $status_materi_badge_class . '">' . htmlspecialchars(ucfirst($materi['status_materi'])) . '</span>';
                                                         ?>
-                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
                                                     </td>
                                                     <td>
                                                         <a href="admin-approveMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-success" title="Approve Materi">
@@ -277,6 +303,61 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
+
+                <!-- --- START: Tambahan Tabel Materi Ditolak/Non-Aktif Terbaru --- -->
+                <div class="col-lg-12">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Tabel Materi Ditolak/Non-Aktif</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Judul Materi</th>
+                                            <th>Tgl Dibuat</th>
+                                            <th>Status Materi</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($totalMateriRejectedNonAktifResult)): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php foreach ($totalMateriRejectedNonAktifResult as $materi): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
+                                                    <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
+                                                    <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $status_materi_badge_class = ($materi['status_materi'] === 'non-aktif') ? 'badge-status-nonaktif' : 'badge-status-default';
+                                                        echo '<span class="badge ' . $status_materi_badge_class . '">' . htmlspecialchars(ucfirst($materi['status_materi'])) . '</span>';
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-activateMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-success" title="Aktifkan Materi (Approve)">
+                                                            <i class="fas fa-check-circle"></i> Aktifkan
+                                                        </a>
+                                                        <a href="admin-deleteMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-danger" title="Hapus Materi" onclick="return confirm('Apakah Anda yakin ingin menghapus materi ini?');">
+                                                            <i class="fas fa-trash-alt"></i> Hapus
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data materi ditolak atau non-aktif.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- --- END: Tambahan Tabel Materi Ditolak/Non-Aktif Terbaru --- -->
 
                 <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
@@ -307,14 +388,9 @@ $namaAdmin = $_SESSION['username'];
                                                     <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
                                                     <td>
                                                         <?php
-                                                        $status_materi_badge_class = 'badge ';
-                                                        if ($materi['status_materi'] === 'aktif') {
-                                                            $status_materi_badge_class .= 'bg-success';
-                                                        } else {
-                                                            $status_materi_badge_class .= 'bg-secondary';
-                                                        }
+                                                        $status_materi_badge_class = ($materi['status_materi'] === 'aktif') ? 'badge-status-aktif' : 'badge-status-default';
+                                                        echo '<span class="badge ' . $status_materi_badge_class . '">' . htmlspecialchars(ucfirst($materi['status_materi'])) . '</span>';
                                                         ?>
-                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
                                                     </td>
                                                     <td>
                                                         <a href="admin-deactivateMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Materi" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan materi ini?');">
@@ -332,67 +408,9 @@ $namaAdmin = $_SESSION['username'];
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-12">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Tabel Materi Non-Aktif</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Nama Kelas</th>
-                                            <th>Judul Materi</th>
-                                            <th>Tgl Dibuat</th>
-                                            <th>Status Materi</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (!empty($totalMateriNonaktifResult)): ?>
-                                            <?php $counter = 1; ?>
-                                            <?php foreach ($totalMateriNonaktifResult as $materi): ?>
-                                                <tr>
-                                                    <th><?= $counter++ ?></th>
-                                                    <td><?= htmlspecialchars($materi['nama_kelas']) ?></td>
-                                                    <td><?= htmlspecialchars($materi['judul_materi']) ?></td>
-                                                    <td><?= (new DateTime($materi['tgl_dibuat_materi']))->format('d M Y') ?></td>
-                                                    <td>
-                                                        <?php
-                                                        $status_materi_badge_class = 'badge ';
-                                                        if ($materi['status_materi'] === 'non-aktif') {
-                                                            $status_materi_badge_class .= 'bg-danger';
-                                                        } else {
-                                                            $status_materi_badge_class .= 'bg-secondary';
-                                                        }
-                                                        ?>
-                                                        <span class="<?= $status_materi_badge_class ?>"><?= htmlspecialchars(ucfirst($materi['status_materi'])) ?></span>
-                                                    </td>
-                                                    <td>
-                                                        <a href="admin-activateMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-success" title="Aktifkan Materi">
-                                                            <i class="fas fa-check-circle"></i> Aktifkan
-                                                        </a>
-                                                        <a href="admin-deleteMateri.php?id=<?= $materi['id_materi'] ?>" class="btn btn-sm btn-warning text-dark" title="Hapus Materi" onclick="return confirm('Apakah Anda yakin ingin menghapus materi ini?');">
-                                                            <i class="fas fa-trash-alt"></i> Hapus
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data materi non-aktif.</td></tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </div> 
-    </div>  
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -39,19 +39,19 @@ function executeStatement(mysqli $conn, string $sql, string $types = '', array $
 }
 
 if (isset($_GET['id'])) {
-    $id_kelas = $_GET['id'];
+    $id_materi = $_GET['id'];
 
-    // Update status_publikasi menjadi 'non-aktif'
-    $sql = "UPDATE tb_kelas SET status_publikasi = 'non-aktif' WHERE id_kelas = ?";
-    if (executeStatement($conn, $sql, 'i', [$id_kelas])) {
-        $_SESSION['message'] = "Kelas berhasil dinonaktifkan.";
+    // Update status materi menjadi 'aktif'
+    $sql = "UPDATE tb_materi SET status = 'aktif' WHERE id_materi = ?";
+    if (executeStatement($conn, $sql, 'i', [$id_materi])) {
+        $_SESSION['message'] = "Materi berhasil di-approve/diaktifkan!";
         $_SESSION['message_type'] = "success";
     } else {
-        $_SESSION['message'] = "Gagal menonaktifkan kelas.";
+        $_SESSION['message'] = "Gagal meng-approve/mengaktifkan materi.";
         $_SESSION['message_type'] = "danger";
     }
 } else {
-    $_SESSION['message'] = "ID Kelas tidak ditemukan.";
+    $_SESSION['message'] = "ID Materi tidak ditemukan.";
     $_SESSION['message_type'] = "danger";
 }
 
@@ -60,6 +60,6 @@ if ($conn) {
     $conn->close();
 }
 
-header("Location: admin-kelolaKelas.php"); // Kembali ke halaman kelola kelas
+header("Location: admin-kelolaMateri.php"); // Kembali ke halaman kelola materi
 exit();
 ?>

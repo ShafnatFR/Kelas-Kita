@@ -192,17 +192,17 @@
                 Kelola Kelas
             </a>
             
-            <!-- <a class="nav-link" href="Admin-kelolaTransaksi.php">
+            <a class="nav-link" href="Admin-kelolaTransaksi.php">
                 <i class="fas fa-credit-card"></i>
                 Kelola Transaksi
-            </a> -->
+            </a>
             
             <a class="nav-link" href="admin-kelolaMateri.php">
                 <i class="fas fa-book-open"></i>
                 Kelola Materi
             </a>
             
-            <!-- <a class="nav-link" href="admin-kelolaReviewKomentar.php">
+            <a class="nav-link" href="admin-kelolaReviewKomentar.php">
                 <i class="fas fa-comments"></i>
                 Review & Komentar
             </a>
@@ -212,10 +212,10 @@
                 Pesan
             </a>
             
-            <a class="nav-link" href="laporan.php">
+            <a class="nav-link" href="admin-kelolaLaporan.php">
                 <i class="fas fa-chart-bar"></i>
                 Laporan
-            </a> -->
+            </a>
             
             <div class="sidebar-divider"></div>
             

@@ -114,11 +114,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit();
 }
 
-// Menghitung total keranjang
+// Fetch current prices for cart items from database
+$current_prices = [];
+if (isset($_SESSION['cart']) && is_array($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+    $item_ids = array_map(function($item) { return $item['id']; }, $_SESSION['cart']);
+    $ids_placeholder = implode(',', array_fill(0, count($item_ids), '?'));
+    $stmt = $conn->prepare("SELECT id_kelas, harga FROM tb_kelas WHERE id_kelas IN ($ids_placeholder)");
+    $types = str_repeat('i', count($item_ids));
+    $stmt->bind_param($types, ...$item_ids);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $current_prices[$row['id_kelas']] = $row['harga'];
+    }
+}
+
+// Calculate total using current prices
 $total = 0;
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
-        $total += $item['price'] * $item['quantity'];
+        $price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : ($item['price'] ?? 0);
+        $total += $price * $item['quantity'];
     }
 }
 
@@ -229,7 +245,10 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($_SESSION['cart'] as $index => $item): ?>
+                                    <?php
+                                    foreach ($_SESSION['cart'] as $item):
+                                        $price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : ($item['price'] ?? 0);
+                                    ?>
                                     <tr>
                                         <td width="100">
                                             <?php if (isset($item['image']) && !empty($item['image'])): ?>
@@ -244,7 +263,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                             <h6 class="mb-1"><?php echo htmlspecialchars($item['name']); ?></h6>
                                             <small class="text-muted"><?php echo htmlspecialchars($item['category']); ?></small>
                                         </td>
-                                        <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
+<td><?php echo 'Rp ' . number_format(intval($price), 0, ',', '.'); ?></td>
                                         <td>
                                             <form method="post" class="d-inline">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
@@ -252,7 +271,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                                 <input type="hidden" name="update_quantity" value="1">
                                             </form>
                                         </td>
-                                        <td>Rp <?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?></td>
+<td><?php echo 'Rp ' . number_format(intval($price * $item['quantity']), 0, ',', '.'); ?></td>
                                         <td>
                                             <form method="post">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
@@ -294,7 +313,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                         <h4 class="mb-4">Ringkasan Pesanan</h4>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
-                            <span>Rp <?php echo number_format($total, 0, ',', '.'); ?></span>
+<span><?php echo 'Rp ' . number_format(intval($total), 0, ',', '.'); ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-4">
                             <span>Pajak</span>

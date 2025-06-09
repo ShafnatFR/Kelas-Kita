@@ -3,7 +3,7 @@ session_start();
 require 'db.php';
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: loginAdmin.php");
+    header("Location: adminLogin.php");
     exit();
 }
 
