@@ -39,3 +39,66 @@ SELECT COUNT(*) as total_users FROM tb_dokumen WHERE status LIKE 'non-aktif';
 SELECT COUNT(*) as total_users FROM tb_transaksi;
 SELECT COUNT(*) as total_users FROM tb_transaksi WHERE status LIKE 'pending';
 SELECT COUNT(*) as total_users FROM tb_transaksi WHERE status LIKE 'acc';
+
+-- Kelola Laporan
+
+-- Count total laporan
+SELECT
+  COUNT(*)
+FROM
+  tb_laporan r
+JOIN
+  tb_user u ON u.id_user = r.id_user
+JOIN
+  tb_kelas k ON k.id_kelas = r.id_kelas;
+
+-- Count laporan berdasarkan kategori ('Penggunaan kata kasar')
+SELECT
+  r.id_report,
+  u.username,
+  k.nama_kelas,
+  r.kategori_report,
+  r.keterangan_report,
+  r.tgl_dibuat
+FROM
+  tb_laporan r
+JOIN
+  tb_user u ON u.id_user = r.id_user
+JOIN
+  tb_kelas k ON k.id_kelas = r.id_kelas
+WHERE
+  r.kategori_report LIKE 'Penggunaan kata kasar';
+
+-- Count laporan berdasarkan kategori ('Materi tidak relevan')
+SELECT
+  r.id_report,
+  u.username,
+  k.nama_kelas,
+  r.kategori_report,
+  r.keterangan_report,
+  r.tgl_dibuat
+FROM
+  tb_laporan r
+JOIN
+  tb_user u ON u.id_user = r.id_user
+JOIN
+  tb_kelas k ON k.id_kelas = r.id_kelas
+WHERE
+  r.kategori_report LIKE 'Materi tidak relevan';
+
+-- Count laporan berdasarkan kategori ('Pornografi')
+SELECT
+  r.id_report,
+  u.username,
+  k.nama_kelas,
+  r.kategori_report,
+  r.keterangan_report,
+  r.tgl_dibuat
+FROM
+  tb_laporan r
+JOIN
+  tb_user u ON u.id_user = r.id_user
+JOIN
+  tb_kelas k ON k.id_kelas = r.id_kelas
+WHERE
+  r.kategori_report LIKE 'Pornografi';
