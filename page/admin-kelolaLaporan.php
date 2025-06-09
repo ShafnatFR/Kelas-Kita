@@ -12,107 +12,112 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// --- QUERY UNTUK STATS KELAS ---
-// Query untuk total kelas dengan berbagai status
-$kelas_stats_query = $conn->prepare("
-    SELECT
-        COUNT(CASE WHEN status_publikasi = 'aktif' THEN 1 END) AS total_aktif,
-        COUNT(CASE WHEN status_publikasi = 'pending' THEN 1 END) AS total_pending,
-        COUNT(CASE WHEN status_publikasi = 'non-aktif' THEN 1 END) AS total_nonaktif
-    FROM tb_kelas
+// Filter berdasarkan status
+$filter_status = isset($_GET['status']) ? $_GET['status'] : '';
+
+// QUERY UNTUK COUNT
+// Count total laporan
+$countTL = $conn->prepare("
+    SELECT COUNT(*) as total_laporan
+    FROM tb_laporan r
+    JOIN tb_user u ON u.id_user = r.id_user
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas
 ");
-if (!$kelas_stats_query) {
-    die("Error preparing kelas_stats_query: " . $conn->error);
+if (!$countTL) {
+    die("Error preparing countTL: " . $conn->error);
 }
-$kelas_stats_query->execute();
-$kelas_stats_result = $kelas_stats_query->get_result();
-$kelas_stats_data = $kelas_stats_result->fetch_assoc();
+$countTL->execute();
+$tlData = $countTL->get_result()->fetch_assoc();
 
-
-// Query untuk mengambil total user
-$totalUser_stmt = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
-if (!$totalUser_stmt) {
-    die("Error preparing totalUser_stmt: " . $conn->error);
-}
-$totalUser_stmt->execute();
-$userData = $totalUser_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil total laporan
-$totalLaporan_stmt = $conn->prepare("SELECT COUNT(*) as total_laporan FROM tb_laporan");
-if (!$totalLaporan_stmt) {
-    die("Error preparing totalLaporan_stmt: " . $conn->error);
-}
-$totalLaporan_stmt->execute();
-$laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
-
-// --- PERUBAHAN UTAMA DI SINI: QUERY UNTUK DATA TRANSAKSI LANGSUNG DARI TABEL ---
-$transaksi_data_query = $conn->prepare("
-    SELECT
-        t.id_transaksi,
-        t.bukti_transaksi,
-        t.tgl_transaksi,
-        t.status AS status_transaksi,
-        k.nama_kelas,
-        k.harga AS harga_kelas,
-        u_user.username AS nama_user_pembeli,
-        u_mentor.username AS nama_mentor_kelas
-    FROM
-        tb_transaksi t
-    JOIN
-        tb_keranjang kk ON t.id_keranjang = kk.id_keranjang
-    JOIN
-        tb_kelas k ON kk.id_kelas = k.id_kelas
-    JOIN
-        tb_user u_user ON kk.id_user = u_user.id_user
-    JOIN
-        tb_mentor m ON k.id_mentor = m.id_mentor
-    JOIN
-        tb_user u_mentor ON m.id_user = u_mentor.id_user
-    ORDER BY t.tgl_transaksi DESC
+// Count total laporan Pornografi
+$countTLP = $conn->prepare("
+    SELECT COUNT(*) as total_pornografi
+    FROM tb_laporan r
+    JOIN tb_user u ON u.id_user = r.id_user
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas
+    WHERE r.kategori_report LIKE 'Pornografi'
 ");
-if (!$transaksi_data_query) {
-    die("Error preparing transaksi_data_query: " . $conn->error);
+if (!$countTLP) {
+    die("Error preparing countTLP: " . $conn->error);
 }
-$transaksi_data_query->execute();
-$transaksi_data_result = $transaksi_data_query->get_result();
+$countTLP->execute();
+$tlpData = $countTLP->get_result()->fetch_assoc();
 
-// Query untuk mengambil 10 kelas non-aktif terbaru
-$tbKelasNonAktif = $conn->prepare("
-    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
-    FROM tb_kelas
-    WHERE status_publikasi LIKE 'non-aktif'
-    ORDER BY tgl_dibuat DESC
-    LIMIT 10
+// Count total laporan Materi tidak relevan
+$countTLMTR = $conn->prepare("
+    SELECT COUNT(*) as total_materi_tidak_relevan
+    FROM tb_laporan r
+    JOIN tb_user u ON u.id_user = r.id_user
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas
+    WHERE r.kategori_report LIKE 'Materi tidak relevan'
 ");
-if (!$tbKelasNonAktif) {
-    die("Error preparing tbKelasNonAktif: " . $conn->error);
+if (!$countTLMTR) {
+    die("Error preparing countTLMTR: " . $conn->error);
 }
-$tbKelasNonAktif->execute();
-$tbKelasNonAktifResult = $tbKelasNonAktif->get_result();
+$countTLMTR->execute();
+$tlmrData = $countTLMTR->get_result()->fetch_assoc();
 
-// Query untuk mengambil 10 kelas aktif terbaru
-$tbKelasAktif = $conn->prepare("
-    SELECT k.id_kelas, k.nama_kelas, k.status_publikasi, u.username, k.tgl_dibuat
-    FROM tb_kelas k
-    JOIN tb_mentor m ON k.id_mentor=m.id_mentor
-    JOIN tb_user u ON m.id_user=u.id_user
-    WHERE status_publikasi LIKE 'aktif'
-    ORDER BY tgl_dibuat DESC
-    LIMIT 10
+// Count total laporan Penggunaan kata kasar
+$countTLPKK = $conn->prepare("
+    SELECT COUNT(*) as total_kata_kasar
+    FROM tb_laporan r
+    JOIN tb_user u ON u.id_user = r.id_user
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas
+    WHERE r.kategori_report LIKE 'Penggunaan kata kasar'
 ");
-if (!$tbKelasAktif) {
-    die("Error preparing tbKelasAktif: " . $conn->error);
+if (!$countTLPKK) {
+    die("Error preparing countTLPKK: " . $conn->error);
 }
-$tbKelasAktif->execute();
-$tbKelasAktifResult = $tbKelasAktif->get_result();
+$countTLPKK->execute();
+$tlpkkData = $countTLPKK->get_result()->fetch_assoc();
 
-// Data untuk statistik cards
+// QUERY UNTUK TABEL - Memasukkan filter status dan kolom status_laporan
+$base_query = "
+    SELECT r.id_report, u.username, k.nama_kelas, r.kategori_report, r.keterangan_report, r.tgl_dibuat, r.status_laporan
+    FROM tb_laporan r
+    JOIN tb_user u ON u.id_user = r.id_user
+    JOIN tb_kelas k ON k.id_kelas = r.id_kelas
+";
+
+$where_clause_p = " WHERE r.kategori_report LIKE 'Pornografi'";
+$where_clause_pkk = " WHERE r.kategori_report LIKE 'Penggunaan kata kasar'";
+$where_clause_mtr = " WHERE r.kategori_report LIKE 'Materi tidak relevan'";
+
+if (!empty($filter_status)) {
+    $where_clause_p .= " AND r.status_laporan = ?";
+    $where_clause_pkk .= " AND r.status_laporan = ?";
+    $where_clause_mtr .= " AND r.status_laporan = ?";
+}
+
+$order_by = " ORDER BY r.tgl_dibuat DESC";
+
+// Query laporan Pornografi untuk tabel
+$totalLaporanP = $conn->prepare($base_query . $where_clause_p . $order_by);
+if (!$totalLaporanP) { die("Error preparing totalLaporanP: " . $conn->error); }
+if (!empty($filter_status)) { $totalLaporanP->bind_param("s", $filter_status); }
+$totalLaporanP->execute();
+$pDataResult = $totalLaporanP->get_result();
+
+// Query laporan Penggunaan kata kasar untuk tabel
+$totalLaporanPkk = $conn->prepare($base_query . $where_clause_pkk . $order_by);
+if (!$totalLaporanPkk) { die("Error preparing totalLaporanPkk: " . $conn->error); }
+if (!empty($filter_status)) { $totalLaporanPkk->bind_param("s", $filter_status); }
+$totalLaporanPkk->execute();
+$pkkDataResult = $totalLaporanPkk->get_result();
+
+// Query laporan Materi tidak relevan untuk tabel
+$totalLaporanMtr = $conn->prepare($base_query . $where_clause_mtr . $order_by);
+if (!$totalLaporanMtr) { die("Error preparing totalLaporanMtr: " . $conn->error); }
+if (!empty($filter_status)) { $totalLaporanMtr->bind_param("s", $filter_status); }
+$totalLaporanMtr->execute();
+$mtrDataResult = $totalLaporanMtr->get_result();
+
+// Data untuk statistik cards - DIPERBAIKI sesuai dengan query count
 $stats = array(
-    'total_users' => $userData['total_users'] ?? 0,
-    'total_kelas_aktif' => $kelas_stats_data['total_aktif'] ?? 0,
-    'total_kelas_pending' => $kelas_stats_data['total_pending'] ?? 0,
-    'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0,
-    'total_laporan' => $laporanData['total_laporan'] ?? 0
+    'total_laporan' => $tlData['total_laporan'] ?? 0,
+    'total_pornografi' => $tlpData['total_pornografi'] ?? 0,
+    'total_materi_tidak_relevan' => $tlmrData['total_materi_tidak_relevan'] ?? 0,
+    'total_kata_kasar' => $tlpkkData['total_kata_kasar'] ?? 0,
 );
 
 $namaAdmin = $_SESSION['username'];
@@ -123,7 +128,7 @@ $namaAdmin = $_SESSION['username'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Transaksi</title>
+    <title>Kelola Laporan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -161,21 +166,55 @@ $namaAdmin = $_SESSION['username'];
                 <div class="col-12">
                     <h2 class="text-primary">
                         <i class="fas fa-tachometer-alt me-2"></i>
-                        Kelola Transaksi
+                        Kelola Laporan
                     </h2>
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
+                    <?php if (isset($_SESSION['message'])): ?>
+                        <div class="alert alert-<?= $_SESSION['message_type'] ?> alert-dismissible fade show" role="alert">
+                            <?= $_SESSION['message'] ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <?php 
+                            unset($_SESSION['message']);
+                            unset($_SESSION['message_type']);
+                        ?>
+                    <?php endif; ?>
                 </div>
             </div>
             
             <div class="row mb-5 gy-4">
                 <div class="col-xl-3 col-md-6">
-                    <div class="card stat-card success shadow-sm h-100">
+                    <div class="card stat-card primary shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Kelas Aktif</h6>
-                                <h3 class="text-success"><?= $stats['total_kelas_aktif'] ?></h3>
+                                <h6 class="card-title text-muted">Total Laporan</h6>
+                                <h3 class="text-primary"><?= $stats['total_laporan'] ?></h3>
                             </div>
-                            <i class="fas fa-book-open fa-2x text-success opacity-50"></i>
+                            <i class="fas fa-file-alt fa-2x text-primary opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card danger shadow-sm h-100">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted">Laporan Pornografi</h6>
+                                <h3 class="text-danger"><?= $stats['total_pornografi'] ?></h3>
+                            </div>
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card warning shadow-sm h-100">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title text-muted">Materi Tidak Relevan</h6>
+                                <h3 class="text-warning"><?= $stats['total_materi_tidak_relevan'] ?></h3>
+                            </div>
+                            <i class="fas fa-ban fa-2x text-warning opacity-50"></i>
                         </div>
                     </div>
                 </div>
@@ -184,45 +223,33 @@ $namaAdmin = $_SESSION['username'];
                     <div class="card stat-card info shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Kelas Pending</h6>
-                                <h3 class="text-info"><?= $stats['total_kelas_pending'] ?></h3>
+                                <h6 class="card-title text-muted">Kata Kasar</h6>
+                                <h3 class="text-info"><?= $stats['total_kata_kasar'] ?></h3>
                             </div>
-                            <i class="fas fa-hourglass-half fa-2x text-info opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stat-card danger shadow-sm h-100">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title text-muted">Total Kelas Non-Aktif</h6>
-                                <h3 class="text-danger"><?= $stats['total_kelas_nonaktif'] ?></h3>
-                            </div>
-                            <i class="fas fa-book-dead fa-2x text-danger opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stat-card warning shadow-sm h-100">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title text-muted">Total Laporan</h6>
-                                <h3 class="text-warning"><?= $stats['total_laporan'] ?></h3>
-                            </div>
-                            <i class="fas fa-file-alt fa-2x text-warning opacity-50"></i>
+                            <i class="fas fa-comment-slash fa-2x text-info opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="row mb-5 gy-4"> 
-                
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label for="filterStatus" class="form-label">Filter Status Laporan:</label>
+                    <select class="form-select" id="filterStatus" onchange="window.location.href='admin-kelolaLaporan.php?status=' + this.value;">
+                        <option value="">Semua Status</option>
+                        <option value="Belum Diproses" <?= ($filter_status == 'Belum Diproses') ? 'selected' : '' ?>>Belum Diproses</option>
+                        <option value="Diproses" <?= ($filter_status == 'Diproses') ? 'selected' : '' ?>>Diproses</option>
+                        <option value="Selesai" <?= ($filter_status == 'Selesai') ? 'selected' : '' ?>>Selesai</option>
+                        <option value="Ditolak" <?= ($filter_status == 'Ditolak') ? 'selected' : '' ?>>Ditolak</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-5">
                 <div class="col-lg-12">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Detail Transaksi</h5>
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Laporan Pornografi</h5>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -230,59 +257,171 @@ $namaAdmin = $_SESSION['username'];
                                     <thead class="table-light">
                                         <tr>
                                             <th>#</th>
-                                            <th>ID Transaksi</th>
-                                            <th>Nama Pembeli</th>
+                                            <th>ID Laporan</th>
+                                            <th>Username</th>
                                             <th>Nama Kelas</th>
-                                            <th>Harga Kelas</th>
-                                            <th>Nama Mentor</th>
-                                            <th>Bukti Transaksi</th>
-                                            <th>Tgl Transaksi</th>
-                                            <th>Status</th>
-                                            <th>Aksi</th>
+                                            <th>Kategori</th>
+                                            <th>Keterangan</th>
+                                            <th>Tanggal Dibuat</th>
+                                            <th>Status</th> <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php if ($transaksi_data_result->num_rows > 0): ?>
+                                        <?php if ($pDataResult->num_rows > 0): ?>
                                             <?php $counter = 1; ?>
-                                            <?php while ($transaksi = $transaksi_data_result->fetch_assoc()): ?>
+                                            <?php while ($laporan = $pDataResult->fetch_assoc()): ?>
                                                 <tr>
                                                     <th><?= $counter++ ?></th>
-                                                    <td><?= htmlspecialchars($transaksi['id_transaksi']) ?></td>
-                                                    <td><?= htmlspecialchars($transaksi['nama_user_pembeli']) ?></td>
-                                                    <td><?= htmlspecialchars($transaksi['nama_kelas']) ?></td>
-                                                    <td>Rp<?= number_format($transaksi['harga_kelas'], 2, ',', '.') ?></td>
-                                                    <td><?= htmlspecialchars($transaksi['nama_mentor_kelas']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['id_report']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['username']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['nama_kelas']) ?></td>
+                                                    <td><span class="badge bg-danger"><?= htmlspecialchars($laporan['kategori_report']) ?></span></td>
+                                                    <td><?= htmlspecialchars(substr($laporan['keterangan_report'], 0, 50)) . (strlen($laporan['keterangan_report']) > 50 ? '...' : '') ?></td>
+                                                    <td><?= (new DateTime($laporan['tgl_dibuat']))->format('d M Y H:i') ?></td>
                                                     <td>
-                                                        <?php if (!empty($transaksi['bukti_transaksi'])): ?>
-                                                            <a href="uploads/bukti_transaksi/<?= htmlspecialchars($transaksi['bukti_transaksi']) ?>" target="_blank" class="btn btn-sm btn-info">Lihat Bukti</a>
-                                                        <?php else: ?>
-                                                            Tidak ada
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td><?= (new DateTime($transaksi['tgl_transaksi']))->format('d M Y H:i') ?></td>
-                                                    <td>
-                                                        <span class="badge 
-                                                            <?php
-                                                                if ($transaksi['status_transaksi'] == 'pending') echo 'bg-warning text-dark';
-                                                                else if ($transaksi['status_transaksi'] == 'acc') echo 'bg-success';
-                                                                else echo 'bg-secondary';
-                                                            ?>
-                                                        ">
-                                                            <?= htmlspecialchars(ucfirst($transaksi['status_transaksi'])) ?>
-                                                        </span>
+                                                        <?php
+                                                        $status_badge_class = '';
+                                                        switch ($laporan['status_laporan']) {
+                                                            case 'Belum Diproses': $status_badge_class = 'bg-warning text-dark'; break;
+                                                            case 'Diproses': $status_badge_class = 'bg-info'; break;
+                                                            case 'Selesai': $status_badge_class = 'bg-success'; break;
+                                                            case 'Ditolak': $status_badge_class = 'bg-danger'; break;
+                                                            default: $status_badge_class = 'bg-secondary'; break;
+                                                        }
+                                                        ?>
+                                                        <span class="badge <?= $status_badge_class ?>"><?= htmlspecialchars($laporan['status_laporan']) ?></span>
                                                     </td>
                                                     <td>
-                                                        <?php if ($transaksi['status_transaksi'] == 'pending'): ?>
-                                                            <a href="admin-accTransaksi.php?id=<?= $transaksi['id_transaksi'] ?>" class="btn btn-sm btn-success me-1">ACC</a>
-                                                            <a href="admin-tolakTransaksi.php?id=<?= $transaksi['id_transaksi'] ?>" class="btn btn-sm btn-danger">Tolak</a>
-                                                        <?php else: ?>
-                                                            -
-                                                        <?php endif; ?>
+                                                        <a href="admin-detail-report.php?id=<?= $laporan['id_report'] ?>" class="btn btn-sm btn-primary">Detail</a>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="10" class="text-center text-muted p-3">Tidak ada data transaksi.</td></tr>
+                                            <tr><td colspan="9" class="text-center text-muted p-3">Tidak ada laporan pornografi.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-comment-slash me-2"></i>Laporan Penggunaan Kata Kasar</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>ID Laporan</th>
+                                            <th>Username</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Kategori</th>
+                                            <th>Keterangan</th>
+                                            <th>Tanggal Dibuat</th>
+                                            <th>Status</th> <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if ($pkkDataResult->num_rows > 0): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php while ($laporan = $pkkDataResult->fetch_assoc()): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($laporan['id_report']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['username']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['nama_kelas']) ?></td>
+                                                    <td><span class="badge bg-info"><?= htmlspecialchars($laporan['kategori_report']) ?></span></td>
+                                                    <td><?= htmlspecialchars(substr($laporan['keterangan_report'], 0, 50)) . (strlen($laporan['keterangan_report']) > 50 ? '...' : '') ?></td>
+                                                    <td><?= (new DateTime($laporan['tgl_dibuat']))->format('d M Y H:i') ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $status_badge_class = '';
+                                                        switch ($laporan['status_laporan']) {
+                                                            case 'Belum Diproses': $status_badge_class = 'bg-warning text-dark'; break;
+                                                            case 'Diproses': $status_badge_class = 'bg-info'; break;
+                                                            case 'Selesai': $status_badge_class = 'bg-success'; break;
+                                                            case 'Ditolak': $status_badge_class = 'bg-danger'; break;
+                                                            default: $status_badge_class = 'bg-secondary'; break;
+                                                        }
+                                                        ?>
+                                                        <span class="badge <?= $status_badge_class ?>"><?= htmlspecialchars($laporan['status_laporan']) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-detail-report.php?id=<?= $laporan['id_report'] ?>" class="btn btn-sm btn-primary">Detail</a>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="9" class="text-center text-muted p-3">Tidak ada laporan kata kasar.</td></tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Laporan Materi Tidak Relevan</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>ID Laporan</th>
+                                            <th>Username</th>
+                                            <th>Nama Kelas</th>
+                                            <th>Kategori</th>
+                                            <th>Keterangan</th>
+                                            <th>Tanggal Dibuat</th>
+                                            <th>Status</th> <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if ($mtrDataResult->num_rows > 0): ?>
+                                            <?php $counter = 1; ?>
+                                            <?php while ($laporan = $mtrDataResult->fetch_assoc()): ?>
+                                                <tr>
+                                                    <th><?= $counter++ ?></th>
+                                                    <td><?= htmlspecialchars($laporan['id_report']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['username']) ?></td>
+                                                    <td><?= htmlspecialchars($laporan['nama_kelas']) ?></td>
+                                                    <td><span class="badge bg-warning text-dark"><?= htmlspecialchars($laporan['kategori_report']) ?></span></td>
+                                                    <td><?= htmlspecialchars(substr($laporan['keterangan_report'], 0, 50)) . (strlen($laporan['keterangan_report']) > 50 ? '...' : '') ?></td>
+                                                    <td><?= (new DateTime($laporan['tgl_dibuat']))->format('d M Y H:i') ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $status_badge_class = '';
+                                                        switch ($laporan['status_laporan']) {
+                                                            case 'Belum Diproses': $status_badge_class = 'bg-warning text-dark'; break;
+                                                            case 'Diproses': $status_badge_class = 'bg-info'; break;
+                                                            case 'Selesai': $status_badge_class = 'bg-success'; break;
+                                                            case 'Ditolak': $status_badge_class = 'bg-danger'; break;
+                                                            default: $status_badge_class = 'bg-secondary'; break;
+                                                        }
+                                                        ?>
+                                                        <span class="badge <?= $status_badge_class ?>"><?= htmlspecialchars($laporan['status_laporan']) ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="admin-detail-report.php?id=<?= $laporan['id_report'] ?>" class="btn btn-sm btn-primary">Detail</a>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr><td colspan="9" class="text-center text-muted p-3">Tidak ada laporan materi tidak relevan.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -292,19 +431,22 @@ $namaAdmin = $_SESSION['username'];
                 </div>
             </div>
             
-            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
 <?php
 // --- Close statements dan connection ---
-if (isset($kelas_stats_query) && $kelas_stats_query) $kelas_stats_query->close();
-if (isset($totalUser_stmt) && $totalUser_stmt) $totalUser_stmt->close();
-if (isset($totalLaporan_stmt) && $totalLaporan_stmt) $totalLaporan_stmt->close();
-if (isset($transaksi_data_query) && $transaksi_data_query) $transaksi_data_query->close(); // Mengubah nama variabel
-if (isset($tbKelasNonAktif) && $tbKelasNonAktif) $tbKelasNonAktif->close();
-if (isset($tbKelasAktif) && $tbKelasAktif) $tbKelasAktif->close();
+if (isset($countTL) && $countTL) $countTL->close();
+if (isset($countTLP) && $countTLP) $countTLP->close();
+if (isset($countTLMTR) && $countTLMTR) $countTLMTR->close();
+if (isset($countTLPKK) && $countTLPKK) $countTLPKK->close();
+if (isset($totalLaporanP) && $totalLaporanP) $totalLaporanP->close();
+if (isset($totalLaporanPkk) && $totalLaporanPkk) $totalLaporanPkk->close();
+if (isset($totalLaporanMtr) && $totalLaporanMtr) $totalLaporanMtr->close();
 
 if ($conn) $conn->close();
 ?>
