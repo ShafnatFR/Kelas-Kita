@@ -212,7 +212,7 @@
                 Pesan
             </a>
             
-            <a class="nav-link" href="laporan.php">
+            <a class="nav-link" href="admin-kelolaLaporan.php">
                 <i class="fas fa-chart-bar"></i>
                 Laporan
             </a>
