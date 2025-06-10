@@ -194,7 +194,7 @@ $namaAdmin = $_SESSION['username'];
                     <div class="card stat-card info shadow-sm h-100">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title text-muted">Total Pengguna Terbaru (10)</h6>
+                                <h6 class="card-title text-muted">Total Pengguna Terbaru</h6>
                                 <h3 class="text-info"><?= $stats['total_user_terbaru'] ?></h3>
                             </div>
                             <i class="fas fa-user-plus fa-2x text-info opacity-50"></i>
@@ -308,66 +308,6 @@ $namaAdmin = $_SESSION['username'];
                                             <?php endforeach; ?>
                                         <?php else: ?>
                                             <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada pengguna non-aktif.</td></tr>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-warning text-white">
-                            <h5 class="mb-0"><i class="fas fa-flag me-2"></i>Laporan Pengguna</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Username</th>
-                                            <th>Role</th>
-                                            <th>Status</th>
-                                            <th>Isi Laporan</th>
-                                            <th>Tgl Laporan</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (!empty($tbUserDilaporkanResult)): ?>
-                                            <?php $counter = 1; ?>
-                                            <?php foreach ($tbUserDilaporkanResult as $user): ?>
-                                                <tr>
-                                                    <th><?= $counter++ ?></th>
-                                                    <td><?= htmlspecialchars($user['username']) ?></td>
-                                                    <td><?= htmlspecialchars(ucfirst($user['role'])) ?></td>
-                                                    <td>
-                                                        <?php
-                                                        $status_user_badge_class = 'badge ';
-                                                        if ($user['status'] === 'aktif') {
-                                                            $status_user_badge_class .= 'badge-status-aktif';
-                                                        } else {
-                                                            $status_user_badge_class .= 'badge-status-nonaktif';
-                                                        }
-                                                        ?>
-                                                        <span class="<?= $status_user_badge_class ?>"><?= htmlspecialchars(ucfirst($user['status'])) ?></span>
-                                                    </td>
-                                                    <td><?= htmlspecialchars($user['keterangan_report']) ?></td>
-                                                    <td><?= (new DateTime($user['tgl_laporan']))->format('d M Y, H:i') ?></td>
-                                                    <td>
-                                                        <a href="send_message.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary" title="Kirim Pesan">
-                                                            <i class="fas fa-envelope"></i> Pesan
-                                                        </a>
-                                                        <a href="admin-nonaktifkanUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Pengguna" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pengguna ini?');">
-                                                            <i class="fas fa-user-times"></i> Non-Aktifkan
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <tr><td colspan="7" class="text-center text-muted p-3">Tidak ada data laporan pengguna.</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
