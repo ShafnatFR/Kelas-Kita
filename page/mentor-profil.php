@@ -13,8 +13,8 @@ $message = "";
 // Ambil data mentor lengkap
 $mentor_query = $conn->prepare("
     SELECT 
-        u.id_user, u.nama_lengkap, u.username, u.email, u.no_telepon, u.fotoProfil, u.instagram, u.linkdin, u.twitter, u.github,
-        m.id_mentor, m.keahlian, m.pengalaman, m.deskripsi, m.website_url, m.status
+        u.id_user, u.nama_lengkap, u.username, u.email, u.fotoProfil, u.instagram, u.linkdin, u.twitter, u.github,
+        m.id_mentor, m.keahlian, m.pengalaman, m.status
     FROM tb_user u 
     JOIN tb_mentor m ON u.id_user = m.id_user 
     WHERE u.id_user = ?
@@ -62,7 +62,6 @@ $recent_classes = $recent_classes_query->get_result();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $nama_lengkap = $_POST['nama_lengkap'];
     $email = $_POST['email'];
-    $no_telepon = $_POST['no_telepon']; // Disesuaikan dengan struktur tabel
     $keahlian = $_POST['keahlian'];
     $pengalaman = $_POST['pengalaman'];
     $deskripsi = $_POST['deskripsi'];
@@ -73,8 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $website_url = $_POST['website_url'];
     
     // Update data user (sesuai struktur tabel tb_user)
-    $update_user = $conn->prepare("UPDATE tb_user SET nama_lengkap = ?, email = ?, no_telepon = ?, linkdin = ?, instagram = ?, twitter = ?, github = ? WHERE id_user = ?");
-    $update_user->bind_param("ssissssi", $nama_lengkap, $email, $no_telepon, $linkdin, $instagram, $twitter, $github, $user_id);
+    $update_user = $conn->prepare("UPDATE tb_user SET nama_lengkap = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ? WHERE id_user = ?");
+    $update_user->bind_param("ssssssi", $nama_lengkap, $email, $linkdin, $instagram, $twitter, $github, $user_id);
     
     // Update data mentor (sesuai struktur tabel tb_mentor)
     $update_mentor = $conn->prepare("UPDATE tb_mentor SET keahlian = ?, pengalaman = ?, deskripsi = ?, website_url = ? WHERE id_user = ?");
@@ -207,11 +206,6 @@ if (isset($_GET['msg'])) {
                                            value="<?php echo htmlspecialchars($mentor['email']); ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">No. Telepon</label>
-                                    <input type="number" class="form-control" name="no_telepon" 
-                                           value="<?php echo htmlspecialchars($mentor['no_telepon']); ?>" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
                                     <label class="form-label">Keahlian</label>
                                     <input type="text" class="form-control" name="keahlian" 
                                            value="<?php echo htmlspecialchars($mentor['keahlian'] ?? ''); ?>" 
@@ -257,12 +251,6 @@ if (isset($_GET['msg'])) {
                                     <input type="text" class="form-control" name="github" 
                                            value="<?php echo htmlspecialchars($mentor['github'] ?? ''); ?>" 
                                            placeholder="username">
-                                </div>
-                                <div class="col-md-12 mb-3">
-                                    <label class="form-label">Website URL</label>
-                                    <input type="url" class="form-control" name="website_url" 
-                                           value="<?php echo htmlspecialchars($mentor['website_url'] ?? ''); ?>" 
-                                           placeholder="https://yourwebsite.com">
                                 </div>
                             </div>
 
