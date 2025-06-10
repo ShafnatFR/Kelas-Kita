@@ -73,7 +73,7 @@ $namaAdmin = $_SESSION['username'];
 <body class="bg-light">
     <?php include "adminSidebar.php"; ?>
     
-    <div class="content-wrapper">
+    <div class="content-wrapper">    
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col-12">
