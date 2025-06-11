@@ -106,7 +106,7 @@ $totalMateriAktifResult = fetchData($conn, "
         tm.status AS status_materi
     FROM tb_kelas tk
     JOIN tb_materi tm ON tk.id_kelas = tm.id_kelas
-    WHERE tm.status = 'aktif'
+    WHERE tm.status = 'approved'
     ORDER BY tm.tgl_dibuat_materi DESC
     LIMIT 10
 ");
