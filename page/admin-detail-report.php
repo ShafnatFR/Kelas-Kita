@@ -17,7 +17,7 @@ $laporan = null;
 
 if ($report_id > 0) {
     $stmt = $conn->prepare("
-        SELECT r.id_report, u.username, k.nama_kelas, r.kategori_report, r.keterangan_report, r.tgl_dibuat, r.status_laporan
+        SELECT r.id_report, u.username, k.nama_kelas, r.kategori_report, r.keterangan_report, r.tgl_dibuat, r.status_laporan, r.id_kelas
         FROM tb_laporan r
         JOIN tb_user u ON u.id_user = r.id_user
         JOIN tb_kelas k ON k.id_kelas = r.id_kelas
@@ -72,8 +72,7 @@ $namaAdmin = $_SESSION['username'];
 </head>
 <body class="bg-light">
     <?php include "adminSidebar.php"; ?>
-    
-    <div class="content-wrapper">
+    <div class="content-wrapper">    
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col-12">
@@ -135,11 +134,13 @@ $namaAdmin = $_SESSION['username'];
                 <div class="card-body">
                     <form action="admin-process-report.php" method="POST">
                         <input type="hidden" name="id_report" value="<?= htmlspecialchars($laporan['id_report']) ?>">
+                        <input type="hidden" name="id_kelas_reported" value="<?= htmlspecialchars($laporan['id_kelas']) ?>">
                         
                         <div class="mb-3">
-                            <label for="status_aksi" class="form-label">Ubah Status Laporan:</label>
-                            <select class="form-select" id="status_aksi" name="status_aksi" required>
+                            <label for="report_status" class="form-label">Ubah Status Laporan:</label>
+                            <select class="form-select" id="report_status" name="report_status" required>
                                 <option value="">Pilih Status</option>
+                                <option value="Belum Diproses" <?= ($laporan['status_laporan'] == 'Belum Diproses') ? 'selected' : '' ?>>Belum Diproses</option>
                                 <option value="Diproses" <?= ($laporan['status_laporan'] == 'Diproses') ? 'selected' : '' ?>>Diproses</option>
                                 <option value="Selesai" <?= ($laporan['status_laporan'] == 'Selesai') ? 'selected' : '' ?>>Selesai</option>
                                 <option value="Ditolak" <?= ($laporan['status_laporan'] == 'Ditolak') ? 'selected' : '' ?>>Ditolak (Tidak ada pelanggaran)</option>
@@ -152,12 +153,13 @@ $namaAdmin = $_SESSION['username'];
                         </div>
 
                         <p class="text-muted">
-                            **Tindakan Lebih Lanjut (Contoh):**<br>
-                            <small>- Untuk menghapus konten terkait, Anda mungkin perlu navigasi ke halaman manajemen materi/kelas dan hapus secara manual.</small><br>
+                            **Tindakan Lainnya (Opsional):**<br>
+                            <small>- Anda dapat membekukan kelas terkait jika diperlukan.</small><br>
                             <small>- Untuk membekukan atau memblokir pengguna, Anda mungkin perlu navigasi ke halaman manajemen user.</small>
                         </p>
 
-                        <button type="submit" class="btn btn-success me-2"><i class="fas fa-save me-1"></i>Simpan Perubahan Status</button>
+                        <button type="submit" name="update_report_status" class="btn btn-success me-2"><i class="fas fa-save me-1"></i>Simpan Perubahan Status</button>
+                        <button type="submit" name="ban_class" class="btn btn-danger"><i class="fas fa-ban me-1"></i>Bekukan Kelas</button>
                         <a href="admin-kelolaLaporan.php" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Kembali ke Daftar Laporan</a>
                     </form>
                 </div>
@@ -165,7 +167,7 @@ $namaAdmin = $_SESSION['username'];
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

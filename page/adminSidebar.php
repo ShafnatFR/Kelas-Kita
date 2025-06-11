@@ -207,10 +207,10 @@
                 Review & Komentar
             </a>
             
-            <a class="nav-link" href="admin-kelolaPesan.php">
+            <!-- <a class="nav-link" href="admin-kelolaPesan.php">
                 <i class="fas fa-envelope"></i>
                 Pesan
-            </a>
+            </a> -->
             
             <a class="nav-link" href="admin-kelolaLaporan.php">
                 <i class="fas fa-chart-bar"></i>

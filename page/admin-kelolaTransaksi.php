@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan sudah menghubungkan ke database
+require 'db.php'; // Pastikan sudah menghubungkan ke database Anda
 
 // Pastikan pengguna sudah login dan memiliki role sebagai admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
@@ -8,6 +8,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Cek koneksi database
 if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
@@ -45,7 +46,7 @@ if (!$totalLaporan_stmt) {
 $totalLaporan_stmt->execute();
 $laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
 
-// --- PERUBAHAN UTAMA DI SINI: QUERY UNTUK DATA TRANSAKSI LANGSUNG DARI TABEL ---
+// --- QUERY UNTUK DATA TRANSAKSI LANGSUNG DARI TABEL ---
 $transaksi_data_query = $conn->prepare("
     SELECT
         t.id_transaksi,
@@ -75,36 +76,6 @@ if (!$transaksi_data_query) {
 }
 $transaksi_data_query->execute();
 $transaksi_data_result = $transaksi_data_query->get_result();
-
-// Query untuk mengambil 10 kelas non-aktif terbaru
-$tbKelasNonAktif = $conn->prepare("
-    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
-    FROM tb_kelas
-    WHERE status_publikasi LIKE 'non-aktif'
-    ORDER BY tgl_dibuat DESC
-    LIMIT 10
-");
-if (!$tbKelasNonAktif) {
-    die("Error preparing tbKelasNonAktif: " . $conn->error);
-}
-$tbKelasNonAktif->execute();
-$tbKelasNonAktifResult = $tbKelasNonAktif->get_result();
-
-// Query untuk mengambil 10 kelas aktif terbaru
-$tbKelasAktif = $conn->prepare("
-    SELECT k.id_kelas, k.nama_kelas, k.status_publikasi, u.username, k.tgl_dibuat
-    FROM tb_kelas k
-    JOIN tb_mentor m ON k.id_mentor=m.id_mentor
-    JOIN tb_user u ON m.id_user=u.id_user
-    WHERE status_publikasi LIKE 'aktif'
-    ORDER BY tgl_dibuat DESC
-    LIMIT 10
-");
-if (!$tbKelasAktif) {
-    die("Error preparing tbKelasAktif: " . $conn->error);
-}
-$tbKelasAktif->execute();
-$tbKelasAktifResult = $tbKelasAktif->get_result();
 
 // Data untuk statistik cards
 $stats = array(
@@ -157,6 +128,19 @@ $namaAdmin = $_SESSION['username'];
     
     <div class="content-wrapper">
         <div class="container-fluid">
+            <?php
+            // --- Feedback Message Display ---
+            if (isset($_SESSION['message'])) {
+                echo '<div class="alert alert-' . htmlspecialchars($_SESSION['message_type']) . ' alert-dismissible fade show mt-3" role="alert">';
+                echo htmlspecialchars($_SESSION['message']);
+                echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                echo '</div>';
+                // Clear the message after displaying it
+                unset($_SESSION['message']);
+                unset($_SESSION['message_type']);
+            }
+            ?>
+
             <div class="row mb-4">
                 <div class="col-12">
                     <h2 class="text-primary">
@@ -265,6 +249,7 @@ $namaAdmin = $_SESSION['username'];
                                                             <?php
                                                                 if ($transaksi['status_transaksi'] == 'pending') echo 'bg-warning text-dark';
                                                                 else if ($transaksi['status_transaksi'] == 'acc') echo 'bg-success';
+                                                                else if ($transaksi['status_transaksi'] == 'ditolak') echo 'bg-danger';
                                                                 else echo 'bg-secondary';
                                                             ?>
                                                         ">
@@ -273,8 +258,8 @@ $namaAdmin = $_SESSION['username'];
                                                     </td>
                                                     <td>
                                                         <?php if ($transaksi['status_transaksi'] == 'pending'): ?>
-                                                            <a href="admin-accTransaksi.php?id=<?= $transaksi['id_transaksi'] ?>" class="btn btn-sm btn-success me-1">ACC</a>
-                                                            <a href="admin-tolakTransaksi.php?id=<?= $transaksi['id_transaksi'] ?>" class="btn btn-sm btn-danger">Tolak</a>
+                                                            <a href="admin-accTransaksi.php?id=<?= urlencode($transaksi['id_transaksi']) ?>" class="btn btn-sm btn-success me-1">ACC</a>
+                                                            <a href="admin-tolakTransaksi.php?id=<?= urlencode($transaksi['id_transaksi']) ?>" class="btn btn-sm btn-danger">Tolak</a>
                                                         <?php else: ?>
                                                             -
                                                         <?php endif; ?>
@@ -292,8 +277,9 @@ $namaAdmin = $_SESSION['username'];
                 </div>
             </div>
             
-            </div>
+        </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
@@ -302,7 +288,10 @@ $namaAdmin = $_SESSION['username'];
 if (isset($kelas_stats_query) && $kelas_stats_query) $kelas_stats_query->close();
 if (isset($totalUser_stmt) && $totalUser_stmt) $totalUser_stmt->close();
 if (isset($totalLaporan_stmt) && $totalLaporan_stmt) $totalLaporan_stmt->close();
-if (isset($transaksi_data_query) && $transaksi_data_query) $transaksi_data_query->close(); // Mengubah nama variabel
+if (isset($transaksi_data_query) && $transaksi_data_query) $transaksi_data_query->close();
+// Note: tbKelasNonAktif and tbKelasAktif were queried but not used in the HTML of this specific page.
+// If they are not used, you can remove their queries and closing statements to optimize.
+// For now, keeping them as they might be intended for future use or other dashboard elements.
 if (isset($tbKelasNonAktif) && $tbKelasNonAktif) $tbKelasNonAktif->close();
 if (isset($tbKelasAktif) && $tbKelasAktif) $tbKelasAktif->close();
 
