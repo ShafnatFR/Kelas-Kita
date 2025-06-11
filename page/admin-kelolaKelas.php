@@ -71,7 +71,7 @@ $userData = fetchData($conn, "SELECT COUNT(*) as total_users FROM tb_user");
 // Kueri untuk statistik kelas (aktif, pending, non-aktif/ditolak/draft)
 $kelas_stats_data = fetchData($conn, "
     SELECT
-        COUNT(CASE WHEN k.status_publikasi = 'aktif' THEN 1 END) AS total_aktif,
+        COUNT(CASE WHEN k.status_publikasi = 'approved' THEN 1 END) AS total_aktif,
         COUNT(CASE WHEN k.status_publikasi = 'pending' THEN 1 END) AS total_pending,
         COUNT(CASE WHEN k.status_publikasi = 'non-aktif' THEN 1 END) AS total_nonaktif,
         COUNT(CASE WHEN k.status_publikasi = 'rejected' THEN 1 END) AS total_rejected,
@@ -108,7 +108,7 @@ $tbKelasRejectedResult = fetchData($conn, "
 $tbKelasNonAktifResult = fetchData($conn, "
     SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
     FROM tb_kelas
-    WHERE status_publikasi IN ('non-aktif', 'draft')
+    WHERE status_publikasi IN ('draft')
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
@@ -119,7 +119,7 @@ $tbKelasAktifResult = fetchData($conn, "
     FROM tb_kelas k
     JOIN tb_mentor m ON k.id_mentor = m.id_mentor
     JOIN tb_user u ON m.id_user = u.id_user
-    WHERE k.status_publikasi = 'aktif'
+    WHERE k.status_publikasi = 'approved'
     ORDER BY k.tgl_dibuat DESC
     LIMIT 10
 ");
