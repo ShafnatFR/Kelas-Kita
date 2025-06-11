@@ -318,6 +318,19 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 ---
 
+<section class="section-padding" style="background: linear-gradient(rgba(3, 3, 176, 0.47), rgb(15, 167, 232)), url('path-to-cta-bg.jpg'); background-size: cover; background-position: center; color: white;">
+    <div class="container text-center">
+        <h2 class="display-5 mb-4">Siap Meluncurkan Perjalanan Karier Baru Anda?</h2>
+        <p class="lead mb-5">Bergabunglah dengan ribuan profesional yang telah mengubah hidup mereka melalui pembelajaran yang transformatif</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="courses.php" class="btn btn-light btn-lg">Jelajahi Kursus</a>
+            <a href="register.php" class="btn btn-outline-light btn-lg">Mulai Sekarang</a>
+        </div>
+    </div>
+</section>
+
+---
+
 <section class="section-padding bg-light">
     <div class="container">
         <div class="row justify-content-center">
@@ -345,8 +358,7 @@ include_once("../Views/footerbootsrap.php");
 $conn->close(); // Tutup koneksi database setelah semua query selesai
 ?>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 
 <script>
     // Script untuk animasi scroll
@@ -411,6 +423,7 @@ $conn->close(); // Tutup koneksi database setelah semua query selesai
         })
     })()
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 </body>
 </html>
