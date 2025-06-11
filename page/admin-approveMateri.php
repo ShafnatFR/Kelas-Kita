@@ -42,7 +42,7 @@ if (isset($_GET['id'])) {
     $id_materi = $_GET['id'];
 
     // Update status materi menjadi 'aktif'
-    $sql = "UPDATE tb_materi SET status = 'aktif' WHERE id_materi = ?";
+    $sql = "UPDATE tb_materi SET status = 'approved' WHERE id_materi = ?";
     if (executeStatement($conn, $sql, 'i', [$id_materi])) {
         $_SESSION['message'] = "Materi berhasil di-approve/diaktifkan!";
         $_SESSION['message_type'] = "success";

@@ -197,10 +197,10 @@
                 Kelola Transaksi
             </a>
             
-            <a class="nav-link" href="admin-kelolaMateri.php">
+            <!-- <a class="nav-link" href="admin-kelolaMateri.php">
                 <i class="fas fa-book-open"></i>
                 Kelola Materi
-            </a>
+            </a> -->
             
             <a class="nav-link" href="admin-kelolaReviewKomentar.php">
                 <i class="fas fa-comments"></i>
@@ -226,7 +226,7 @@
         </nav>
         
         <div class="logout-section">
-            <a class="nav-link logout-link text-center" href="logout.php">
+            <a class="nav-link logout-link text-center" href="adminLogout.php">
                 <i class="fas fa-sign-out-alt"></i>
                 Logout
             </a>

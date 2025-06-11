@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
+<<<<<<< HEAD
+-- Generation Time: Jun 11, 2025 at 05:53 PM
+=======
 -- Generation Time: May 25, 2025 at 04:22 PM
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -68,10 +72,11 @@ INSERT INTO `tb_bootcamp_fitur` (`id`, `bootcamp_id`, `fitur`, `created_at`) VAL
 
 CREATE TABLE `tb_dokumen` (
   `id_dokumen` int(30) NOT NULL,
-  `file_path_dokumen` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending'
+  `file_path_dokumen` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+=======
 --
 -- Dumping data untuk tabel `tb_dokumen`
 --
@@ -147,6 +152,7 @@ INSERT INTO `tb_kategori_kelas` (`id_kategori_kelas`, `id_kelas`, `id_kategori`)
 (14, 15, 6),
 (15, 12, 5);
 
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 
 --
@@ -159,9 +165,16 @@ CREATE TABLE `tb_kelas` (
   `nama_kelas` varchar(255) NOT NULL,
   `kategori` enum('SQL','Design','Java','Web Development','Bisnis','Ekonomi','Psikologi','IT','Python') NOT NULL,
   `harga` decimal(10,2) NOT NULL,
-  `profil_kelas` varchar(100) DEFAULT NULL,
-  `badge` varchar(100) DEFAULT NULL,
+  `profil_kelas` varchar(100) DEFAULT 'default.jpg',
   `description` text DEFAULT NULL,
+<<<<<<< HEAD
+  `status_publikasi` enum('draft','non-aktif','pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `ada_sertifikat` int(1) DEFAULT NULL,
+  `tanggal_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+=======
   `status_publikasi` enum('draft','pending','approved','rejected') NOT NULL DEFAULT 'draft',
   `tanggal_rilis` date DEFAULT NULL,
   `ada_sertifikat` tinyint(1) DEFAULT 0,
@@ -182,6 +195,7 @@ ALTER TABLE `tb_kelas`
 ALTER TABLE `tb_kelas`
   MODIFY `id_kelas` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 
 --
@@ -195,6 +209,8 @@ CREATE TABLE `tb_keranjang` (
   `id_user` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+=======
 --
 -- Dumping data for table `tb_keranjang`
 --
@@ -225,6 +241,7 @@ CREATE TABLE `tb_komentar` (
   `id_kelas` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 
 --
@@ -232,40 +249,14 @@ CREATE TABLE `tb_komentar` (
 --
 
 CREATE TABLE `tb_laporan` (
-  `id_report` int(11) NOT NULL,
+  `id_report` int(30) NOT NULL,
   `kategori_report` enum('Penggunaan kata kasar','Materi tidak relevan','Pornografi') NOT NULL,
   `keterangan_report` varchar(100) NOT NULL,
+  `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_kelas` int(30) NOT NULL,
   `id_user` int(30) NOT NULL,
-  `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status_laporan` enum('Belum Diproses','Diproses','Selesai','Ditolak') NOT NULL DEFAULT 'Belum Diproses',
-  `catatan_admin` text DEFAULT NULL
+  `status_laporan` enum('Belum Diproses','Diproses','Selesai','Ditolak') NOT NULL DEFAULT 'Belum Diproses'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tb_laporan`
---
-
-INSERT INTO `tb_laporan` (`id_report`, `kategori_report`, `keterangan_report`, `id_kelas`, `id_user`, `tgl_dibuat`, `status_laporan`, `catatan_admin`) VALUES
-(1, 'Penggunaan kata kasar', 'Ada beberapa komentar yang menggunakan bahasa tidak pantas di kelas ini.', 1, 4, '2025-06-05 03:00:00', 'Belum Diproses', NULL),
-(3, 'Pornografi', 'Ditemukan konten yang tidak senonoh pada bagian diskusi kelas.', 3, 7, '2025-06-05 07:15:00', 'Selesai', NULL),
-(4, 'Penggunaan kata kasar', 'Mentor sering menggunakan kata-kata kasar saat menjelaskan materi.', 4, 4, '2025-06-06 02:00:00', 'Belum Diproses', NULL),
-(5, 'Materi tidak relevan', 'Video yang dilampirkan tidak berhubungan dengan topik materi.', 5, 5, '2025-06-06 06:45:00', 'Belum Diproses', NULL),
-(6, 'Materi tidak relevan', 'Keterangan laporan dummy ke-6: Materi tidak relevan.', 9, 39, '2025-05-18 09:38:10', 'Diproses', NULL),
-(7, 'Materi tidak relevan', 'Keterangan laporan dummy ke-7: Materi tidak relevan.', 15, 34, '2025-05-24 09:38:10', 'Diproses', NULL),
-(8, 'Pornografi', 'Keterangan laporan dummy ke-8: Konten tidak senonoh.', 16, 27, '2025-05-29 09:38:10', 'Belum Diproses', NULL),
-(9, 'Materi tidak relevan', 'Keterangan laporan dummy ke-9: Materi tidak relevan.', 14, 29, '2025-05-13 09:38:10', 'Selesai', NULL),
-(10, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-10: Ada beberapa kata kasar.', 11, 25, '2025-05-26 09:38:10', 'Belum Diproses', NULL),
-(11, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-11: Ada beberapa kata kasar.', 14, 30, '2025-05-27 09:38:10', 'Diproses', NULL),
-(12, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-12: Ada beberapa kata kasar.', 17, 34, '2025-05-12 09:38:10', 'Diproses', NULL),
-(13, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-13: Ada beberapa kata kasar.', 13, 30, '2025-05-27 09:38:10', 'Diproses', NULL),
-(14, 'Materi tidak relevan', 'Keterangan laporan dummy ke-14: Materi tidak relevan.', 13, 32, '2025-05-23 09:38:10', 'Belum Diproses', NULL),
-(15, 'Materi tidak relevan', 'Keterangan laporan dummy ke-15: Materi tidak relevan.', 14, 25, '2025-05-26 09:38:10', 'Belum Diproses', NULL),
-(16, 'Pornografi', 'Keterangan laporan dummy ke-16: Konten tidak senonoh.', 16, 35, '2025-05-23 09:38:10', 'Belum Diproses', NULL),
-(17, 'Pornografi', 'Keterangan laporan dummy ke-17: Konten tidak senonoh.', 11, 24, '2025-05-18 09:38:10', 'Belum Diproses', NULL),
-(18, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-18: Ada beberapa kata kasar.', 16, 26, '2025-05-11 09:38:10', 'Belum Diproses', NULL),
-(19, 'Pornografi', 'Keterangan laporan dummy ke-19: Konten tidak senonoh.', 17, 33, '2025-05-18 09:38:10', 'Diproses', NULL),
-(20, 'Penggunaan kata kasar', 'Keterangan laporan dummy ke-20: Ada beberapa kata kasar.', 9, 39, '2025-05-17 09:38:10', 'Belum Diproses', NULL);
 
 -- --------------------------------------------------------
 
@@ -278,10 +269,13 @@ CREATE TABLE `tb_materi` (
   `id_kelas` int(30) NOT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_materi` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending',
-  `tgl_dibuat_materi` timestamp NOT NULL DEFAULT current_timestamp()
+  `deskripsi_m` text NOT NULL,
+  `status` enum('pending','approved','non-aktif','rejected') NOT NULL DEFAULT 'pending',
+  `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+=======
 --
 -- Dumping data untuk tabel `tb_materi`
 --
@@ -298,6 +292,7 @@ INSERT INTO `tb_materi` (`id_materi`, `id_kelas`, `urutan`, `judul_materi`) VALU
 (9, 6, 2, 'Variabel dan Tipe Data'),
 (10, 7, 1, 'Pengenalan PHP');
 
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 
 --
@@ -307,9 +302,19 @@ INSERT INTO `tb_materi` (`id_materi`, `id_kelas`, `urutan`, `judul_materi`) VALU
 CREATE TABLE `tb_mentor` (
   `id_mentor` int(30) NOT NULL,
   `status` enum('Aktif','Non-Aktif') NOT NULL,
-  `id_user` int(30) NOT NULL
+  `id_user` int(30) NOT NULL,
+  `keahlian` varchar(255) DEFAULT NULL,
+  `pengalaman` text DEFAULT NULL,
+  `deskripsi` text DEFAULT NULL,
+  `website_url` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_pembayaran`
+=======
 --
 -- Dumping data untuk tabel `tb_mentor`
 --
@@ -326,29 +331,20 @@ INSERT INTO `tb_mentor` (`id_mentor`, `status`, `id_user`) VALUES
 
 --
 -- Struktur dari tabel `tb_notifikasi`
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 --
 
-CREATE TABLE `tb_notifikasi` (
-  `id_notifikasi` int(30) NOT NULL,
-  `id_user` int(30) NOT NULL,
-  `pesan_notif` text NOT NULL
+CREATE TABLE `tb_pembayaran` (
+  `id_pembayaran` int(11) NOT NULL,
+  `order_id` varchar(255) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `total_bayar` decimal(10,2) NOT NULL,
+  `metode_bayar` varchar(50) NOT NULL,
+  `nomor_va` varchar(255) DEFAULT NULL,
+  `bukti_transfer` varchar(255) DEFAULT NULL,
+  `tanggal_pembayaran` datetime DEFAULT current_timestamp(),
+  `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tb_notifikasi`
---
-
-INSERT INTO `tb_notifikasi` (`id_notifikasi`, `id_user`, `pesan_notif`) VALUES
-(1, 35, 'Pesan notifikasi dummy ke-1: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(2, 36, 'Pesan notifikasi dummy ke-2: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(3, 40, 'Pesan notifikasi dummy ke-3: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(4, 28, 'Pesan notifikasi dummy ke-4: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(5, 31, 'Pesan notifikasi dummy ke-5: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(6, 32, 'Pesan notifikasi dummy ke-6: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(7, 30, 'Pesan notifikasi dummy ke-7: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(8, 23, 'Pesan notifikasi dummy ke-8: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(9, 39, 'Pesan notifikasi dummy ke-9: Kelas baru tersedia atau ada balasan komentar di kelas Anda.'),
-(10, 29, 'Pesan notifikasi dummy ke-10: Kelas baru tersedia atau ada balasan komentar di kelas Anda.');
 
 -- --------------------------------------------------------
 CREATE TABLE `tb_pengembangan_profesional` (
@@ -387,22 +383,6 @@ CREATE TABLE `tb_progress_kelas` (
   `id_materi` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tb_progress_kelas`
---
-
-INSERT INTO `tb_progress_kelas` (`id_progress_kelas`, `id_kelas`, `id_user`, `id_materi`) VALUES
-(1, 16, 27, 10),
-(2, 17, 34, 15),
-(3, 10, 24, 21),
-(4, 13, 31, 20),
-(5, 12, 38, 22),
-(6, 17, 34, 24),
-(7, 14, 24, 10),
-(8, 17, 42, 27),
-(9, 12, 36, 19),
-(10, 16, 32, 22);
-
 -- --------------------------------------------------------
 
 --
@@ -413,27 +393,10 @@ CREATE TABLE `tb_review` (
   `id_review` int(30) NOT NULL,
   `bintang_review` enum('1','2','3','4','5') NOT NULL,
   `isi_review` varchar(100) NOT NULL,
-  `tgl_review` datetime NOT NULL DEFAULT current_timestamp(),
-  `id_user` int(11) NOT NULL,
-  `id_kelas` int(11) NOT NULL
+  `tgl_review` timestamp NOT NULL DEFAULT current_timestamp(),
+  `id_user` int(30) NOT NULL,
+  `id_kelas` int(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tb_review`
---
-
-INSERT INTO `tb_review` (`id_review`, `bintang_review`, `isi_review`, `tgl_review`, `id_user`, `id_kelas`) VALUES
-(1, '5', 'Kelasnya keren dan sangat membantu pemula seperti saya!', '2025-06-01 15:29:17', 4, 1),
-(2, '4', 'Review dummy ke-2: Kelas ini sangat informatif.', '2025-03-24 16:38:10', 32, 12),
-(3, '4', 'Review dummy ke-3: Kelas ini sangat luar biasa.', '2025-05-09 16:38:10', 34, 13),
-(4, '5', 'Review dummy ke-4: Kelas ini sangat bagus.', '2025-04-12 16:38:10', 41, 14),
-(5, '4', 'Review dummy ke-5: Kelas ini sangat bagus.', '2025-03-09 16:38:10', 35, 10),
-(6, '2', 'Review dummy ke-6: Kelas ini sangat bagus.', '2025-04-24 16:38:10', 37, 16),
-(7, '1', 'Review dummy ke-7: Kelas ini sangat kurang memuaskan.', '2025-03-10 16:38:10', 30, 15),
-(8, '4', 'Review dummy ke-8: Kelas ini sangat luar biasa.', '2025-05-18 16:38:10', 33, 16),
-(9, '5', 'Review dummy ke-9: Kelas ini sangat informatif.', '2025-05-05 16:38:10', 25, 9),
-(10, '5', 'Review dummy ke-10: Kelas ini sangat informatif.', '2025-03-23 16:38:10', 36, 15),
-(11, '5', 'Review dummy ke-11: Kelas ini sangat bagus.', '2025-03-13 16:38:10', 29, 13);
 
 -- --------------------------------------------------------
 
@@ -445,13 +408,14 @@ CREATE TABLE `tb_sub_materi` (
   `id_sub_materi` int(30) NOT NULL,
   `id_materi` int(30) NOT NULL,
   `id_dokumen` int(30) NOT NULL,
-  `id_video` int(30) NOT NULL,
+  `id_video` int(11) DEFAULT NULL,
   `urutan` int(11) DEFAULT 1,
   `judul_sub_materi` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending',
-  `tgl_dibuat_subMateri` timestamp NOT NULL DEFAULT current_timestamp()
+  `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+=======
 --
 -- Dumping data untuk tabel `tb_sub_materi`
 --
@@ -544,6 +508,7 @@ INSERT INTO `tb_sub_materi` (`id_sub_materi`, `id_materi`, `id_dokumen`, `id_vid
 (87, 19, 11, 2, 4, 'Sub Materi Dummy 87: Latihan Topik B', 'non-aktif', '2025-05-25 09:38:10'),
 (88, 22, 0, 9, 1, 'Sub Materi Dummy 88: Praktik Topik A', 'aktif', '2025-05-15 09:38:10');
 
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 CREATE TABLE `tb_testimoni` (
   `id` int(11) NOT NULL,
@@ -576,8 +541,8 @@ CREATE TABLE `tb_transaksi` (
   `id_user` int(30) NOT NULL,
   `id_keranjang` int(30) NOT NULL,
   `bukti_transaksi` varchar(50) NOT NULL,
-  `tgl_transaksi` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','acc','ditolak') NOT NULL DEFAULT 'pending'
+  `tgl_transaksi` date NOT NULL,
+  `status` enum('Completed','Pending','Cancelled') NOT NULL DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -619,6 +584,7 @@ CREATE TABLE `tb_user` (
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
   `username` varchar(30) NOT NULL,
+  `no_telepon` int(13) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('murid','mentor','admin') NOT NULL DEFAULT 'murid',
   `status` enum('aktif','non-aktif') NOT NULL DEFAULT 'aktif',
@@ -626,8 +592,6 @@ CREATE TABLE `tb_user` (
   `fotoProfil` varchar(50) NOT NULL,
   `bahasa` enum('Bahasa Indonesia','Inggris','Jepang') NOT NULL,
   `zona_waktu` enum('Jakarta','London','Tokyo') NOT NULL,
-  `balasan_ke_komentar` tinyint(1) NOT NULL,
-  `komentar_baru` tinyint(1) NOT NULL,
   `notifikasi_postingan_baru` tinyint(1) NOT NULL,
   `email` varchar(50) NOT NULL,
   `instagram` varchar(30) NOT NULL,
@@ -637,6 +601,8 @@ CREATE TABLE `tb_user` (
   `tgl_dibuat` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
+=======
 --
 -- Dumping data untuk tabel `tb_user`
 --
@@ -652,6 +618,7 @@ INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `passwo
 (16, '', '', 'coba db baru', '$2y$10$TW9ZWuqYnaZpmxwk1X9JNeCCepSGDxwBk.4V7oi2JwzAAzBNxjF6O', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', ''),
 (17, '', '', 'blabla', '$2y$10$4imiVUlOZFABSuRzavGqxeghZqhCIFY6JCyfVXRsj0fKWbxqBYQWi', 'mentor', NULL, '', 'Bahasa Indonesia', 'Jakarta', 0, 0, 0, '', '', '', '', '');
 
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- --------------------------------------------------------
 
 --
@@ -660,11 +627,12 @@ INSERT INTO `tb_user` (`id_user`, `first_name`, `last_name`, `username`, `passwo
 
 CREATE TABLE `tb_video` (
   `id_video` int(30) NOT NULL,
-  `file_path_video` varchar(255) NOT NULL,
-  `status` enum('pending','aktif','non-aktif') NOT NULL DEFAULT 'pending'
+  `file_path_video` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+<<<<<<< HEAD
+=======
 -- Dumping data untuk tabel `tb_video`
 --
 
@@ -675,6 +643,7 @@ INSERT INTO `tb_video` (`id_video`, `file_path_video`) VALUES
 (4, '../uploads/video/68330a508fd51_lv_7392906537750072583_20240905064053.mp4');
 
 --
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 -- Indexes for dumped tables
 --
 
@@ -685,6 +654,13 @@ ALTER TABLE `tb_dokumen`
   ADD PRIMARY KEY (`id_dokumen`);
 
 --
+<<<<<<< HEAD
+-- Indexes for table `tb_kelas`
+--
+ALTER TABLE `tb_kelas`
+  ADD PRIMARY KEY (`id_kelas`),
+  ADD KEY `fk_kelas_mentor` (`id_mentor`);
+=======
 -- Indeks untuk tabel `tb_kategori`
 --
 ALTER TABLE `tb_kategori`
@@ -704,6 +680,7 @@ ALTER TABLE `tb_kategori_kelas`
 ALTER TABLE `tb_kelas`
   ADD PRIMARY KEY (`id_kelas`),
   ADD KEY `fkid_mentor_mentor` (`id_mentor`);
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- Indeks untuk tabel `tb_keranjang`
@@ -714,12 +691,21 @@ ALTER TABLE `tb_keranjang`
   ADD KEY `fkid_kelas_keranjang` (`id_kelas`);
 
 --
+<<<<<<< HEAD
+-- Indexes for table `tb_laporan`
+--
+ALTER TABLE `tb_laporan`
+  ADD PRIMARY KEY (`id_report`),
+  ADD KEY `id_kelas` (`id_kelas`),
+  ADD KEY `id_user` (`id_user`);
+=======
 -- Indexes for table `tb_komentar`
 --
 ALTER TABLE `tb_komentar`
   ADD PRIMARY KEY (`id_komentar`),
   ADD KEY `fkid_kelas` (`id_kelas`),
   ADD KEY `fkid_user` (`id_user`);
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- Indexes for table `tb_materi`
@@ -736,6 +722,23 @@ ALTER TABLE `tb_mentor`
   ADD KEY `fkid_user_user` (`id_user`);
 
 --
+<<<<<<< HEAD
+-- Indexes for table `tb_progress_kelas`
+--
+ALTER TABLE `tb_progress_kelas`
+  ADD KEY `id_user` (`id_user`),
+  ADD KEY `id_kelas` (`id_kelas`),
+  ADD KEY `id_materi` (`id_materi`);
+
+--
+-- Indexes for table `tb_review`
+--
+ALTER TABLE `tb_review`
+  ADD PRIMARY KEY (`id_review`);
+
+--
+-- Indexes for table `tb_sub_materi`
+=======
 -- Indeks untuk tabel `tb_pembayaran`
 --
 ALTER TABLE `tb_pembayaran`
@@ -751,12 +754,22 @@ ALTER TABLE `tb_pengembangan_profesional`
 
 --
 -- Indeks untuk tabel `tb_sub_materi`
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 --
 ALTER TABLE `tb_sub_materi`
   ADD PRIMARY KEY (`id_sub_materi`),
   ADD KEY `fkid_video_video` (`id_video`),
-  ADD KEY `fkid_dokumen_dokumen` (`id_dokumen`),
-  ADD KEY `fkid_materi_materi` (`id_materi`);
+  ADD KEY `fkid_materi_materi` (`id_materi`),
+  ADD KEY `fkid_dokumen_dokumen` (`id_dokumen`);
+
+--
+-- Indexes for table `tb_transaksi`
+--
+ALTER TABLE `tb_transaksi`
+  ADD PRIMARY KEY (`id_transaksi`),
+  ADD KEY `id_kelas` (`id_kelas`),
+  ADD KEY `id_user` (`id_user`),
+  ADD KEY `id_keranjang` (`id_keranjang`);
 
 --
 -- Indeks untuk tabel `tb_testimoni`
@@ -789,6 +802,30 @@ ALTER TABLE `tb_video`
 --
 
 --
+<<<<<<< HEAD
+-- AUTO_INCREMENT for table `tb_dokumen`
+--
+ALTER TABLE `tb_dokumen`
+  MODIFY `id_dokumen` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `tb_kelas`
+--
+ALTER TABLE `tb_kelas`
+  MODIFY `id_kelas` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `tb_laporan`
+--
+ALTER TABLE `tb_laporan`
+  MODIFY `id_report` int(30) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tb_materi`
+--
+ALTER TABLE `tb_materi`
+  MODIFY `id_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+=======
 -- AUTO_INCREMENT untuk tabel `tb_kategori`
 --
 ALTER TABLE `tb_kategori`
@@ -805,12 +842,23 @@ ALTER TABLE `tb_kelas`
 --
 ALTER TABLE `tb_materi`
   MODIFY `id_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_mentor`
 --
 ALTER TABLE `tb_mentor`
+<<<<<<< HEAD
+  MODIFY `id_mentor` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- AUTO_INCREMENT for table `tb_review`
+--
+ALTER TABLE `tb_review`
+  MODIFY `id_review` int(30) NOT NULL AUTO_INCREMENT;
+=======
   MODIFY `id_mentor` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_pembayaran`
@@ -828,7 +876,13 @@ ALTER TABLE `tb_pengembangan_profesional`
 -- AUTO_INCREMENT untuk tabel `tb_sub_materi`
 --
 ALTER TABLE `tb_sub_materi`
-  MODIFY `id_sub_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+  MODIFY `id_sub_materi` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `tb_transaksi`
+--
+ALTER TABLE `tb_transaksi`
+  MODIFY `id_transaksi` int(30) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_testimoni`
@@ -846,19 +900,43 @@ ALTER TABLE `tb_transaksi`
 -- AUTO_INCREMENT untuk tabel `tb_user`
 --
 ALTER TABLE `tb_user`
+<<<<<<< HEAD
+  MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+=======
   MODIFY `id_user` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_video`
 --
 ALTER TABLE `tb_video`
+<<<<<<< HEAD
+  MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+=======
   MODIFY `id_video` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
+<<<<<<< HEAD
+-- Constraints for table `tb_kelas`
+--
+ALTER TABLE `tb_kelas`
+  ADD CONSTRAINT `fk_kelas_mentor` FOREIGN KEY (`id_mentor`) REFERENCES `tb_mentor` (`id_mentor`);
+
+--
+-- Constraints for table `tb_laporan`
+--
+ALTER TABLE `tb_laporan`
+  ADD CONSTRAINT `tb_laporan_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`),
+  ADD CONSTRAINT `tb_laporan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`);
+
+--
+-- Constraints for table `tb_materi`
+=======
 -- Ketidakleluasaan untuk tabel `tb_kelas`
 --
 ALTER TABLE `tb_kelas`
@@ -866,9 +944,10 @@ ALTER TABLE `tb_kelas`
 
 --
 -- Ketidakleluasaan untuk tabel `tb_materi`
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 --
 ALTER TABLE `tb_materi`
-  ADD CONSTRAINT `fkid_kelas_kelas` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`);
+  ADD CONSTRAINT `fkid_kelas_kelas` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `tb_mentor`
@@ -877,6 +956,17 @@ ALTER TABLE `tb_mentor`
   ADD CONSTRAINT `fkid_user_user` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`);
 
 --
+<<<<<<< HEAD
+-- Constraints for table `tb_progress_kelas`
+--
+ALTER TABLE `tb_progress_kelas`
+  ADD CONSTRAINT `tb_progress_kelas_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`),
+  ADD CONSTRAINT `tb_progress_kelas_ibfk_2` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`),
+  ADD CONSTRAINT `tb_progress_kelas_ibfk_3` FOREIGN KEY (`id_materi`) REFERENCES `tb_materi` (`id_materi`);
+
+--
+-- Constraints for table `tb_sub_materi`
+=======
 -- Ketidakleluasaan untuk tabel `tb_pembayaran`
 --
 ALTER TABLE `tb_pembayaran`
@@ -884,11 +974,20 @@ ALTER TABLE `tb_pembayaran`
 
 --
 -- Ketidakleluasaan untuk tabel `tb_sub_materi`
+>>>>>>> 108f9f33fda58bcc923cfe73f34db186b4d6b123
 --
 ALTER TABLE `tb_sub_materi`
   ADD CONSTRAINT `fkid_dokumen_dokumen` FOREIGN KEY (`id_dokumen`) REFERENCES `tb_dokumen` (`id_dokumen`),
   ADD CONSTRAINT `fkid_materi_materi` FOREIGN KEY (`id_materi`) REFERENCES `tb_materi` (`id_materi`),
   ADD CONSTRAINT `fkid_video_video` FOREIGN KEY (`id_video`) REFERENCES `tb_video` (`id_video`);
+
+--
+-- Constraints for table `tb_transaksi`
+--
+ALTER TABLE `tb_transaksi`
+  ADD CONSTRAINT `tb_transaksi_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `tb_kelas` (`id_kelas`),
+  ADD CONSTRAINT `tb_transaksi_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `tb_user` (`id_user`),
+  ADD CONSTRAINT `tb_transaksi_ibfk_3` FOREIGN KEY (`id_keranjang`) REFERENCES `tb_keranjang` (`id_keranjang`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

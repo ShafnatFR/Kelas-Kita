@@ -20,7 +20,7 @@
             <a class="nav-link active" href="kelola-kelas.php">Kelola Kelas</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="kelola-transaksi.php">Kelola Transaksi</a>
+            <a class="nav-link" href="kelola-transaksi.php">Lihat Transaksi</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="kelola-materi.php">Kelola Materi</a>
@@ -28,9 +28,9 @@
         <li class="nav-item">
             <a class="nav-link" href="reviews-comments.php">Review & Komentar</a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="pesan-mentor.php">Pesan</a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link" href="mentor-profil.php">Profil</a>
         </li>
