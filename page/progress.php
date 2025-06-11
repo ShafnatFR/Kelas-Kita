@@ -1,5 +1,6 @@
 <?php
 session_start();
+$site_name = "Kelas Kita";
 include "db.php";  // koneksi database
 if (!isset($_SESSION['id'])) {
     header("Location: ../login.php");
@@ -9,7 +10,7 @@ if (!isset($_SESSION['id'])) {
 $id_user = $_SESSION['id'];
 
 // Ambil kelas yang sudah dibeli user dengan status Completed
-$sql = "SELECT k.id_kelas, k.nama_kelas, k.badge 
+$sql = "SELECT k.id_kelas, k.nama_kelas 
         FROM tb_kelas k
         JOIN tb_transaksi t ON k.id_kelas = t.id_kelas
         WHERE t.id_user = ? AND t.status = 'Completed'";
@@ -18,7 +19,6 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_user);
 $stmt->execute();
 $result = $stmt->get_result();
-
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +28,9 @@ $result = $stmt->get_result();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kelas Saya - KelasKita</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         header {
             background-color: rgb(22, 137, 213);
@@ -45,11 +47,8 @@ $result = $stmt->get_result();
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php while ($kelas = $result->fetch_assoc()): ?>
                     <div class="bg-white rounded-lg shadow-md p-5">
-                        <div class="flex items-center justify-between mb-3">
+                        <div class="mb-3">
                             <h2 class="text-xl font-semibold"><?php echo htmlspecialchars($kelas['nama_kelas']); ?></h2>
-                            <?php if (!empty($kelas['badge'])): ?>
-                                <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded"><?php echo htmlspecialchars($kelas['badge']); ?></span>
-                            <?php endif; ?>
                         </div>
 
                         <?php
@@ -87,9 +86,8 @@ $result = $stmt->get_result();
         <?php else: ?>
             <p class="text-gray-600">Belum ada kelas yang dibeli.</p>
         <?php endif; ?>
-
     </div>
-    <?php include "../Views/footer.php"; ?>
+    <?php include_once(__DIR__ . "/../Views/footerbootsrap.php"); ?>
 </body>
 
 </html>

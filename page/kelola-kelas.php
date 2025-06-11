@@ -1,282 +1,186 @@
 <?php
 session_start();
 
-// Pastikan path ke file db.php benar dan file ada
-$db_path = 'db.php';
-if (!file_exists($db_path)) {
-    die("Error: File db.php tidak ditemukan di path: " . $db_path);
-}
+// --- START: Validasi dan Inisialisasi ---
 
-require $db_path;
+// Pastikan path ke file db.php benar
+require 'db.php';
 
 // Validasi koneksi database
-if (!isset($conn) || $conn === null) {
-    die("Error: Koneksi database gagal. Pastikan file db.php mengembalikan variabel \$conn yang valid.");
+if (!isset($conn) || $conn->connect_error) {
+    die("Error: Koneksi database gagal. Pesan: " . $conn->connect_error);
 }
 
-// Cek koneksi database
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Validasi session
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'mentor') {
+// Validasi session mentor
+if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'mentor' || !isset($_SESSION['id'])) {
     header("Location: HalamanSignIn.php");
     exit();
 }
 
-// Validasi session ID
-if (!isset($_SESSION['id']) || empty($_SESSION['id'])) {
-    die("Error: Session ID tidak valid. Silakan login ulang.");
-}
+$user_id = $_SESSION['id'];
+$id_mentor = 0;
+$message = "";
 
-$user_id = $_SESSION['id']; // ID User dari sesi
-$message = ""; // Untuk pesan feedback
-
-// --- START: Inisialisasi id_mentor ---
-$id_mentor = 0; // Default value
-
+// Ambil id_mentor berdasarkan id_user yang login
 try {
-    // Dapatkan id_mentor berdasarkan id_user yang login
     $mentor_query = $conn->prepare("SELECT id_mentor FROM tb_mentor WHERE id_user = ?");
-    if (!$mentor_query) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
+    if (!$mentor_query) throw new Exception("Prepare failed: " . $conn->error);
     
     $mentor_query->bind_param("i", $user_id);
     $mentor_query->execute();
     $mentor_result = $mentor_query->get_result();
 
-    if ($mentor_result->num_rows > 0) {
-        $mentor_row = $mentor_result->fetch_assoc();
+    if ($mentor_row = $mentor_result->fetch_assoc()) {
         $id_mentor = $mentor_row['id_mentor'];
     } else {
+        // Jika mentor belum ada, bisa ditambahkan di sini atau dilempar error
         throw new Exception("Data mentor tidak ditemukan untuk user ID: $user_id");
     }
     $mentor_query->close();
 } catch (Exception $e) {
-    die("Error saat mengambil data mentor: " . $e->getMessage());
-}
-
-// Validasi id_mentor
-if ($id_mentor <= 0) {
-    die("Error: ID Mentor tidak valid ($id_mentor). Silakan hubungi admin.");
+    die("Error Kritis: " . $e->getMessage());
 }
 
 // --- START: Penanganan Aksi (Ajukan Publikasi) ---
 if (isset($_GET['action']) && $_GET['action'] === 'submit_for_review' && isset($_GET['id_kelas'])) {
     $id_kelas_to_submit = (int)$_GET['id_kelas'];
-    $debug_info = []; // Array untuk menyimpan info debug
 
-    if ($id_kelas_to_submit <= 0) {
-        $message = "ID Kelas tidak valid.";
-    } else {
+    if ($id_kelas_to_submit > 0) {
+        $conn->begin_transaction();
         try {
-            // Ambil data kelas lengkap untuk validasi
-            $check_stmt = $conn->prepare("
-                SELECT id_kelas, nama_kelas, status_publikasi, tanggal_update 
-                FROM tb_kelas 
-                WHERE id_kelas = ? AND id_mentor = ?
-            ");
-            
-            if (!$check_stmt) {
-                throw new Exception("Prepare failed: " . $conn->error);
-            }
-            
+            // Cek status kelas saat ini milik mentor ini
+            $check_stmt = $conn->prepare("SELECT nama_kelas, status_publikasi FROM tb_kelas WHERE id_kelas = ? AND id_mentor = ?");
+            if (!$check_stmt) throw new Exception("Prepare check failed: " . $conn->error);
             $check_stmt->bind_param("ii", $id_kelas_to_submit, $id_mentor);
             $check_stmt->execute();
             $check_result = $check_stmt->get_result();
 
-            if ($check_result->num_rows > 0) {
-                $class_data = $check_result->fetch_assoc();
+            if ($class_data = $check_result->fetch_assoc()) {
                 $current_status = $class_data['status_publikasi'];
-                $debug_info[] = "Status sebelum update: " . $current_status;
-                
-                // Validasi status yang diizinkan untuk diajukan
-                $allowed_statuses = ['draft', 'rejected'];
-                
-                if (in_array($current_status, $allowed_statuses)) {
-                    // Gunakan transaksi untuk memastikan konsistensi data
-                    $conn->begin_transaction();
+                if (in_array($current_status, ['draft', 'rejected'])) {
+                    $update_stmt = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'pending' WHERE id_kelas = ? AND id_mentor = ?");
+                    if (!$update_stmt) throw new Exception("Prepare update failed: " . $conn->error);
+                    $update_stmt->bind_param("ii", $id_kelas_to_submit, $id_mentor);
+                    $update_stmt->execute();
                     
-                    try {
-                        // Update dengan WHERE condition yang lebih spesifik
-                        $update_status_stmt = $conn->prepare("
-                            UPDATE tb_kelas 
-                            SET status_publikasi = 'pending' 
-                            WHERE id_kelas = ? 
-                            AND id_mentor = ? 
-                            AND status_publikasi = ?
-                        ");
-                        
-                        if (!$update_status_stmt) {
-                            throw new Exception("Prepare update failed: " . $conn->error);
-                        }
-                        
-                        $update_status_stmt->bind_param("iis", $id_kelas_to_submit, $id_mentor, $current_status);
-                        $update_result = $update_status_stmt->execute();
-                        $affected_rows = $conn->affected_rows;
-                        
-                        $debug_info[] = "Update executed: " . ($update_result ? 'SUCCESS' : 'FAILED');
-                        $debug_info[] = "Affected rows: " . $affected_rows;
-                        
-                        if ($update_result && $affected_rows > 0) {
-                            // Verifikasi update berhasil dengan query SELECT
-                            $verify_stmt = $conn->prepare("
-                                SELECT status_publikasi, tanggal_update 
-                                FROM tb_kelas 
-                                WHERE id_kelas = ?
-                            ");
-                            
-                            if (!$verify_stmt) {
-                                throw new Exception("Prepare verify failed: " . $conn->error);
-                            }
-                            
-                            $verify_stmt->bind_param("i", $id_kelas_to_submit);
-                            $verify_stmt->execute();
-                            $verify_result = $verify_stmt->get_result();
-                            
-                            if ($verify_result->num_rows > 0) {
-                                $verify_data = $verify_result->fetch_assoc();
-                                $new_status = $verify_data['status_publikasi'];
-                                $debug_info[] = "Status setelah update: " . $new_status;
-                                $debug_info[] = "Tanggal update: " . $verify_data['tanggal_update'];
-                                
-                                if ($new_status === 'pending') {
-                                    $conn->commit();
-                                    $message = "Kelas '{$class_data['nama_kelas']}' berhasil diajukan untuk publikasi.";
-                                    
-                                    // Log ke file untuk debugging
-                                    error_log("Publication submitted - Class ID: $id_kelas_to_submit, Status: $new_status, Time: " . date('Y-m-d H:i:s'));
-                                } else {
-                                    throw new Exception("Status tidak berubah setelah update. Status saat ini: $new_status");
-                                }
-                            } else {
-                                throw new Exception("Kelas tidak ditemukan setelah update");
-                            }
-                            $verify_stmt->close();
-                            
-                        } else {
-                            throw new Exception("Update gagal atau tidak ada baris yang terpengaruh. MySQL Error: " . $conn->error);
-                        }
-                        $update_status_stmt->close();
-                        
-                    } catch (Exception $e) {
-                        $conn->rollback();
-                        $message = "Gagal mengajukan kelas: " . $e->getMessage();
-                        $debug_info[] = "Exception: " . $e->getMessage();
-                        
-                        // Log error ke file
-                        error_log("Publication failed - Class ID: $id_kelas_to_submit, Error: " . $e->getMessage());
+                    if ($update_stmt->affected_rows > 0) {
+                        $conn->commit();
+                        $message = "Kelas '{$class_data['nama_kelas']}' berhasil diajukan untuk ditinjau.";
+                    } else {
+                        throw new Exception("Gagal mengupdate status, tidak ada baris yang terpengaruh.");
                     }
-                    
+                    $update_stmt->close();
                 } else {
-                    $message = "Kelas dengan status '$current_status' tidak dapat diajukan untuk publikasi.";
-                    $debug_info[] = "Status tidak diizinkan: $current_status";
+                    $message = "Hanya kelas dengan status 'Draft' atau 'Rejected' yang dapat diajukan.";
                 }
             } else {
-                $message = "Kelas tidak ditemukan atau bukan milik Anda.";
-                $debug_info[] = "Kelas tidak ditemukan - ID: $id_kelas_to_submit, Mentor: $id_mentor";
+                $message = "Kelas tidak ditemukan atau Anda tidak memiliki akses.";
             }
             $check_stmt->close();
-            
         } catch (Exception $e) {
-            $message = "Error database: " . $e->getMessage();
-            $debug_info[] = "Database Exception: " . $e->getMessage();
+            $conn->rollback();
+            $message = "Terjadi kesalahan: " . $e->getMessage();
         }
+    } else {
+        $message = "ID kelas tidak valid.";
     }
-
-    // Simpan debug info ke session untuk ditampilkan jika diperlukan
-    if (isset($_GET['debug']) && $_GET['debug'] == '1') {
-        $_SESSION['debug_info'] = $debug_info;
-    }
-
-    // Redirect untuk membersihkan URL GET dan menampilkan pesan
-    $redirect_url = "kelola-kelas.php?msg=" . urlencode($message);
-    if (isset($_GET['debug']) && $_GET['debug'] == '1') {
-        $redirect_url .= "&debug=1";
-    }
-    header("Location: $redirect_url");
+    header("Location: kelola-kelas.php?msg=" . urlencode($message));
     exit();
 }
 
-// Ambil pesan dari URL jika ada (setelah redirect)
+// Ambil pesan dari URL jika ada
 if (isset($_GET['msg'])) {
     $message = htmlspecialchars(urldecode($_GET['msg']));
 }
 
-// --- START: Mengambil Data Kelas ---
+// --- START: Mengambil Data Kelas untuk Ditampilkan ---
+$classes_result = null; // Inisialisasi
 try {
     $stmt_classes = $conn->prepare("
-        SELECT 
-            k.id_kelas, 
-            k.nama_kelas, 
-            k.kategori, 
-            k.harga, 
-            k.description, 
-            k.status_publikasi,
-            k.tanggal_update,
-            k.tgl_dibuat
-        FROM tb_kelas k
-        JOIN tb_mentor m ON k.id_mentor = m.id_mentor
-        WHERE m.id_user = ?
-        ORDER BY k.tanggal_update DESC, k.id_kelas DESC
+        SELECT id_kelas, nama_kelas, kategori, harga, status_publikasi
+        FROM tb_kelas
+        WHERE id_mentor = ?
+        ORDER BY tgl_dibuat DESC
     ");
-    
-    if (!$stmt_classes) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
-    
-    $stmt_classes->bind_param("i", $_SESSION['id']);
+    if (!$stmt_classes) throw new Exception("Prepare select classes failed: " . $conn->error);
+    $stmt_classes->bind_param("i", $id_mentor);
     $stmt_classes->execute();
     $classes_result = $stmt_classes->get_result();
-    
 } catch (Exception $e) {
     die("Error saat mengambil data kelas: " . $e->getMessage());
 }
-?>
 
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Kelas</title>
+    <title>Kelola Kelas - Dashboard Mentor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/keloladata-mentor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Memuat CSS dari sidebar Anda (pastikan path ini benar) -->
+    <link rel="stylesheet" href="../assets/css/sidebar-mentor.css"> 
+    
+    <style>
+        /* CSS Tambahan untuk styling konten */
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e3e6f0;
+            padding: 1rem 1.5rem;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+        .badge {
+            font-size: 0.85em;
+            padding: 0.5em 0.75em;
+            font-weight: 500;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #6c757d;
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #e3e6f0;
+        }
+        .action-buttons a, .action-buttons button {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
+    <!-- Memanggil sidebar Anda yang memiliki position:fixed -->
     <?php include 'sidebar-mentor.php'; ?>
 
-    <div class="content-wrapper">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Kelola Kelas</h2>
-            <a href="create-class.php" class="btn btn-success">+ Tambah Kelas</a>
+    <!-- MEMBUNGKUS KONTEN DENGAN KELAS .main-content DARI CSS ANDA -->
+    <div class="main-content">
+        <!-- Header Halaman -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Kelola Kelas Anda
+            </h1>
+            <a href="create-class.php" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Buat Kelas Baru
+            </a>
         </div>
 
-        <!-- Tampilkan debug info jika ada -->
-        <?php if (isset($_GET['debug']) && $_GET['debug'] == '1' && isset($_SESSION['debug_info'])): ?>
-        <div class="alert alert-warning">
-            <strong>Debug Information:</strong><br>
-            <?php foreach ($_SESSION['debug_info'] as $info): ?>
-                <?= htmlspecialchars($info) ?><br>
-            <?php endforeach; ?>
-        </div>
-        <?php unset($_SESSION['debug_info']); endif; ?>
-
-        <!-- Debug Mode Info -->
-        <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
-        <div class="alert alert-info">
-            <strong>Debug Mode Active</strong><br>
-            ID Mentor: <?= $id_mentor ?><br>
-            Session ID: <?= $_SESSION['id'] ?? 'Not set' ?><br>
-            Session Role: <?= $_SESSION['role'] ?? 'Not set' ?><br>
-            Current Time: <?= date('Y-m-d H:i:s') ?><br>
-            Database Connection: <?= ($conn && !$conn->connect_error) ? 'OK' : 'FAILED' ?>
-        </div>
-        <?php endif; ?>
-
-        <!-- Pesan Feedback -->
+        <!-- Tampilkan pesan feedback jika ada -->
         <?php if (!empty($message)): ?>
             <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <?= $message ?>
@@ -284,92 +188,83 @@ try {
             </div>
         <?php endif; ?>
 
-        <div class="table-wrapper">
-            <?php if ($classes_result->num_rows > 0): ?>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Nama Kelas</th>
-                            <th>Kategori</th>
-                            <th>Harga</th>
-                            <th>Deskripsi</th>
-                            <th>Status Publikasi</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = $classes_result->fetch_assoc()): ?>
+        <!-- Card untuk Tabel Data -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Daftar Kelas</h5>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis"><?= $classes_result->num_rows ?> Kelas Ditemukan</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
                             <tr>
-                                <td><?= htmlspecialchars($row['nama_kelas']) ?></td>
-                                <td><?= htmlspecialchars($row['kategori']) ?></td>
-                                <td>Rp <?= number_format($row['harga'], 0, ',', '.') ?></td>
-                                <td><?= htmlspecialchars(substr($row['description'], 0, 50)) ?><?= strlen($row['description']) > 50 ? '...' : '' ?></td>
-                                <td>
-                                    <?php
-                                    $status = $row['status_publikasi'];
-                                    $text_bg_class = '';
-                                    switch ($status) {
-                                        case 'draft':
-                                            $text_bg_class = 'text-bg-secondary';
-                                            break;
-                                        case 'pending':
-                                            $text_bg_class = 'text-bg-warning';
-                                            break;
-                                        case 'approved':
-                                            $text_bg_class = 'text-bg-success';
-                                            break;
-                                        case 'rejected':
-                                            $text_bg_class = 'text-bg-danger';
-                                            break;
-                                        default:
-                                            $text_bg_class = 'text-bg-info';
-                                            break;
-                                    }
-                                    ?>
-                                    <span class="badge <?= $text_bg_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
-                                    <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
-                                        <small class="text-muted d-block">Update: <?= $row['tanggal_update'] ?></small>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <a href="edit-class.php?id_kelas=<?= $row['id_kelas'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                    <a href="delete-class.php?id_kelas=<?= $row['id_kelas'] ?>"
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Yakin ingin menghapus kelas ini?')">Delete</a>
-
-                                    <?php if (in_array($row['status_publikasi'], ['draft', 'rejected'])): ?>
-                                        <?php 
-                                        $confirm_msg = "Yakin ingin mengajukan kelas '" . addslashes($row['nama_kelas']) . "' untuk publikasi?";
-                                        $debug_param = (isset($_GET['debug']) && $_GET['debug'] == '1') ? '&debug=1' : '';
-                                        ?>
-                                        <a href="kelola-kelas.php?action=submit_for_review&id_kelas=<?= $row['id_kelas'] ?><?= $debug_param ?>" 
-                                           class="btn btn-success btn-sm mt-1"
-                                           onclick="return confirm('<?= $confirm_msg ?>')">
-                                           Ajukan Publikasi
-                                        </a>
-                                    <?php elseif ($row['status_publikasi'] === 'pending'): ?>
-                                        <span class="badge text-bg-warning">Menunggu Review</span>
-                                    <?php elseif ($row['status_publikasi'] === 'approved'): ?>
-                                        <span class="badge text-bg-success">Sudah Dipublikasi</span>
-                                    <?php endif; ?>
-                                </td>
+                                <th scope="col" class="ps-4">Nama Kelas</th>
+                                <th scope="col">Kategori</th>
+                                <th scope="col" class="text-center">Status</th>
+                                <th scope="col" class="text-center pe-4">Aksi</th>
                             </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <div class="text-center py-5">
-                    <p class="text-muted">Belum ada kelas yang dibuat.</p>
-                    <a href="create-class.php" class="btn btn-primary">Buat Kelas Pertama</a>
+                        </thead>
+                        <tbody>
+                            <?php if ($classes_result->num_rows > 0): ?>
+                                <?php while ($row = $classes_result->fetch_assoc()): ?>
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold"><?= htmlspecialchars($row['nama_kelas']) ?></div>
+                                            <small class="text-muted">Rp <?= number_format($row['harga'], 0, ',', '.') ?></small>
+                                        </td>
+                                        <td><?= htmlspecialchars($row['kategori']) ?></td>
+                                        <td class="text-center">
+                                            <?php
+                                            $status = $row['status_publikasi'];
+                                            $badge_class = 'bg-secondary'; // Default
+                                            if ($status == 'approved') $badge_class = 'bg-success';
+                                            if ($status == 'pending') $badge_class = 'bg-warning text-dark';
+                                            if ($status == 'rejected') $badge_class = 'bg-danger';
+                                            if ($status == 'draft') $badge_class = 'bg-info text-dark';
+                                            ?>
+                                            <span class="badge rounded-pill <?= $badge_class ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
+                                        </td>
+                                        <td class="text-center pe-4 action-buttons">
+                                            <a href="edit-class.php?id_kelas=<?= $row['id_kelas'] ?>" class="btn btn-outline-primary btn-sm" title="Edit Kelas">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="delete-class.php?id_kelas=<?= $row['id_kelas'] ?>" class="btn btn-outline-danger btn-sm" title="Hapus Kelas"
+                                               onclick="return confirm('PENTING:\n\nAnda yakin ingin mengarsipkan kelas \'<?= addslashes($row['nama_kelas']) ?>\'?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                            
+                                            <?php if (in_array($row['status_publikasi'], ['draft', 'rejected'])): ?>
+                                                <a href="kelola-kelas.php?action=submit_for_review&id_kelas=<?= $row['id_kelas'] ?>" 
+                                                   class="btn btn-success btn-sm" title="Ajukan untuk ditinjau"
+                                                   onclick="return confirm('Anda yakin ingin mengajukan kelas \'<?= addslashes($row['nama_kelas']) ?>\' untuk ditinjau oleh admin?')">
+                                                   <i class="fas fa-paper-plane"></i> Ajukan
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state">
+                                            <div class="icon"><i class="fas fa-chalkboard"></i></div>
+                                            <h4>Anda Belum Membuat Kelas</h4>
+                                            <p class="mb-0">Ayo mulai buat kelas pertama Anda dan bagikan ilmu.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
-            <?php endif; ?>
+            </div>
         </div>
-    </div>
+    </div> <!-- Akhir dari .main-content -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
 <?php
 // Tutup statement dan koneksi
 if (isset($stmt_classes)) {

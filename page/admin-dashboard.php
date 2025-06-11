@@ -47,14 +47,14 @@ $userData = fetchData($conn, "SELECT COUNT(*) as total_users FROM tb_user");
 
 $laporanData = fetchData($conn, "SELECT COUNT(*) as total_laporan FROM tb_laporan");
 
-$kelasData = fetchData($conn, "SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'aktif'");
+$kelasData = fetchData($conn, "SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'approved'");
 
 $transaksiData = fetchData($conn, "
     SELECT COALESCE(SUM(k.harga), 0) AS total_transaksi
     FROM tb_kelas k
     INNER JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
     INNER JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
-    WHERE tk.status = 'acc'
+    WHERE tk.status = 'Completed'
 ");
 
 if ($transaksiData === false) {

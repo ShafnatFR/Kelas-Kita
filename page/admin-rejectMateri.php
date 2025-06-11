@@ -42,7 +42,7 @@ if (isset($_GET['id'])) {
     $id_materi = $_GET['id'];
 
     // Update status materi menjadi 'non-aktif' (sebagai 'rejected' karena enum terbatas)
-    $sql = "UPDATE tb_materi SET status = 'non-aktif' WHERE id_materi = ?";
+    $sql = "UPDATE tb_materi SET status = 'rejected' WHERE id_materi = ?";
     if (executeStatement($conn, $sql, 'i', [$id_materi])) {
         $_SESSION['message'] = "Materi berhasil di-reject dan dinonaktifkan.";
         $_SESSION['message_type'] = "success";

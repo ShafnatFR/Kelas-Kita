@@ -93,7 +93,7 @@ $tb_kelas_query->execute();
 $tb_kelas_result = $tb_kelas_query->get_result();
 
 // Query untuk mengambil total kelas aktif (Variabel diubah menjadi totalKelasAktif untuk kejelasan)
-$totalKelasAktif = $conn->prepare("SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'aktif'");
+$totalKelasAktif = $conn->prepare("SELECT COUNT(*) as total_kelas FROM tb_kelas WHERE status_publikasi = 'approved'");
 if (!$totalKelasAktif) {
     die("Error preparing totalKelasAktif statement: " . $conn->error);
 }
@@ -107,7 +107,7 @@ $totalTransaksi = $conn->prepare("
     FROM tb_kelas k
     LEFT JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
     LEFT JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
-    WHERE tk.status = 'acc'
+    WHERE tk.status = 'Completed'
 ");
 if (!$totalTransaksi) {
     error_log("Error preparing totalTransaksi with JOIN: " . $conn->error . ". Falling back to 0.");
@@ -133,7 +133,7 @@ $materiData = $materiResult->fetch_assoc();
 $recent_classes_query = $conn->prepare("
     SELECT nama_kelas, kategori, harga 
     FROM tb_kelas 
-    WHERE status_publikasi = 'aktif' 
+    WHERE status_publikasi = 'approved' 
     ORDER BY id_kelas DESC 
     LIMIT 10
 ");
