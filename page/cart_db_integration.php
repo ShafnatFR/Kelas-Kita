@@ -1,212 +1,212 @@
 <?php
-// Functions for cart database integration
+// cart_db_integration.php
 
-/**
- * Syncs the session cart with database cart when user logs in
- * @param int $user_id User ID
- * @param mysqli $conn Database connection
- */
-function syncCartOnLogin($user_id, $conn) {
-    // 1. Get user's cart from database
-    $db_cart = [];
-    $sql = "SELECT uc.id_kelas, k.nama_kelas, k.harga, k.profil_kelas, kat.nama_kategori 
-            FROM tb_keranjang uc 
-            JOIN tb_kelas k ON uc.id_kelas = k.id_kelas 
-            LEFT JOIN tb_kategori kat ON k.kategori = kat.id_kategori 
-            WHERE uc.id_user = ?";
+function getCartItems($id_user, $conn) {
+    $cart_items = [];
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Get cart items with complete course data
+    $stmt = $conn->prepare("
+        SELECT c.id_kelas, c.tgl_keranjang, 
+               k.nama_kelas, k.harga, k.kategori, k.profil_kelas as gambar, k.description as deskripsi
+        FROM tb_keranjang c 
+        JOIN tb_kelas k ON c.id_kelas = k.id_kelas 
+        WHERE c.id_user = ?
+    ");
     
-    while ($row = $result->fetch_assoc()) {
-        $db_cart[] = [
-            'id' => $row['course_id'],
-            'name' => $row['nama_kursus'],
-            'price' => $row['harga'],
-            'quantity' => 1, // Courses typically have quantity of 1
-            'image' => $row['gambar'],
-            'category' => $row['nama_kategori']
-        ];
-    }
-    
-    // 2. Merge with session cart (prioritize session items if duplicates)
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-    
-    // Create a lookup of course IDs in session cart
-    $session_course_ids = [];
-    foreach ($_SESSION['cart'] as $item) {
-        $session_course_ids[] = $item['id'];
-    }
-    
-    // Add database items that are not in session
-    foreach ($db_cart as $db_item) {
-        if (!in_array($db_item['id'], $session_course_ids)) {
-            $_SESSION['cart'][] = $db_item;
-        }
-    }
-    
-    // 3. Update database to match session
-    updateDatabaseCart($user_id, $conn);
-}
-
-/**
- * Updates the database cart to match session cart
- * @param int $user_id User ID
- * @param mysqli $conn Database connection
- */
-function updateDatabaseCart($user_id, $conn) {
-    // Only proceed if user is logged in
-    if (!$user_id) return;
-    
-    // 1. Clear existing cart
-    $sql = "DELETE FROM tb_keranjang WHERE id_user = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    
-    // 2. Insert current session cart items to database
-    if (!empty($_SESSION['cart'])) {
-        $sql = "INSERT INTO tb_keranjang (id_user, id_kelas) VALUES (?, ?)";
-        $stmt = $conn->prepare($sql);
-        
-        foreach ($_SESSION['cart'] as $item) {
-            $stmt->bind_param("ii", $user_id, $item['id']);
-            $stmt->execute();
-        }
-    }
-}
-
-/**
- * Adds item to both session cart and database if user is logged in
- * @param array $item Item details
- * @param int $user_id User ID
- * @param mysqli $conn Database connection
- * @return bool Success status
- */
-function addToCart($item, $user_id, $conn) {
-    // 1. Check if item already exists in cart
-    $exists = false;
-    
-    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as $index => $cart_item) {
-            if ($cart_item['id'] == $item['id']) {
-                $exists = true;
-                break;
-            }
-        }
-    } else {
-        $_SESSION['cart'] = [];
-    }
-    
-    // 2. Add to session cart if not already there
-    if (!$exists) {
-        $_SESSION['cart'][] = $item;
-        
-        // 3. Add to database if user is logged in
-        if ($user_id) {
-            $sql = "INSERT INTO tb_keranjang (id_user, id_kelas) VALUES (?, ?)";
-            
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $user_id, $item['id']);
-            $stmt->execute();
-        }
-        
-        return true;
-    }
-    
-    return false; // Item already in cart
-}
-
-/**
- * Removes item from cart (both session and database)
- * @param int $item_id Course ID to remove
- * @param int $user_id User ID
- * @param mysqli $conn Database connection
- */
-function removeFromCart($item_id, $user_id, $conn) {
-    // 1. Remove from session
-    if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-        foreach ($_SESSION['cart'] as $index => $item) {
-            if ($item['id'] == $item_id) {
-                array_splice($_SESSION['cart'], $index, 1);
-                break;
-            }
-        }
-    }
-    
-    // 2. Remove from database if user is logged in
-    if ($user_id) {
-    $sql = "DELETE FROM tb_keranjang WHERE id_user = ? AND id_kelas = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $user_id, $item_id);
-    $stmt->execute();
-    }
-}
-
-/**
- * Clears the entire cart (both session and database)
- * @param int $user_id User ID
- * @param mysqli $conn Database connection
- */
-function clearCart($user_id, $conn) {
-    // 1. Clear session cart
-    $_SESSION['cart'] = [];
-    
-    // 2. Clear database cart if user is logged in
-    if ($user_id) {
-        $sql = "DELETE FROM tb_keranjang WHERE id_user = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-    }
-}
-
-/**
- * Gets the current cart items (preferably from session)
- * @param int $user_id User ID (optional, for backup if session empty)
- * @param mysqli $conn Database connection
- * @return array Cart items
- */
-function getCartItems($user_id = null, $conn = null) {
-    // Return session cart if available
-    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-        return $_SESSION['cart'];
-    }
-    
-    // If session cart is empty but user is logged in, try getting from database
-    if ($user_id && $conn) {
-        $cart = [];
-        $sql = "SELECT uc.id_kelas, k.nama_kelas, k.harga, k.profil_kelas, kat.nama_kategori 
-                FROM tb_keranjang uc 
-                JOIN tb_kelas k ON uc.id_kelas = k.id_kelas 
-                LEFT JOIN tb_kategori kat ON k.kategori = kat.id_kategori 
-                WHERE uc.id_user = ?";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $user_id);
+    if ($stmt) {
+        $stmt->bind_param("i", $id_user);
         $stmt->execute();
         $result = $stmt->get_result();
         
         while ($row = $result->fetch_assoc()) {
-            $cart[] = [
+            // Try different possible column names for course title
+            $course_name = '';
+            if (!empty($row['judul_kelas'])) {
+                $course_name = $row['judul_kelas'];
+            } elseif (!empty($row['nama_kelas'])) {
+                $course_name = $row['nama_kelas'];
+            } else {
+                $course_name = 'Kursus Tanpa Judul';
+            }
+            
+            $cart_items[] = [
                 'id' => $row['id_kelas'],
-                'name' => $row['nama_kelas'],
+                'name' => $course_name,
                 'price' => $row['harga'],
-                'quantity' => 1,
-                'image' => $row['profil_kelas'],
-                'category' => $row['nama_kategori']
+                'tgl_keranjang' => $row['tgl_keranjang'],
+                'category' => $row['kategori'] ?? 'Umum',
+                'image' => $row['gambar'] ?? '',
+                'description' => $row['deskripsi'] ?? ''
             ];
         }
-        
-        // Update session with database cart
-        $_SESSION['cart'] = $cart;
-        return $cart;
+        $stmt->close();
     }
     
-    // Default: empty cart
-    return [];
+    return $cart_items;
 }
+
+function addToCart($id_kelas, $id_user, $conn) {
+    // Check if item already exists in cart
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM tb_keranjang WHERE id_user = ? AND id_kelas = ?");
+    if ($stmt) {
+        $stmt->bind_param("ii", $id_user, $id_kelas);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        
+        if ($row['count'] > 0) {
+            // Item already in cart, do nothing or update date
+            // Optionally update tgl_keranjang here if needed
+        } else {
+            // Add new item
+            $insert_stmt = $conn->prepare("INSERT INTO tb_keranjang (id_user, id_kelas, tgl_keranjang) VALUES (?, ?, CURDATE())");
+            if ($insert_stmt) {
+                $insert_stmt->bind_param("ii", $id_user, $id_kelas);
+                $insert_stmt->execute();
+                $insert_stmt->close();
+            }
+        }
+        $stmt->close();
+    }
+    
+    // Update session cart
+    if (isset($_SESSION['cart'])) {
+        // Check if item exists in session cart
+        $found = false;
+        foreach ($_SESSION['cart'] as $index => $item) {
+            if ($item['id'] == $id_kelas) {
+                $found = true;
+                break;
+            }
+        }
+        
+        // If not found, get course data and add to session
+        if (!$found) {
+            $course_stmt = $conn->prepare("SELECT nama_kelas, harga, kategori, profil_kelas as gambar, description as deskripsi FROM tb_kelas WHERE id_kelas = ?");
+            if ($course_stmt) {
+                $course_stmt->bind_param("i", $id_kelas);
+                $course_stmt->execute();
+                $course_result = $course_stmt->get_result();
+                
+                if ($course_row = $course_result->fetch_assoc()) {
+                    // Try different possible column names for course title
+                    $course_name = '';
+                    if (!empty($course_row['judul_kelas'])) {
+                        $course_name = $course_row['judul_kelas'];
+                    } elseif (!empty($course_row['nama_kelas'])) {
+                        $course_name = $course_row['nama_kelas'];
+                    } else {
+                        $course_name = 'Kursus Tanpa Judul';
+                    }
+                    
+                    $_SESSION['cart'][] = [
+                        'id' => $id_kelas,
+                        'name' => $course_name,
+                        'price' => $course_row['harga'],
+                        'category' => $course_row['kategori'] ?? 'Umum',
+                        'image' => $course_row['gambar'] ?? ''
+                    ];
+                }
+                $course_stmt->close();
+            }
+        }
+    }
+}
+
+function removeFromCart($id_kelas, $id_user, $conn) {
+    // Remove from database
+    if ($id_user) {
+        $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ? AND id_kelas = ?");
+        if ($stmt) {
+            $stmt->bind_param("ii", $id_user, $id_kelas);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+    
+    // Remove from session
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $index => $item) {
+            if ($item['id'] == $id_kelas) {
+                unset($_SESSION['cart'][$index]);
+                $_SESSION['cart'] = array_values($_SESSION['cart']); // Reindex array
+                break;
+            }
+        }
+    }
+}
+
+function clearCart($id_user, $conn) {
+    // Clear database cart
+    if ($id_user) {
+        $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $id_user);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+    
+    // Clear session cart
+    $_SESSION['cart'] = [];
+}
+
+function updateDatabaseCart($id_user, $conn) {
+    // Clear existing cart in database
+    $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $id_user);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    // Insert current session cart to database
+    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        $insert_stmt = $conn->prepare("INSERT INTO tb_keranjang (id_user, id_kelas, tgl_keranjang) VALUES (?, ?, CURDATE())");
+        if ($insert_stmt) {
+            foreach ($_SESSION['cart'] as $item) {
+                $insert_stmt->bind_param("ii", $id_user, $item['id']);
+                $insert_stmt->execute();
+            }
+            $insert_stmt->close();
+        }
+    }
+}
+
+function getCartCount($id_user = null, $conn = null) {
+    $count = 0;
+    
+    // If user is logged in and database connection is available
+    if ($id_user && $conn) {
+        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM tb_keranjang WHERE id_user = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $id_user);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $count = $row['total'] ?? 0;
+            }
+            $stmt->close();
+        }
+    } else {
+        // Fall back to session cart
+        if (isset($_SESSION['cart'])) {
+            foreach ($_SESSION['cart'] as $item) {
+                $count += 1;
+            }
+        }
+    }
+    
+    return $count;
+}
+
+function syncCartToSession($id_user, $conn) {
+    // Get cart items from database and sync to session
+    $_SESSION['cart'] = getCartItems($id_user, $conn);
+}
+
+function syncCartToDatabase($id_user, $conn) {
+    // Sync session cart to database
+    updateDatabaseCart($id_user, $conn);
+}
+?>

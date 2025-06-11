@@ -163,42 +163,6 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 ---
 
-<section class="section-padding bg-light">
-    <div class="container">
-        <div class="section-title">
-            <h2>Jelajahi Kursus Berdasarkan Kategori</h2>
-            <p>Temukan bidang minat Anda dan mulai perjalanan pembelajaran Anda hari ini</p>
-        </div>
-        
-        <div class="row">
-            <?php
-            // Query untuk mengambil kategori kursus dari database
-            $sql_Kategori_links = "SELECT id_kategori AS id, nama_kategori, icon, jumlah_kursus FROM tb_kategori ORDER BY nama_kategori ASC LIMIT 4";
-            $result_Kategori_links = $conn->query($sql_Kategori_links);
-               
-            if ($result_Kategori_links && $result_Kategori_links->num_rows > 0) {
-                while ($category = $result_Kategori_links->fetch_assoc()) {
-                    // Gunakan ikon dari database
-                    $icon = '<i class="' . htmlspecialchars($category['icon']) . '"></i>';
-                    
-                    echo '<div class="col-md-3 col-6 mb-4">
-                        <div class="card text-center p-4">
-                            <div class="card-icon mb-3">' . $icon . '</div>
-                            <h5>' . htmlspecialchars($category['nama_kategori']) . '</h5>
-                            <p class="text-muted">' . htmlspecialchars($category['jumlah_kursus']) . '+ Kursus</p>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '<div class="col-12 text-center">Tidak ada kategori ditemukan</div>';
-            }
-            ?>
-        </div>
-        <div class="text-center mt-4">
-            <a href="categories.php" class="btn btn-outline-primary">Lihat Semua Kategori</a>
-        </div>
-    </div>
-</section>
 
 ---
 
@@ -231,7 +195,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                 SELECT 
                     k.id_kelas AS id,
                     k.profil_kelas AS image,
-                    c.nama_kategori AS category,
+                    k.nama_kelas AS title,
                     k.nama_kelas AS title,
                     CONCAT(u.first_name, ' ', u.last_name) AS instructor,
                     0 AS views,
@@ -241,7 +205,6 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                     $duration_field AS duration,
                     $type_field AS type
                 FROM tb_kelas k
-                LEFT JOIN tb_kategori c ON k.kategori = c.id_kategori
                 LEFT JOIN tb_mentor m ON k.id_mentor = m.id_mentor
                 LEFT JOIN tb_user u ON m.id_user = u.id_user
                 LEFT JOIN tb_review rev ON k.id_kelas = rev.id_kelas
@@ -263,7 +226,6 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                         $comments = intval($course['comments']);
                         $views = intval($course['views']);
                         $duration = htmlspecialchars($course['duration'] ?? '1 Jam');
-                        $category = htmlspecialchars($course['category']);
                         $instructor = htmlspecialchars($course['instructor']);
                         $title = htmlspecialchars($course['title']);
                         $image = htmlspecialchars($course['image']);
@@ -282,9 +244,6 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
                                     </div>
                                     
                                     <div class="position-absolute top-0 start-0 m-2">
-                                        <span class="badge bg-primary me-1 px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
-                                            <?php echo strtoupper($category); ?>
-                                        </span>
                                         <span class="badge bg-secondary px-2 py-1" style="font-size: 0.7rem; border-radius: 4px;">
                                             <?php echo $type; ?>
                                         </span>
@@ -432,7 +391,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 </section>
 
 <?php 
-include_once(_DIR_ . "/../Views/footerbootsrap.php"); 
+include_once("../Views/footerbootsrap.php"); 
 $conn->close(); // Tutup koneksi database setelah semua query selesai
 ?>
 

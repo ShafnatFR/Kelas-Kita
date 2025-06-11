@@ -20,7 +20,6 @@ $db_user = "root";
 $db_pass = ""; 
 $db_name = "KelasKita_baru";
 
-
 // Membuat koneksi
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
 
@@ -114,18 +113,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit();
 }
 
-// Fetch current prices for cart items from database
-$current_prices = [];
+// Fetch complete course data for cart items from database
+$cart_items_data = [];
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     $item_ids = array_map(function($item) { return $item['id']; }, $_SESSION['cart']);
     $ids_placeholder = implode(',', array_fill(0, count($item_ids), '?'));
-    $stmt = $conn->prepare("SELECT id_kelas, harga FROM tb_kelas WHERE id_kelas IN ($ids_placeholder)");
+    
+    // Fetch complete course data including name, price, category, and image
+$stmt = $conn->prepare("SELECT id_kelas, nama_kelas, harga, kategori, profil_kelas AS gambar, description AS deskripsi FROM tb_kelas WHERE id_kelas IN ($ids_placeholder)");
     $types = str_repeat('i', count($item_ids));
     $stmt->bind_param($types, ...$item_ids);
     $stmt->execute();
     $result = $stmt->get_result();
+    
     while ($row = $result->fetch_assoc()) {
-        $current_prices[$row['id_kelas']] = $row['harga'];
+        // Try different possible column names for course title
+        $course_name = '';
+        if (!empty($row['judul_kelas'])) {
+            $course_name = $row['judul_kelas'];
+        } elseif (!empty($row['nama_kelas'])) {
+            $course_name = $row['nama_kelas'];
+        } else {
+            $course_name = 'Kursus Tanpa Judul';
+        }
+        
+        $cart_items_data[$row['id_kelas']] = [
+            'name' => $course_name,
+            'price' => $row['harga'],
+            'category' => $row['kategori'] ?? 'Umum',
+            'image' => $row['gambar'] ?? '',
+            'description' => $row['deskripsi'] ?? ''
+        ];
+    }
+}
+
+// Update cart items with fresh data from database
+if (!empty($cart_items_data)) {
+    foreach ($_SESSION['cart'] as $index => $item) {
+        if (isset($cart_items_data[$item['id']])) {
+            $_SESSION['cart'][$index]['name'] = $cart_items_data[$item['id']]['name'];
+            $_SESSION['cart'][$index]['price'] = $cart_items_data[$item['id']]['price'];
+            $_SESSION['cart'][$index]['category'] = $cart_items_data[$item['id']]['category'];
+            $_SESSION['cart'][$index]['image'] = $cart_items_data[$item['id']]['image'];
+        }
     }
 }
 
@@ -133,12 +163,15 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart']) && count($_SESSION['
 $total = 0;
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
-        $price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : ($item['price'] ?? 0);
+        $price = isset($cart_items_data[$item['id']]) ? $cart_items_data[$item['id']]['price'] : ($item['price'] ?? 0);
         $total += $price * $item['quantity'];
     }
 }
 
-// Rest of the HTML code remains the same...
+// Debug: Uncomment the lines below to see cart data
+// echo "<pre>Cart Data: ";
+// print_r($_SESSION['cart']);
+// echo "</pre>";
 ?>
 
 <!DOCTYPE html>
@@ -247,12 +280,15 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                 <tbody>
                                     <?php
                                     foreach ($_SESSION['cart'] as $item):
-                                        $price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : ($item['price'] ?? 0);
+                                        $price = isset($cart_items_data[$item['id']]) ? $cart_items_data[$item['id']]['price'] : ($item['price'] ?? 0);
+                                        $course_name = isset($item['name']) && !empty($item['name']) ? $item['name'] : 'Kursus Tanpa Judul';
+                                        $category = isset($item['category']) && !empty($item['category']) ? $item['category'] : 'Umum';
+                                        $image = isset($item['image']) && !empty($item['image']) ? $item['image'] : '';
                                     ?>
                                     <tr>
                                         <td width="100">
-                                            <?php if (isset($item['image']) && !empty($item['image'])): ?>
-                                            <img src="<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" class="cart-item-img">
+                                            <?php if (!empty($image)): ?>
+                                            <img src="<?php echo htmlspecialchars($image); ?>" alt="<?php echo htmlspecialchars($course_name); ?>" class="cart-item-img">
                                             <?php else: ?>
                                             <div class="bg-light d-flex justify-content-center align-items-center cart-item-img">
                                                 <i class="fas fa-book text-muted"></i>
@@ -260,10 +296,10 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <h6 class="mb-1"><?php echo htmlspecialchars($item['name']); ?></h6>
-                                            <small class="text-muted"><?php echo htmlspecialchars($item['category']); ?></small>
+                                            <h6 class="mb-1"><?php echo htmlspecialchars($course_name); ?></h6>
+                                            <small class="text-muted"><?php echo htmlspecialchars($category); ?></small>
                                         </td>
-<td><?php echo 'Rp ' . number_format(intval($price), 0, ',', '.'); ?></td>
+                                        <td><?php echo 'Rp ' . number_format(intval($price), 0, ',', '.'); ?></td>
                                         <td>
                                             <form method="post" class="d-inline">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
@@ -271,7 +307,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                                 <input type="hidden" name="update_quantity" value="1">
                                             </form>
                                         </td>
-<td><?php echo 'Rp ' . number_format(intval($price * $item['quantity']), 0, ',', '.'); ?></td>
+                                        <td><?php echo 'Rp ' . number_format(intval($price * $item['quantity']), 0, ',', '.'); ?></td>
                                         <td>
                                             <form method="post">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
@@ -313,7 +349,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                         <h4 class="mb-4">Ringkasan Pesanan</h4>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
-<span><?php echo 'Rp ' . number_format(intval($total), 0, ',', '.'); ?></span>
+                            <span><?php echo 'Rp ' . number_format(intval($total), 0, ',', '.'); ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-4">
                             <span>Pajak</span>
