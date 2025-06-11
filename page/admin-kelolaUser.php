@@ -250,9 +250,9 @@ $namaAdmin = $_SESSION['username'];
                                                     </td>
                                                     <td><?= (new DateTime($user['tgl_dibuat']))->format('d M Y') ?></td>
                                                     <td>
-                                                        <a href="send_message.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary" title="Kirim Pesan">
+                                                        <!-- <a href="send_message.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-primary" title="Kirim Pesan">
                                                             <i class="fas fa-envelope"></i> Pesan
-                                                        </a>
+                                                        </a> -->
                                                         <a href="admin-deactivateUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Pengguna" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan pengguna ini?');">
                                                             <i class="fas fa-user-times"></i> Non-Aktifkan
                                                         </a>
@@ -300,9 +300,9 @@ $namaAdmin = $_SESSION['username'];
                                                         <a href="admin-activateUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-success" title="Aktifkan Pengguna">
                                                             <i class="fas fa-user-check"></i> Aktifkan
                                                         </a>
-                                                        <a href="admin-deleteUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-warning text-dark" title="Hapus Pengguna" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                                        <!-- <a href="admin-deleteUser.php?id=<?= $user['id_user'] ?>" class="btn btn-sm btn-warning text-dark" title="Hapus Pengguna" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                                             <i class="fas fa-trash-alt"></i> Hapus
-                                                        </a>
+                                                        </a> -->
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

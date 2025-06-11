@@ -228,28 +228,54 @@ $namaAdmin = $_SESSION['username'];
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <?php if ($transaksi['status_transaksi'] == 'Pending'): ?>
-                                                            <div class="d-flex">
-                                                                <?php if ($transaksi['status_transaksi'] == 'Pending' or 'Cancelled'): ?>
-                                                                    <form action="admin-updateStatusTransaksi.php" method="POST" class="me-1">
-                                                                        <input type="hidden" name="id_transaksi" value="<?= htmlspecialchars($transaksi['id_transaksi']) ?>">
-                                                                        <input type="hidden" name="status" value="Completed">
-                                                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Anda yakin ingin MENERIMA transaksi ini?')">
-                                                                            <i class="fas fa-check"></i> ACC
-                                                                        </button>
-                                                                    </form>
+                                                        <?php
+                                                            // Menggunakan 'switch' untuk logika yang lebih bersih saat menangani banyak status
+                                                            switch ($transaksi['status_transaksi']) {
 
-                                                                <form action="admin-updateStatusTransaksi.php" method="POST">
-                                                                    <input type="hidden" name="id_transaksi" value="<?= htmlspecialchars($transaksi['id_transaksi']) ?>">
-                                                                    <input type="hidden" name="status" value="Cancelled">
-                                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin ingin MENOLAK transaksi ini?')">
-                                                                        <i class="fas fa-times"></i> Tolak
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        <?php else: ?>
-                                                            <span class="text-muted">-</span>
-                                                        <?php endif; ?>
+                                                                // KASUS 1: Jika transaksi masih 'Pending'
+                                                                case 'Pending':
+                                                                    ?>
+                                                                    <div class="d-flex">
+                                                                        <form action="admin-updateStatusTransaksi.php" method="POST" class="me-1">
+                                                                            <input type="hidden" name="id_transaksi" value="<?= htmlspecialchars($transaksi['id_transaksi']) ?>">
+                                                                            <input type="hidden" name="status" value="Completed">
+                                                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Anda yakin ingin MENERIMA transaksi ini?')">
+                                                                                <i class="fas fa-check"></i> ACC
+                                                                            </button>
+                                                                        </form>
+
+                                                                        <form action="admin-updateStatusTransaksi.php" method="POST">
+                                                                            <input type="hidden" name="id_transaksi" value="<?= htmlspecialchars($transaksi['id_transaksi']) ?>">
+                                                                            <input type="hidden" name="status" value="Cancelled">
+                                                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin ingin MENOLAK transaksi ini?')">
+                                                                                <i class="fas fa-times"></i> Tolak
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                    <?php
+                                                                    break;
+
+                                                                    // KASUS 2 (BARU): Jika transaksi sudah 'Cancelled'
+                                                                    case 'Cancelled':
+                                                                        ?>
+                                                                        <form action="admin-updateStatusTransaksi.php" method="POST">
+                                                                            <input type="hidden" name="id_transaksi" value="<?= htmlspecialchars($transaksi['id_transaksi']) ?>">
+                                                                            <input type="hidden" name="status" value="Completed">
+                                                                            <button type="submit" class="btn btn-sm btn-info" onclick="return confirm('Transaksi ini sudah dibatalkan. Anda yakin ingin MENYETUJUINYA kembali?')">
+                                                                                <i class="fas fa-check-double"></i> Approve
+                                                                            </button>
+                                                                        </form>
+                                                                        <?php
+                                                                        break;
+
+                                                                    // KASUS 3: Jika transaksi sudah 'Completed' atau status lainnya
+                                                                    case 'Completed':
+                                                                    default:
+                                                                        // Tidak ada aksi yang bisa dilakukan, tampilkan strip
+                                                                        echo '<span class="text-muted">-</span>';
+                                                                        break;
+                                                                }
+                                                                ?>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>
