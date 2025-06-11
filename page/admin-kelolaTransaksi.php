@@ -13,38 +13,13 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// --- QUERY UNTUK STATS KELAS ---
-// Query untuk total kelas dengan berbagai status
-$kelas_stats_query = $conn->prepare("
-    SELECT
-        COUNT(CASE WHEN status_publikasi = 'aktif' THEN 1 END) AS total_aktif,
-        COUNT(CASE WHEN status_publikasi = 'pending' THEN 1 END) AS total_pending,
-        COUNT(CASE WHEN status_publikasi = 'non-aktif' THEN 1 END) AS total_nonaktif
-    FROM tb_kelas
+$transaksiData = fetchData($conn, "
+    SELECT COALESCE(SUM(k.harga), 0) AS total_transaksi
+    FROM tb_kelas k
+    INNER JOIN tb_keranjang kk ON kk.id_kelas = k.id_kelas
+    INNER JOIN tb_transaksi tk ON tk.id_keranjang = kk.id_keranjang
+    WHERE tk.status = 'Completed'
 ");
-if (!$kelas_stats_query) {
-    die("Error preparing kelas_stats_query: " . $conn->error);
-}
-$kelas_stats_query->execute();
-$kelas_stats_result = $kelas_stats_query->get_result();
-$kelas_stats_data = $kelas_stats_result->fetch_assoc();
-
-
-// Query untuk mengambil total user
-$totalUser_stmt = $conn->prepare("SELECT COUNT(*) as total_users FROM tb_user");
-if (!$totalUser_stmt) {
-    die("Error preparing totalUser_stmt: " . $conn->error);
-}
-$totalUser_stmt->execute();
-$userData = $totalUser_stmt->get_result()->fetch_assoc();
-
-// Query untuk mengambil total laporan
-$totalLaporan_stmt = $conn->prepare("SELECT COUNT(*) as total_laporan FROM tb_laporan");
-if (!$totalLaporan_stmt) {
-    die("Error preparing totalLaporan_stmt: " . $conn->error);
-}
-$totalLaporan_stmt->execute();
-$laporanData = $totalLaporan_stmt->get_result()->fetch_assoc();
 
 // --- QUERY UNTUK DATA TRANSAKSI LANGSUNG DARI TABEL ---
 $transaksi_data_query = $conn->prepare("
@@ -79,11 +54,7 @@ $transaksi_data_result = $transaksi_data_query->get_result();
 
 // Data untuk statistik cards
 $stats = array(
-    'total_users' => $userData['total_users'] ?? 0,
-    'total_kelas_aktif' => $kelas_stats_data['total_aktif'] ?? 0,
-    'total_kelas_pending' => $kelas_stats_data['total_pending'] ?? 0,
-    'total_kelas_nonaktif' => $kelas_stats_data['total_nonaktif'] ?? 0,
-    'total_laporan' => $laporanData['total_laporan'] ?? 0
+    'total_transaksi' => $transaksiData['total_transaksi'] ?? 0,
 );
 
 $namaAdmin = $_SESSION['username'];
@@ -157,7 +128,7 @@ $namaAdmin = $_SESSION['username'];
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title text-muted">Total Kelas Aktif</h6>
-                                <h3 class="text-success"><?= $stats['total_kelas_aktif'] ?></h3>
+                                <h3 class="text-success"><?= $stats['total_transaksi'] ?></h3>
                             </div>
                             <i class="fas fa-book-open fa-2x text-success opacity-50"></i>
                         </div>
@@ -169,7 +140,7 @@ $namaAdmin = $_SESSION['username'];
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title text-muted">Total Kelas Pending</h6>
-                                <h3 class="text-info"><?= $stats['total_kelas_pending'] ?></h3>
+                                <h3 class="text-info"><?= $stats[''] ?></h3>
                             </div>
                             <i class="fas fa-hourglass-half fa-2x text-info opacity-50"></i>
                         </div>
@@ -181,7 +152,7 @@ $namaAdmin = $_SESSION['username'];
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title text-muted">Total Kelas Non-Aktif</h6>
-                                <h3 class="text-danger"><?= $stats['total_kelas_nonaktif'] ?></h3>
+                                <h3 class="text-danger"><?= $stats[''] ?></h3>
                             </div>
                             <i class="fas fa-book-dead fa-2x text-danger opacity-50"></i>
                         </div>
@@ -193,7 +164,7 @@ $namaAdmin = $_SESSION['username'];
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title text-muted">Total Laporan</h6>
-                                <h3 class="text-warning"><?= $stats['total_laporan'] ?></h3>
+                                <h3 class="text-warning"><?= $stats[''] ?></h3>
                             </div>
                             <i class="fas fa-file-alt fa-2x text-warning opacity-50"></i>
                         </div>
