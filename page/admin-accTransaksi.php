@@ -65,11 +65,6 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         }
         $stmt_kelas_status->bind_param("s", $id_kelas); // 's' sesuai dengan tipe id_kelas Anda
         $stmt_kelas_status->execute();
-        // Optional: Check if the class was actually updated.
-        // If it was already 'aktif', affected_rows might be 0.
-        // if ($stmt_kelas_status->affected_rows === 0) {
-        //     // Consider if this is an error or acceptable. For now, it's fine.
-        // }
         $stmt_kelas_status->close();
 
         // Commit transaksi jika semua berhasil
