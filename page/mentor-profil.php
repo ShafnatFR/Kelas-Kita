@@ -59,49 +59,104 @@ $recent_classes_query->execute();
 $recent_classes = $recent_classes_query->get_result();
 
 // Proses update profil
+// Proses update profil
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $email = $_POST['email'];
-    $keahlian = $_POST['keahlian'];
-    $pengalaman = $_POST['pengalaman'];
-    $deskripsi = $_POST['deskripsi'];
-    $linkdin = $_POST['linkdin']; // Disesuaikan dengan struktur tabel (ada typo di database)
-    $instagram = $_POST['instagram'];
-    $twitter = $_POST['twitter'];
-    $github = $_POST['github'];
-    $website_url = $_POST['website_url'];
     
-    // Update data user (sesuai struktur tabel tb_user)
-    $update_user = $conn->prepare("UPDATE tb_user SET first_name = ?,last_name = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ? WHERE id_user = ?");
-    $update_user->bind_param("sssssssi", $first_name, $last_name, $email, $linkdin, $instagram, $twitter, $github, $user_id);
-    
-    // Update data mentor (sesuai struktur tabel tb_mentor)
-    $update_mentor = $conn->prepare("UPDATE tb_mentor SET keahlian = ?, pengalaman = ?, deskripsi = ?, website_url = ? WHERE id_user = ?");
-    $update_mentor->bind_param("ssssi", $keahlian, $pengalaman, $deskripsi, $website_url, $user_id);
-    
-    if ($update_user->execute() && $update_mentor->execute()) {
+    $conn->begin_transaction(); // Mulai transaksi untuk keamanan data
+
+    try {
+        // --- PROSES UPLOAD FOTO PROFIL BARU ---
+        $new_photo_filename = null;
+        if (isset($_FILES['foto_profil_file']) && $_FILES['foto_profil_file']['error'] === UPLOAD_ERR_OK) {
+            
+            $upload_dir = '../uploads/profile/'; // Pastikan path ini benar dan ada
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $file_tmp_name = $_FILES['foto_profil_file']['tmp_name'];
+            $file_name = basename($_FILES['foto_profil_file']['name']);
+            $file_size = $_FILES['foto_profil_file']['size'];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+
+            // Validasi ukuran file (misal 2MB)
+            if ($file_size > 2 * 1024 * 1024) { 
+                throw new Exception("Ukuran file terlalu besar. Maksimal 2MB.");
+            }
+            // Validasi ekstensi file
+            if (!in_array($file_ext, $allowed_exts)) {
+                throw new Exception("Tipe file tidak diizinkan. Hanya JPG, PNG, GIF.");
+            }
+
+            // Generate nama file unik
+            $new_photo_filename = uniqid('profil_') . '.' . $file_ext;
+            $destination_path = $upload_dir . $new_photo_filename;
+
+            // Pindahkan file
+            if (!move_uploaded_file($file_tmp_name, $destination_path)) {
+                throw new Exception("Gagal memindahkan file yang diunggah.");
+            }
+
+            // Hapus foto lama jika ada (dan bukan default)
+            $old_photo = $mentor['fotoProfil'];
+            if (!empty($old_photo) && file_exists($upload_dir . $old_photo)) {
+                unlink($upload_dir . $old_photo);
+            }
+        }
+
+        // --- UPDATE DATABASE ---
+        $first_name = $_POST['first_name'];
+        $last_name = $_POST['last_name'];
+        $email = $_POST['email'];
+        $keahlian = $_POST['keahlian'];
+        $pengalaman = $_POST['pengalaman'];
+        $deskripsi = $_POST['deskripsi']; 
+        $linkdin = $_POST['linkdin'];
+        $instagram = $_POST['instagram'];
+        $twitter = $_POST['twitter'];
+        $github = $_POST['github'];
+        // Kolom 'website_url' tidak ada di form Anda, jika ada silakan tambahkan lagi
+        // $website_url = $_POST['website_url'];
+
+        // Siapkan query update untuk tb_user
+        // Query akan dinamis tergantung apakah ada foto baru yang diupload atau tidak
+        if ($new_photo_filename) {
+            // Jika ada foto baru, update kolom fotoProfil
+            $sql_user = "UPDATE tb_user SET first_name = ?, last_name = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ?, fotoProfil = ? WHERE id_user = ?";
+            $stmt_user = $conn->prepare($sql_user);
+            $stmt_user->bind_param("ssssssssi", $first_name, $last_name, $email, $linkdin, $instagram, $twitter, $github, $new_photo_filename, $user_id);
+        } else {
+            // Jika tidak ada foto baru, jangan update kolom fotoProfil
+            $sql_user = "UPDATE tb_user SET first_name = ?, last_name = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ? WHERE id_user = ?";
+            $stmt_user = $conn->prepare($sql_user);
+            $stmt_user->bind_param("sssssssi", $first_name, $last_name, $email, $linkdin, $instagram, $twitter, $github, $user_id);
+        }
+        
+        // Eksekusi update user
+        if (!$stmt_user->execute()) {
+            throw new Exception("Gagal update data user: " . $stmt_user->error);
+        }
+
+        // Update data mentor (tb_mentor)
+        $update_mentor = $conn->prepare("UPDATE tb_mentor SET keahlian = ?, pengalaman = ?, deskripsi = ? WHERE id_user = ?");
+        $update_mentor->bind_param("sssi", $keahlian, $pengalaman, $deskripsi, $user_id);
+        
+        if (!$update_mentor->execute()) {
+            throw new Exception("Gagal update data mentor: " . $update_mentor->error);
+        }
+
+        // Jika semua berhasil, commit transaksi
+        $conn->commit();
         $message = "Profil berhasil diperbarui!";
-        
-        // Tutup prepared statements
-        $update_user->close();
-        $update_mentor->close();
-        
-        // Refresh data
         header("Location: mentor-profil.php?msg=" . urlencode($message));
         exit();
-    } else {
-        $message = "Terjadi kesalahan saat memperbarui profil: " . $conn->error;
-        
-        // Tutup prepared statements
-        $update_user->close();
-        $update_mentor->close();
-    }
-}
 
-// Ambil pesan dari URL
-if (isset($_GET['msg'])) {
-    $message = htmlspecialchars(urldecode($_GET['msg']));
+    } catch (Exception $e) {
+        // Jika ada kesalahan, batalkan semua perubahan
+        $conn->rollback();
+        $message = "Terjadi kesalahan: " . $e->getMessage();
+    }
 }
 ?>
 
@@ -193,8 +248,13 @@ if (isset($_GET['msg'])) {
                         <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profil</h4>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="">
+                        <form method="POST" action="" enctype="multipart/form-data">
                             <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="fotoProfilInput" class="form-label">Ganti Foto Profil</label>
+                                    <input type="file" class="form-control" id="fotoProfilInput" name="foto_profil_file" accept="image/png, image/jpeg, image/gif">
+                                    <div class="form-text">Pilih file gambar (JPG, PNG, GIF) dengan ukuran maksimal 2MB.</div>
+                                </div>
                                 <!-- Data Pribadi -->
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">First Name</label>
