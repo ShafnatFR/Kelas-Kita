@@ -1,8 +1,7 @@
 <?php
 session_start();
-require 'db.php'; // Pastikan file koneksi database ada dan berfungsi
+require 'db.php';
 
-// Cek apakah user sudah login dan memiliki peran admin
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     header("Location: adminLogin.php");
     exit();
