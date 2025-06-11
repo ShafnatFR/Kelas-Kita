@@ -1,7 +1,14 @@
 <?php
 session_start();
 
-$total_payment = isset($_SESSION['cart_total_amount']) ? $_SESSION['cart_total_amount'] : '0.00';
+// Add session login check
+if (!isset($_SESSION['id']) || $_SESSION['id'] == 0) {
+    header("Location: HalamanSignIn.php");
+    exit();
+}
+
+$total_payment = isset($_SESSION['cart_total_amount']) ? $_SESSION['cart_total_amount'] : 0.00;
+
 
 // Konfigurasi database
 $host = 'localhost';
@@ -296,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             <img src="../assets/images/qrbayar1.jpg" alt="Bank" class="img-fluid rounded">
                                         </div>
                                         <div class="col-md-9">
-                                            <h5 class="mb-1">Bank Mandiri</h5>
+                                            <h5 class="mb-1">Bank BRI</h5>
                                             <div class="d-flex align-items-center mb-2">
                                                 <strong class="me-2">No. Rekening:</strong>
                                                 <span id="norek" class="me-2">015501149884506</span>
@@ -312,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     </div>
                                     <div class="alert alert-info mt-3 mb-0">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Total Pembayaran: Rp 500.000</strong><br>
+                                        <strong>Total Pembayaran: Rp <?php echo number_format($total_payment, 0, ',', '.'); ?></strong><br>
                                         <small>Pastikan nominal transfer sesuai dengan jumlah di atas</small>
                                     </div>
                                 </div>

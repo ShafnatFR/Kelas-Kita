@@ -428,22 +428,23 @@ include_once(__DIR__ . "/../Views/navbarbootstrap.php");
                                     }
                                     // Display document if exists
                                     if (!empty($row['file_path_dokumen'])) {
+                                        $docFileName = basename($row['file_path_dokumen']);
                                         ?>
                                         <div class="course-material">
                                             <i class="fas fa-file-pdf me-2"></i>
-                                            <a href="<?php echo htmlspecialchars($row['file_path_dokumen']); ?>" target="_blank">Dokumen</a>
+                                            <a href="<?php echo htmlspecialchars($row['file_path_dokumen']); ?>" target="_blank"><?php echo htmlspecialchars($docFileName); ?></a>
                                         </div>
                                         <?php
                                     }
                                     // Display video if exists
                                     if (!empty($row['file_path_video'])) {
+                                        // Assume file_path_video contains YouTube URL, embed using iframe
                                         ?>
                                         <div class="course-material">
                                             <i class="fas fa-video me-2"></i>
-                                            <video width="320" height="240" controls>
-                                                <source src="<?php echo htmlspecialchars($row['file_path_video']); ?>" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
+                                            <div class="ratio ratio-16x9">
+                                                <iframe src="<?php echo htmlspecialchars($row['file_path_video']); ?>" title="YouTube video" allowfullscreen></iframe>
+                                            </div>
                                         </div>
                                         <?php
                                     }

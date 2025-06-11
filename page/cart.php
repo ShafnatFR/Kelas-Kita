@@ -166,6 +166,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
         $price = isset($cart_items_data[$item['id']]) ? $cart_items_data[$item['id']]['price'] : ($item['price'] ?? 0);
         $total += $price * $item['quantity'];
     }
+    $_SESSION['cart_total_amount'] = $total; // Store total in session for use in transaksi.php
 }
 
 // Debug: Uncomment the lines below to see cart data
