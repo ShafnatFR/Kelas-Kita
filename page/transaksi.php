@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Handle file upload
     if (isset($_FILES['bukti_transaksi']) && $_FILES['bukti_transaksi']['error'] == 0) {
-        $upload_dir = 'uploads/bukti_transaksi/';
+        $upload_dir = '../uploads/bukti_transaksi/';
         
         // Buat folder jika belum ada
         if (!file_exists($upload_dir)) {
