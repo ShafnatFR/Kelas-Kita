@@ -1,803 +1,978 @@
 <?php
-// checkout.php - Perbaikan untuk masalah User ID validation
+// checkout.php - Versi yang diperbaiki
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Konfigurasi Database
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "KelasKita_baru";
 
 // Buat koneksi database
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Memeriksa koneksi
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
-
-// Fungsi untuk memeriksa dan menyambungkan kembali koneksi MySQL
-function checkAndReconnect(&$conn, $servername, $username, $password, $dbname) {
-    if (!$conn->ping()) {
-        $conn->close();
-        $conn = new mysqli($servername, $username, $password, $dbname);
-        if ($conn->connect_error) {
-            die("Koneksi gagal setelah reconnect: " . $conn->connect_error);
-        }
+try {
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    if ($conn->connect_error) {
+        throw new Exception("Koneksi database gagal: " . $conn->connect_error);
     }
+    $conn->set_charset("utf8");
+} catch (Exception $e) {
+    die("Error: " . $e->getMessage());
 }
 
-// Aktifkan pelaporan kesalahan untuk debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Panggil fungsi reconnect saat startup
-checkAndReconnect($conn, $servername, $username, $password, $dbname);
-
-// Mulai sesi untuk mengakses data keranjang dan user
 session_start();
 
-// DEBUG: Tampilkan informasi sesi untuk debugging
-if (isset($_GET['debug']) && $_GET['debug'] == '1') {
-    echo "<pre>";
-    echo "=== DEBUG SESSION INFO ===\n";
-    echo "Session ID: " . session_id() . "\n";
-    echo "User ID dari session: " . ($_SESSION['id'] ?? 'NOT SET') . "\n";
-    echo "Username dari session: " . ($_SESSION['username'] ?? 'NOT SET') . "\n";
-    echo "Email dari session: " . ($_SESSION['email'] ?? 'NOT SET') . "\n";
-    echo "All session data:\n";
-    print_r($_SESSION);
-    echo "=== END DEBUG ===\n";
-    echo "</pre>";
-}
+// Initialize pending_order from session if available
+$pending_order = $_SESSION['pending_order'] ?? null;
 
-// PERBAIKAN 1: Cek berbagai kemungkinan key untuk user ID di session
-$user_id = null;
-if (isset($_SESSION['id']) && !empty($_SESSION['id'])) {
-    $user_id = $_SESSION['id'];
-} elseif (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-} elseif (isset($_SESSION['id_user']) && !empty($_SESSION['id_user'])) {
-    $user_id = $_SESSION['id_user'];
-}
-
-// PERBAIKAN 2: Validasi user ID dengan query ke database
-$user_data = null;
-if ($user_id) {
-    checkAndReconnect($conn, $servername, $username, $password, $dbname);
+// Fungsi untuk mendapatkan harga terbaru dari database
+function getCurrentPrices($conn, $cart_items) {
+    $prices = [];
+    $item_ids = array_column($cart_items, 'id');
     
-    // Cek apakah user_id ada di database dan ambil data lengkap
-    $stmt_check_user = $conn->prepare("SELECT id_user, username, email FROM tb_user WHERE id_user = ?");
-    if ($stmt_check_user) {
-        $stmt_check_user->bind_param("i", $user_id);
-        $stmt_check_user->execute();
-        $result_check_user = $stmt_check_user->get_result();
+    if (!empty($item_ids)) {
+        $placeholders = implode(',', array_fill(0, count($item_ids), '?'));
+        $stmt = $conn->prepare("SELECT id_kelas, harga FROM tb_kelas WHERE id_kelas IN ($placeholders)");
         
-        if ($result_check_user->num_rows > 0) {
-            $user_data = $result_check_user->fetch_assoc();
-            // Update session dengan data terbaru dari database
-            $_SESSION['id'] = $user_data['id_user'];
-            $_SESSION['username'] = $user_data['username'];
-            $_SESSION['email'] = $user_data['email'];
-        } else {
-            // User ID tidak ditemukan di database
-            $user_id = null;
-            $user_data = null;
+        if ($stmt) {
+            $types = str_repeat('i', count($item_ids));
+            $stmt->bind_param($types, ...$item_ids);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            while ($row = $result->fetch_assoc()) {
+                $prices[$row['id_kelas']] = $row['harga'];
+            }
+            $stmt->close();
         }
-        $stmt_check_user->close();
-    } else {
-        error_log("Failed to prepare statement for user validation: " . $conn->error);
-        $user_id = null;
     }
-}
-
-// PERBAIKAN 3: Redirect dengan pesan error yang lebih informatif
-if (!$user_id || !$user_data) {
-    // Bersihkan session yang mungkin rusak
-    session_unset();
-    session_destroy();
     
-    // Set pesan error di URL
-    header('Location: HalamanSignIn.php?error=session_expired&message=' . urlencode('Sesi Anda telah berakhir. Silakan login kembali.'));
-    exit;
+    return $prices;
 }
 
-// Redirect jika keranjang kosong
-if (empty($_SESSION['cart'])) {
-    header('Location: cart.php?message=' . urlencode('Keranjang Anda kosong.'));
-    exit;
-}
-
-// PERBAIKAN 4: Validasi struktur data keranjang
-$valid_cart = true;
-foreach ($_SESSION['cart'] as $item) {
-    if (!isset($item['id']) || !isset($item['name'])) {
-        $valid_cart = false;
-        break;
-    }
-}
-
-if (!$valid_cart) {
-    unset($_SESSION['cart']);
-    header('Location: cart.php?error=invalid_cart&message=' . urlencode('Data keranjang tidak valid. Silakan tambahkan item kembali.'));
-    exit;
-}
-
-// Ambil harga terbaru untuk item di keranjang dari database
-$current_prices = [];
-$item_ids_in_cart = [];
-foreach ($_SESSION['cart'] as $item) {
-    $item_ids_in_cart[] = $item['id'];
-}
-
-if (!empty($item_ids_in_cart)) {
-    $ids_placeholder = implode(',', array_fill(0, count($item_ids_in_cart), '?'));
-    $stmt = $conn->prepare("SELECT id_kelas, harga FROM tb_kelas WHERE id_kelas IN ($ids_placeholder)");
-    if ($stmt) {
-        $types = str_repeat('i', count($item_ids_in_cart));
-        $stmt->bind_param($types, ...$item_ids_in_cart);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $current_prices[$row['id_kelas']] = $row['harga'];
-        }
-        $stmt->close();
-    } else {
-        error_log("Failed to prepare statement for fetching current prices: " . $conn->error);
-    }
-}
-
-// Hitung total belanja menggunakan harga terbaru
+// Hitung total belanja
+$current_prices = getCurrentPrices($conn, $_SESSION['cart']);
 $total = 0;
+
 foreach ($_SESSION['cart'] as &$item) {
-    $original_price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : (floatval($item['price'] ?? 0));
+    $price = isset($current_prices[$item['id']]) ? $current_prices[$item['id']] : floatval($item['price'] ?? 0);
     $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
-    $total += $original_price * $quantity;
-    $item['price'] = $original_price;
+    $total += $price * $quantity;
+    $item['price'] = $price; // Update dengan harga terbaru
 }
 
+// Hitung diskon jika ada
 $discount_amount = 0;
 $discounted_total = $total;
 
-// Cek kupon yang diterapkan
-$applied_coupon = null;
 if (isset($_SESSION['applied_coupon'])) {
-    $applied_coupon = $_SESSION['applied_coupon'];
-    $discount_percentage = floatval($applied_coupon['discount'] ?? 0);
+    $coupon = $_SESSION['applied_coupon'];
+    $discount_percentage = floatval($coupon['discount'] ?? 0);
     $discount_amount = $total * ($discount_percentage / 100);
     $discounted_total = $total - $discount_amount;
 }
 
-// Format angka untuk tampilan
-$total_formatted = number_format($total, 0, ',', '.');
-$discounted_total_formatted = number_format($discounted_total, 0, ',', '.');
-$discount_amount_formatted = number_format($discount_amount, 0, ',', '.');
 
-// Variabel status halaman
-$payment_processed = false;
-$payment_confirmed_pending = false;
-$payment_error = '';
-$qr_virtual_account_number = "123456789012";
-$current_page_status = 'customer_info';
+// Fungsi untuk mengatur step pembayaran
+function setPaymentStep($step) {
+    $_SESSION['payment_step'] = $step;
+}
 
-// Cek apakah ada order_id di URL
-if (isset($_GET['order_id']) && !empty($_GET['order_id'])) {
-    $current_page_status = 'confirmation_pending';
-    $order_id_from_url = $_GET['order_id'];
-    checkAndReconnect($conn, $servername, $username, $password, $dbname);
-    $stmt_fetch_payment = $conn->prepare("SELECT * FROM tb_pembayaran WHERE order_id = ? AND id_user = ?");
-    if ($stmt_fetch_payment) {
-        $stmt_fetch_payment->bind_param("si", $order_id_from_url, $user_id);
-        $stmt_fetch_payment->execute();
-        $result_fetch_payment = $stmt_fetch_payment->get_result();
-        $last_order = $result_fetch_payment->fetch_assoc();
-        $stmt_fetch_payment->close();
+function getPaymentStep() {
+    return $_SESSION['payment_step'] ?? 1;
+}
+
+// Fungsi untuk memvalidasi step yang diizinkan
+function validatePaymentStep($current_step) {
+    $allowed_steps = [1, 2, 3];
+    return in_array($current_step, $allowed_steps);
+}
+
+// Handler untuk proses pembayaran
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    
+    switch($action) {
+        case 'confirm_payment':
+            // Validasi data pembayaran step 2
+            if (validatePaymentData()) {
+                // Simpan data pembayaran ke database/session
+                savePaymentData();
+                
+                // Pindah ke step 3 (bukan kembali ke halaman utama)
+                setPaymentStep(3);
+                
+                // Redirect ke step 3
+                header("Location: payment.php?step=3");
+                exit();
+            } else {
+                // Jika validasi gagal, tetap di step 2 dengan pesan error
+                $error_message = "Data pembayaran tidak valid. Silakan periksa kembali.";
+                setPaymentStep(2);
+            }
+            break;
+            
+        case 'complete_payment':
+            // Proses finalisasi pembayaran di step 3
+            if (finalizePayment()) {
+                // Bersihkan session pembayaran
+                unset($_SESSION['payment_step']);
+                unset($_SESSION['payment_data']);
+                
+                // Bersihkan cart setelah pembayaran berhasil
+                if (isset($_SESSION['user_id'])) {
+                    clearCart($_SESSION['user_id'], $conn);
+                }
+                
+                // Redirect ke halaman sukses atau dashboard
+                header("Location: payment_success.php");
+                exit();
+            }
+            break;
+            
+        case 'back_to_step':
+            $target_step = intval($_POST['target_step'] ?? 1);
+            if (validatePaymentStep($target_step)) {
+                setPaymentStep($target_step);
+                header("Location: payment.php?step=" . $target_step);
+                exit();
+            }
+            break;
+    }
+}
+
+function validatePaymentData() {
+    // Validasi data yang diperlukan untuk konfirmasi pembayaran
+    $required_fields = ['payment_method', 'amount'];
+    
+    foreach ($required_fields as $field) {
+        if (empty($_POST[$field])) {
+            return false;
+        }
+    }
+    
+    // Validasi tambahan sesuai kebutuhan
+    $amount = floatval($_POST['amount']);
+    if ($amount <= 0) {
+        return false;
+    }
+    
+    return true;
+}
+
+function savePaymentData() {
+    // Simpan data pembayaran ke session untuk step berikutnya
+    $_SESSION['payment_data'] = [
+        'payment_method' => $_POST['payment_method'],
+        'amount' => $_POST['amount'],
+        'virtual_account' => $_POST['virtual_account'] ?? '',
+        'confirmation_time' => date('Y-m-d H:i:s')
+    ];
+}
+
+function finalizePayment() {
+    global $conn;
+    
+    if (!isset($_SESSION['payment_data']) || !isset($_SESSION['user_id'])) {
+        return false;
+    }
+    
+    $payment_data = $_SESSION['payment_data'];
+    $user_id = $_SESSION['user_id'];
+    
+    try {
+        // Mulai transaksi database
+        $conn->begin_transaction();
         
-        if (!$last_order) {
-            $payment_error = "Order ID tidak ditemukan atau tidak cocok dengan user.";
-            $current_page_status = 'customer_info';
+        // 1. Simpan data transaksi
+        $stmt = $conn->prepare("
+            INSERT INTO tb_transaksi (id_user, total_amount, payment_method, virtual_account, status, created_at) 
+            VALUES (?, ?, ?, ?, 'pending', NOW())
+        ");
+        
+        $stmt->bind_param("idss", 
+            $user_id, 
+            $payment_data['amount'], 
+            $payment_data['payment_method'], 
+            $payment_data['virtual_account']
+        );
+        
+        $stmt->execute();
+        $transaction_id = $conn->insert_id;
+        $stmt->close();
+        
+        // 2. Simpan detail item yang dibeli
+        $cart_items = getCartItems($user_id, $conn);
+        
+        if (!empty($cart_items)) {
+            $detail_stmt = $conn->prepare("
+                INSERT INTO tb_detail_transaksi (id_transaksi, id_kelas, harga) 
+                VALUES (?, ?, ?)
+            ");
+            
+            foreach ($cart_items as $item) {
+                $detail_stmt->bind_param("iid", $transaction_id, $item['id'], $item['price']);
+                $detail_stmt->execute();
+            }
+            $detail_stmt->close();
         }
-    } else {
-        error_log("Failed to prepare statement for fetching payment: " . $conn->error);
-        $payment_error = "Terjadi kesalahan sistem saat memproses order Anda.";
-        $current_page_status = 'customer_info';
+        
+        // 3. Commit transaksi
+        $conn->commit();
+        
+        return true;
+        
+    } catch (Exception $e) {
+        // Rollback jika terjadi error
+        $conn->rollback();
+        error_log("Payment finalization error: " . $e->getMessage());
+        return false;
     }
 }
 
-// Handle form submission: Proceed to Payment
-if (isset($_POST['proceed_to_payment'])) {
-    $errors = [];
-    if (empty($_POST['full_name'])) $errors[] = 'Nama lengkap harus diisi';
-    if (empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Email yang valid harus diisi';
-    if (empty($_POST['phone'])) $errors[] = 'Nomor telepon harus diisi';
+// Fungsi untuk mendapatkan data step saat ini
+function getCurrentStepData() {
+    $step = getPaymentStep();
     
-    if (empty($errors)) {
-        $current_page_status = 'qr_payment';
-        $order_id = 'ORD-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
-        $_SESSION['pending_order_data'] = [
-            'id' => $order_id,
-            'full_name' => $_POST['full_name'],
-            'email' => $_POST['email'],
-            'phone' => $_POST['phone'],
-            'total' => $discounted_total,
-            'discount' => $discount_amount,
-            'items' => $_SESSION['cart'],
-            'date' => date('Y-m-d H:i:s')
-        ];
-    } else {
-        $payment_error = implode('<br>', $errors);
-        $current_page_status = 'customer_info';
+    switch($step) {
+        case 1:
+            return [
+                'title' => 'Informasi Pesanan',
+                'description' => 'Periksa detail pesanan Anda'
+            ];
+        case 2:
+            return [
+                'title' => 'Pembayaran',
+                'description' => 'Pilih metode pembayaran dan konfirmasi'
+            ];
+        case 3:
+            return [
+                'title' => 'Konfirmasi',
+                'description' => 'Upload bukti pembayaran dan selesaikan transaksi'
+            ];
+        default:
+            return [
+                'title' => 'Informasi Pesanan',
+                'description' => 'Periksa detail pesanan Anda'
+            ];
     }
 }
 
-// Handle payment confirmation
-if (isset($_POST['confirm_payment'])) {
-    $payment_success = true;
+// Fungsi untuk mengecek apakah step dapat diakses
+function canAccessStep($target_step) {
+    $current_step = getPaymentStep();
     
-    // Save order to database
-    $user_id = $_SESSION['id'];
-    $pending_order = $_SESSION['pending_order'];
-    $date = date('Y-m-d');
+    // Step 1 selalu dapat diakses
+    if ($target_step == 1) return true;
     
-    // Insert each cart item as a transaction record in tb_transaksi
-    foreach ($_SESSION['cart'] as $item) {
-        $id_kelas = $item['id'];
-        $quantity = isset($item['quantity']) ? $item['quantity'] : 1;
+    // Step 2 dapat diakses jika sudah melewati step 1
+    if ($target_step == 2 && $current_step >= 1) return true;
+    
+    // Step 3 dapat diakses jika sudah melewati step 2
+    if ($target_step == 3 && $current_step >= 2) return true;
+    
+    return false;
+}
 
-        // Get id_keranjang for this user and kelas
-        $stmt_keranjang = $conn->prepare("SELECT id_keranjang FROM tb_keranjang WHERE id_user = ? AND id_kelas = ? LIMIT 1");
-        $stmt_keranjang->bind_param("ii", $user_id, $id_kelas);
-        $stmt_keranjang->execute();
-        $result_keranjang = $stmt_keranjang->get_result();
-        $row_keranjang = $result_keranjang->fetch_assoc();
-        $id_keranjang = $row_keranjang ? $row_keranjang['id_keranjang'] : 0;
-
-        // For each quantity, insert a transaction record
-        for ($i = 0; $i < $quantity; $i++) {
-            $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status) VALUES (?, ?, ?, 'QR_PAYMENT', ?, 'Completed')");
-            $stmt->bind_param("iiis", $id_kelas, $user_id, $id_keranjang, $date);
-            $stmt->execute();
+// Fungsi untuk generate breadcrumb
+function generateBreadcrumb() {
+    $current_step = getPaymentStep();
+    $steps = [
+        1 => 'Informasi Pesanan',
+        2 => 'Pembayaran', 
+        3 => 'Konfirmasi'
+    ];
+    
+    $breadcrumb = '<div class="payment-steps">';
+    
+    foreach ($steps as $step_num => $step_name) {
+        $active_class = ($step_num == $current_step) ? 'active' : '';
+        $completed_class = ($step_num < $current_step) ? 'completed' : '';
+        
+        $breadcrumb .= '<div class="step-item ' . $active_class . ' ' . $completed_class . '">';
+        $breadcrumb .= '<span class="step-number">' . $step_num . '</span>';
+        $breadcrumb .= '<span class="step-name">' . $step_name . '</span>';
+        $breadcrumb .= '</div>';
+        
+        if ($step_num < count($steps)) {
+            $breadcrumb .= '<div class="step-separator">→</div>';
         }
     }
-
-    // Clear tb_keranjang entries for the user
-    $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
     
-    // Store order details for confirmation
-    $_SESSION['last_order'] = $_SESSION['pending_order'];
+    $breadcrumb .= '</div>';
     
-    // Clear cart and coupon
-    $_SESSION['cart'] = [];
-    unset($_SESSION['applied_coupon']);
-    unset($_SESSION['pending_order']);
-}
-
-// Check for success parameter
-if (isset($_GET['success']) && $_GET['success'] == 'true' && isset($_SESSION['last_order'])) {
-    $payment_success = true;
-    $last_order = $_SESSION['last_order'];
+    return $breadcrumb;
 }
 
 $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars(($current_page_status === 'confirmation_pending') ? 'Payment Confirmation' : (($current_page_status === 'qr_payment') ? 'Complete Payment' : 'Checkout')); ?> | KelasKita</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Checkout | KelasKita</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        
-        .step-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-        
-        .step {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: white;
-            font-weight: 600;
-            margin: 0 10px;
-            position: relative;
-            transition: background-color 0.3s ease;
-        }
-        
-        .step.completed {
-            background-color: #10b981;
-        }
-        
-        .step.active {
-            background-color: #3b82f6;
-        }
-        
-        .step.pending {
-            background-color: #d1d5db;
-            color: #6b7280;
-        }
-        
-        .step-connector {
-            width: 60px;
-            height: 2px;
-            background-color: #10b981;
-            transition: background-color 0.3s ease;
-        }
-        
-        .step-connector.pending {
-            background-color: #d1d5db;
+        .container-custom {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         .card-modern {
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .payment-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+        
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+            color: #6c757d;
+        }
+        
+        .step-item.active {
+            color: #007bff;
+        }
+        
+        .step-item.completed {
+            color: #28a745;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: currentColor;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .step-separator {
+            font-size: 1.5rem;
+            color: #6c757d;
         }
         
         .qr-container {
-            background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
-            border: 2px dashed #0ea5e9;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            margin: 1rem 0;
-        }
-        
-        .success-animation {
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .payment-timer {
-            background: linear-gradient(90deg, #fbbf24, #f59e0b);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
-        }
-
-        .payment-confirmation-box {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #007bff;
+            border-radius: 10px;
             padding: 30px;
             text-align: center;
+            margin: 20px 0;
         }
-        .payment-confirmation-box .icon {
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .virtual-account {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .virtual-account .number {
+            font-size: 18px;
+            font-weight: bold;
+            font-family: monospace;
+            color: #1976d2;
+            letter-spacing: 2px;
+        }
+        
+        .confirmation-box {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .confirmation-box .icon {
             font-size: 4rem;
-            color: #10b981;
+            color: #28a745;
             margin-bottom: 20px;
         }
-        .payment-confirmation-box h2 {
-            color: #333;
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+        
+        .order-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
         }
-        .payment-confirmation-box p {
-            color: #555;
-            font-size: 1rem;
-            line-height: 1.6;
+        
+        .item-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .payment-methods {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .method-step {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .method-step:before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #007bff;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .method-steps {
+            counter-reset: step-counter;
+        }
+
+        /* New styles for checkout buttons */
+        .checkout-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .checkout-buttons button,
+        .checkout-buttons a.btn {
+            flex: 1 1 48%;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.6rem;
+            min-width: 110px;
+            max-width: 180px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 576px) {
+            .checkout-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .checkout-buttons button,
+            .checkout-buttons a.btn {
+                flex: 1 1 100%;
+                min-width: unset;
+                max-width: none;
+                font-size: 0.9rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+        
+        /* Center form inputs and container */
+        .form-container {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .form-content {
+            width: 100%;
+            max-width: 600px;
         }
     </style>
 </head>
 <body>
     <?php include("../Views/navbarbootstrap.php"); ?>
     
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
-            
-            <!-- DEBUG INFO (hapus setelah masalah teratasi) -->
-            <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
-            <div class="debug-info">
-                <h4>Debug Information:</h4>
-                <p><strong>User ID:</strong> <?php echo htmlspecialchars($user_id ?? 'NULL'); ?></p>
-                <p><strong>User Data:</strong> <?php echo $user_data ? 'Valid' : 'Invalid'; ?></p>
-                <p><strong>Session Username:</strong> <?php echo htmlspecialchars($_SESSION['username'] ?? 'NOT SET'); ?></p>
-                <p><strong>Session Email:</strong> <?php echo htmlspecialchars($_SESSION['email'] ?? 'NOT SET'); ?></p>
-                <p><strong>Cart Items:</strong> <?php echo count($_SESSION['cart'] ?? []); ?></p>
-                <p><strong>Current Page Status:</strong> <?php echo htmlspecialchars($current_page_status); ?></p>
-                <?php if (!empty($payment_error)): ?>
-                <p><strong>Payment Error:</strong> <?php echo htmlspecialchars($payment_error); ?></p>
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($current_page_status === 'confirmation_pending'): ?>
-                <div class="payment-confirmation-box success-animation">
+    <div class="container-custom">
+        <!-- Breadcrumb -->
+        <?php echo generateBreadcrumb(); ?>
+        
+        <?php if (!empty($errors)): ?>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                <?php foreach ($errors as $error): ?>
+                <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+        
+        <?php $current_step = getPaymentStep(); ?>
+        
+        <?php if ($current_step === 3): ?>
+            <!-- Halaman Konfirmasi -->
+            <div class="card-modern">
+                <div class="confirmation-box">
                     <div class="icon">
-                        <i class="fas fa-hourglass-half"></i>
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    <h2>Pembayaran Anda Sedang Diverifikasi!</h2>
-                    <p class="mb-4">Terima kasih telah melakukan pembayaran. Kami telah menerima bukti transfer Anda.</p>
-                    <p class="mb-4">Nomor Order Anda: <strong class="text-blue-600"><?php echo htmlspecialchars($last_order['order_id'] ?? 'N/A'); ?></strong></p>
-                    <p>Proses verifikasi biasanya membutuhkan waktu 1x24 jam kerja. Setelah pembayaran Anda berhasil diverifikasi, Anda akan menerima email konfirmasi dan akses ke kursus Anda.</p>
-                    <p class="mt-4">Untuk pertanyaan lebih lanjut, silakan hubungi dukungan pelanggan kami.</p>
-                    <a href="index.php" class="btn btn-primary mt-4">Kembali ke Beranda</a>
-                    <a href="my_courses.php" class="btn btn-outline-secondary mt-4 ms-2">Lihat Kursus Saya</a>
-                </div>
-
-            <?php elseif ($current_page_status === 'qr_payment'): ?>
-                <div>
-                    <div class="step-indicator mb-8">
-                        <div class="step completed">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="step-connector"></div>
-                        <div class="step active">
-                            <i class="fas fa-qrcode"></i>
-                        </div>
-                        <div class="step-connector pending"></div>
-                        <div class="step pending">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
+                    <h2 class="text-success mb-3">Pembayaran Berhasil Diunggah!</h2>
+                    <p class="lead mb-4">Terima kasih! Bukti pembayaran Anda telah berhasil diunggah.</p>
                     
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-white mb-2">Selesaikan Pembayaran Anda</h1>
-                        <p class="text-blue-100">Scan QR code di bawah untuk menyelesaikan pembayaran</p>
-                    </div>
-                    
-                    <?php if (!empty($payment_error)): ?>
-                        <div class="alert alert-danger text-center mb-4" role="alert">
-                            <?php echo $payment_error; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="card-modern p-6">
-                            <div class="payment-timer">
-                                <i class="fas fa-clock mr-2"></i>Selesaikan pembayaran dalam 15:00 menit
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <strong>Order ID:</strong> <?php echo htmlspecialchars($payment_data['order_id'] ?? ''); ?><br>
+                                <strong>Status:</strong> <span class="badge bg-warning">Menunggu Verifikasi</span><br>
+                                <strong>Total:</strong> Rp <?php echo number_format($payment_data['total_bayar'] ?? 0, 0, ',', '.'); ?>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Pembayaran Anda akan diverifikasi dalam 1x24 jam kerja. 
+                        Kami akan mengirimkan konfirmasi melalui email.
+                    </p>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="action" value="back_to_step">
+                            <input type="hidden" name="target_step" value="2">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Kembali ke Pembayaran
+                            </button>
+                        </form>
+                        <a href="index.php" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Kembali ke Beranda
+                        </a>
+                        <a href="my-orders.php" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Lihat Pesanan
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        <?php elseif ($current_step === 2): ?>
+            <!-- Halaman Pembayaran -->
+            <div class="card-modern">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Pembayaran</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Info Order -->
+                            <?php if ($pending_order): ?>
+                            <div class="alert alert-info mb-4">
+                                <h6><i class="fas fa-info-circle me-2"></i>Informasi Pesanan</h6>
+                                <p class="mb-1"><strong>Order ID:</strong> <?php echo htmlspecialchars($pending_order['order_id']); ?></p>
+                                <p class="mb-1"><strong>Nama:</strong> <?php echo htmlspecialchars($pending_order['full_name']); ?></p>
+                                <p class="mb-0"><strong>Total:</strong> Rp <?php echo number_format($pending_order['total'], 0, ',', '.'); ?></p>
+                            </div>
+                            <?php endif; ?>
                             
                             <div class="qr-container">
-                                <div class="invoice-header text-center mb-4">
-                                    <h4 class="font-bold text-gray-800">Your Invoice</h4>
-                                    <p class="text-sm text-gray-600">Invoice Code: <span class="font-bold"><?php echo htmlspecialchars($_SESSION['pending_order_data']['id'] ?? 'N/A'); ?></span></p>
-                                    <p class="text-sm text-gray-600">Payment by BCA VIRTUAL ACCOUNT</p>
-                                </div>
-                                <div class="w-48 h-48 mx-auto mb-4 bg-white p-2 rounded-lg border border-gray-200">
-                                    <img src="<?php echo htmlspecialchars($qr_code_image_url); ?>" alt="QR Code Pembayaran" class="w-full h-full object-contain">
-                                </div>
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-qrcode me-2"></i>Scan QR Code untuk Pembayaran
+                                </h5>
                                 
-                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Nomor Virtual Account BCA</h3>
-                                <p class="text-gray-600 mb-4 text-xl font-bold text-blue-700"><?php echo htmlspecialchars($qr_virtual_account_number); ?></p>
-                                
-                                <div class="bg-blue-50 p-3 rounded-lg mb-4">
-                                    <p class="text-sm text-blue-800">
-                                        <strong>Jumlah yang harus dibayar:</strong> Rp<?php echo $discounted_total_formatted; ?>
-                                    </p>
-                                </div>
-                                
-                                <div class="flex justify-center space-x-4 mb-4">
-                                    <img src="https://via.placeholder.com/40x25/1f65ff/ffffff?text=OVO" alt="OVO" class="rounded">
-                                    <img src="https://via.placeholder.com/40x25/00aa5b/ffffff?text=DANA" alt="DANA" class="rounded">
-                                    <img src="https://via.placeholder.com/40x25/0066cc/ffffff?text=BCA" alt="BCA" class="rounded">
-                                    <img src="https://via.placeholder.com/40x25/e31e24/ffffff?text=CIMB" alt="CIMB" class="rounded">
-                                </div>
-                            </div>
-                            
-                            <form method="POST" enctype="multipart/form-data" class="mt-4">
-                                <div class="mb-3">
-                                    <label for="proof_image" class="form-label text-gray-700">Unggah Bukti Transfer *</label>
-                                    <input class="form-control" type="file" id="proof_image" name="proof_image" accept="image/*" required>
-                                    <small class="text-muted">Format: JPG, PNG. Max size: 2MB.</small>
-                                </div>
-                                <button type="submit" name="upload_proof" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
-                                    <i class="fas fa-upload mr-2"></i>Unggah & Konfirmasi Pembayaran
-                                </button>
-                            </form>
-                            
-                            <p class="text-xs text-gray-500 text-center mt-3">
-                                Klik tombol di atas setelah Anda berhasil melakukan pembayaran dan mengunggah bukti.
-                            </p>
-                        </div>
-                        <div class="card-modern p-6">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-receipt mr-2 text-blue-500"></i>Ringkasan Pesanan
-                            </h3>
-                            
-                            <div class="space-y-3 mb-4">
-                                <?php foreach ($_SESSION['cart'] as $item): ?>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <div class="qr-code">
                                     <div>
-                                        <h5 class="font-medium text-gray-800"><?php echo htmlspecialchars($item['name']); ?></h5>
-                                        <small class="text-gray-500">Qty: <?php echo (int)($item['quantity'] ?? 1); ?></small>
+                                        <i class="fas fa-qrcode fa-3x mb-2"></i><br>
+                                        QR Code Pembayaran
                                     </div>
-                                    <span class="font-semibold text-gray-700">
-                                        Rp<?php echo number_format($item['price'] * ($item['quantity'] ?? 1), 0, ',', '.'); ?>
-                                    </span>
                                 </div>
-                                <?php endforeach; ?>
+                                
+                                <div class="virtual-account">
+                                    <div><strong>Virtual Account:</strong></div>
+                                    <div class="number">1234567890</div>
+                                    <div class="mt-2">
+                                        <strong>Jumlah:</strong> 
+                                        <span class="text-success">Rp <?php echo number_format($pending_order ? $pending_order['total'] : $discounted_total, 0, ',', '.'); ?></span>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-outline-primary btn-sm" onclick="copyVA()">
+                                    <i class="fas fa-copy me-1"></i>Copy Virtual Account
+                                </button>
                             </div>
                             
-                            <div class="border-t pt-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-600">Subtotal:</span>
-                                    <span class="font-medium">Rp<?php echo $total_formatted; ?></span>
-                                </div>
-                                
-                                <?php if ($applied_coupon): ?>
-                                <div class="flex justify-between items-center mb-2 text-green-600">
-                                    <span>Diskon (<?php echo htmlspecialchars($applied_coupon['code']); ?>):</span>
-                                    <span>-Rp<?php echo $discount_amount_formatted; ?></span>
-                                </div>
-                                <?php endif; ?>
-                                
-                                <div class="flex justify-between items-center text-lg font-bold text-gray-800 border-t pt-2">
-                                    <span>Total:</span>
-                                    <span class="text-blue-600">Rp<?php echo $discounted_total_formatted; ?></span>
+                            <div class="payment-methods">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Cara Pembayaran:
+                                </h6>
+                                <div class="method-steps">
+                                    <div class="method-step">Buka aplikasi mobile banking atau e-wallet</div>
+                                    <div class="method-step">Pilih menu "Scan QR" atau "QRIS"</div>
+                                    <div class="method-step">Scan QR code atau masukkan Virtual Account</div>
+                                    <div class="method-step">Masukkan nominal pembayaran</div>
+                                    <div class="method-step">Konfirmasi pembayaran</div>
+                                    <div class="method-step">Upload bukti transfer di bawah ini</div>
                                 </div>
                             </div>
                             
-                            <div class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                                <h4 class="font-semibold text-yellow-800 mb-2">
-                                    <i class="fas fa-info-circle mr-2"></i>Instruksi Pembayaran
-                                </h4>
-                                <ol class="text-sm text-yellow-700 space-y-1">
-                                    <li>1. Scan QR code dengan aplikasi mobile banking</li>
-                                    <li>2. Transfer sesuai nominal yang tertera</li>
-                                    <li>3. Screenshot bukti transfer</li>
-                                    <li>4. Upload bukti transfer di form sebelah kiri</li>
-                                    <li>5. Klik "Konfirmasi Pembayaran"</li>
-                                </ol>
-                            </div>
-                            
-                            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                                <p class="text-sm text-blue-800">
-                                    <i class="fas fa-shield-alt mr-2"></i>
-                                    Pembayaran Anda aman dan akan diverifikasi dalam 1x24 jam kerja.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            <?php else: // customer_info ?>
-                <div>
-                    <div class="step-indicator mb-8">
-                        <div class="step active">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="step-connector pending"></div>
-                        <div class="step pending">
-                            <i class="fas fa-qrcode"></i>
-                        </div>
-                        <div class="step-connector pending"></div>
-                        <div class="step pending">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-white mb-2">Checkout</h1>
-                        <p class="text-blue-100">Lengkapi informasi Anda untuk melanjutkan pembayaran</p>
-                    </div>
-                    
-                    <?php if (!empty($payment_error)): ?>
-                        <div class="alert alert-danger text-center mb-4" role="alert">
-                            <?php echo $payment_error; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="card-modern p-6">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-user-edit mr-2 text-blue-500"></i>Informasi Pelanggan
-                            </h3>
-                            
-                            <form method="POST" class="space-y-4">
-                                <div>
-                                    <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap *</label>
-                                    <input type="text" 
-                                           id="full_name" 
-                                           name="full_name" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           value="<?php echo htmlspecialchars($_POST['full_name'] ?? $user_data['username'] ?? ''); ?>" 
-                                           required>
-                                </div>
-                                
-                                <div>
-                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                                    <input type="email" 
-                                           id="email" 
-                                           name="email" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           value="<?php echo htmlspecialchars($_POST['email'] ?? $user_data['email'] ?? ''); ?>" 
-                                           required>
-                                </div>
-                                
-                                <div>
-                                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon *</label>
-                                    <input type="tel" 
-                                           id="phone" 
-                                           name="phone" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                           value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>" 
-                                           placeholder="08xxxxxxxxxx" 
-                                           required>
-                                </div>
-                                
-                                <div class="pt-4">
-                                    <button type="submit" 
-                                            name="proceed_to_payment" 
-                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105">
-                                        <i class="fas fa-arrow-right mr-2"></i>Lanjut ke Pembayaran
-                                    </button>
+                            <!-- Form Upload Bukti -->
+                            <form method="POST" enctype="multipart/form-data" class="mt-4">
+                                <input type="hidden" name="action" value="complete_payment">
+                                <div class="card border-success">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0 text-success">
+                                            <i class="fas fa-upload me-2"></i>Upload Bukti Pembayaran
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="proof_image" class="form-label">
+                                                Pilih File Bukti Transfer <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control" id="proof_image" name="proof_image" 
+                                                   accept="image/jpeg,image/jpg,image/png" required>
+                                            <div class="form-text">
+                                                Format: JPG, PNG. Maksimal: 2MB
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-check me-2"></i>Konfirmasi Pembayaran
+                                            </button>
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="back_to_step">
+                                                <input type="hidden" name="target_step" value="1">
+                                                <button type="submit" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-arrow-left me-2"></i>Kembali
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
-                            
-                            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                                <p class="text-xs text-gray-600">
-                                    <i class="fas fa-lock mr-1"></i>
-                                    Informasi Anda aman dan hanya digunakan untuk proses pembelian.
-                                </p>
-                            </div>
                         </div>
                         
-                        <div class="card-modern p-6">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-shopping-cart mr-2 text-green-500"></i>Ringkasan Pesanan
-                            </h3>
-                            
-                            <div class="space-y-3 mb-4">
-                                <?php foreach ($_SESSION['cart'] as $item): ?>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <div>
-                                        <h5 class="font-medium text-gray-800"><?php echo htmlspecialchars($item['name']); ?></h5>
-                                        <small class="text-gray-500">Qty: <?php echo (int)($item['quantity'] ?? 1); ?></small>
+                        <div class="col-md-4">
+                            <!-- Order Summary -->
+                            <div class="order-summary">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-receipt me-2"></i>Ringkasan Pesanan
+                                </h6>
+                                
+                                <div class="item-list mb-3">
+                                    <?php foreach ($_SESSION['cart'] as $item): ?>
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                        <div>
+                                            <div class="fw-bold"><?php echo htmlspecialchars($item['name']); ?></div>
+                                            <small class="text-muted">Qty: <?php echo isset($item['quantity']) ? $item['quantity'] : 1; ?></small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></strong>
+                                        </div>
                                     </div>
-                                    <span class="font-semibold text-gray-700">
-                                        Rp<?php echo number_format($item['price'] * ($item['quantity'] ?? 1), 0, ',', '.'); ?>
-                                    </span>
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
-                            
-                            <div class="border-t pt-4">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-gray-600">Subtotal:</span>
-                                    <span class="font-medium">Rp<?php echo $total_formatted; ?></span>
+                                    <?php endforeach; ?>
                                 </div>
                                 
-                                <?php if ($applied_coupon): ?>
-                                <div class="flex justify-between items-center mb-2 text-green-600">
-                                    <span>Diskon (<?php echo htmlspecialchars($applied_coupon['code']); ?>):</span>
-                                    <span>-Rp<?php echo $discount_amount_formatted; ?></span>
+                                <div class="border-top pt-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal:</span>
+                                        <span>Rp <?php echo number_format($total, 0, ',', '.'); ?></span>
+                                    </div>
+                                    
+                                    <?php if ($discount_amount > 0): ?>
+                                    <div class="d-flex justify-content-between mb-2 text-success">
+                                        <span>Diskon:</span>
+                                        <span>-Rp <?php echo number_format($discount_amount, 0, ',', '.'); ?></span>
+                                    </div>
+                                    <?php endif; ?>
+                                    
+                                    <hr>
+                                    <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+                                        <span>Total:</span>
+                                        <span>Rp <?php echo number_format($pending_order ? $pending_order['total'] : $discounted_total, 0, ',', '.'); ?></span>
+                                    </div>
                                 </div>
-                                <?php endif; ?>
-                                
-                                <div class="flex justify-between items-center text-lg font-bold text-gray-800 border-t pt-2">
-                                    <span>Total:</span>
-                                    <span class="text-green-600">Rp<?php echo $discounted_total_formatted; ?></span>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                                <h4 class="font-semibold text-blue-800 mb-2">
-                                    <i class="fas fa-credit-card mr-2"></i>Metode Pembayaran
-                                </h4>
-                                <p class="text-sm text-blue-700">BCA Virtual Account</p>
-                                <p class="text-xs text-blue-600 mt-1">Transfer bank yang aman dan mudah</p>
-                            </div>
-                            
-                            <div class="mt-4 p-3 bg-green-50 rounded-lg">
-                                <p class="text-sm text-green-800">
-                                    <i class="fas fa-check-circle mr-2"></i>
-                                    Akses kursus langsung setelah pembayaran terverifikasi
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            <?php endif; ?>
-        </div>
+            </div>
+            
+        <?php elseif ($current_step === 1): ?>
+            <!-- Halaman Input Data Customer -->
+            <div class="card-modern">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="fas fa-user me-2"></i>Informasi Pembeli</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="action" value="confirm_payment">
+                        <div class="row">
+                        <div class="col-md-8 form-container">
+                            <div class="form-content">
+                                <div class="mb-3">
+                                    <label for="full_name" class="form-label">
+                                        Nama Lengkap <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" 
+                                           value="<?php echo htmlspecialchars($_POST['full_name'] ?? $user_data['username'] ?? ''); ?>" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        Email <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="<?php echo htmlspecialchars($_POST['email'] ?? $user_data['email'] ?? ''); ?>" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">
+                                        Nomor Telepon <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>" 
+                                           placeholder="Contoh: 08123456789" required>
+                                </div>
+                                
+                                <!-- Removed optional address field as per user request -->
+                                
+                                <!-- Removed terms and conditions agreement as per user request -->
+                                
+                                <div class="checkout-buttons">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-arrow-right me-2"></i>Lanjut ke Pembayaran
+                                    </button>
+                                    <a href="cart.php" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Kembali ke Keranjang
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                            
+                            <div class="col-md-4">
+                                <!-- Order Summary -->
+                                <div class="order-summary">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-receipt me-2"></i>Ringkasan Pesanan
+                                    </h6>
+                                    
+                                    <div class="item-list mb-3">
+                                        <?php foreach ($_SESSION['cart'] as $item): ?>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                            <div>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($item['name']); ?></div>
+                                                <small class="text-muted">Qty: <?php echo isset($item['quantity']) ? $item['quantity'] : 1; ?></small>
+                                            </div>
+                                            <div class="text-end">
+                                                <strong>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></strong>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    
+                                    <!-- Coupon Section removed as per user request -->
+                                    
+                                    <div class="border-top pt-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Subtotal:</span>
+                                            <span>Rp <?php echo number_format($total, 0, ',', '.'); ?></span>
+                                        </div>
+                                        
+                                        <?php if ($discount_amount > 0): ?>
+                                        <div class="d-flex justify-content-between mb-2 text-success">
+                                            <span>Diskon (<?php echo $_SESSION['applied_coupon']['discount']; ?>%):</span>
+                                            <span>-Rp <?php echo number_format($discount_amount, 0, ',', '.'); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        
+                                        <hr>
+                                        <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+                                            <span>Total:</span>
+                                            <span>Rp <?php echo number_format($discounted_total, 0, ',', '.'); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Security Info -->
+                                <div class="alert alert-info mt-3">
+                                    <h6><i class="fas fa-shield-alt me-2"></i>Keamanan Pembayaran</h6>
+                                    <small>
+                                        <i class="fas fa-check text-success me-1"></i>Pembayaran 100% aman<br>
+                                        <i class="fas fa-check text-success me-1"></i>Data terenkripsi SSL<br>
+                                        <i class="fas fa-check text-success me-1"></i>Verifikasi otomatis
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Timer countdown untuk pembayaran (15 menit)
-        <?php if ($current_page_status === 'qr_payment'): ?>
-        let timeLeft = 15 * 60; // 15 menit dalam detik
+        // Fungsi untuk copy Virtual Account
+        function copyVA() {
+            const vaNumber = '1234567890';
+            navigator.clipboard.writeText(vaNumber).then(function() {
+                alert('Virtual Account berhasil disalin: ' + vaNumber);
+            }).catch(function(err) {
+                console.error('Gagal menyalin: ', err);
+                // Fallback untuk browser lama
+                const textArea = document.createElement('textarea');
+                textArea.value = vaNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Virtual Account berhasil disalin: ' + vaNumber);
+            });
+        }
         
-        function updateTimer() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const timerElement = document.querySelector('.payment-timer');
-            
-            if (timerElement) {
-                timerElement.innerHTML = `<i class="fas fa-clock mr-2"></i>Selesaikan pembayaran dalam ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} menit`;
+        // Fungsi untuk menerapkan kupon
+        function applyCoupon() {
+            const couponCode = document.getElementById('coupon_code').value.trim();
+            if (!couponCode) {
+                alert('Masukkan kode kupon terlebih dahulu.');
+                return;
             }
             
-            if (timeLeft <= 0) {
-                // Timer habis, redirect ke halaman cart
-                alert('Waktu pembayaran telah habis. Silakan coba lagi.');
+            // Kirim AJAX request untuk validasi kupon
+            fetch('apply_coupon.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'coupon_code=' + encodeURIComponent(couponCode)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Kode kupon tidak valid.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memproses kupon.');
+            });
+        }
+        
+        // Fungsi untuk menghapus kupon
+        function removeCoupon() {
+            if (confirm('Hapus kupon yang diterapkan?')) {
+                fetch('remove_coupon.php', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal menghapus kupon.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan.');
+                });
+            }
+        }
+        
+        // Validasi form sebelum submit
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const phone = document.getElementById('phone');
+                    if (phone && phone.value) {
+                        // Validasi format nomor telepon Indonesia
+                        const phonePattern = /^(\+62|62|0)[0-9]{9,13}$/;
+                        if (!phonePattern.test(phone.value.replace(/\s+/g, ''))) {
+                            e.preventDefault();
+                            alert('Format nomor telepon tidak valid. Gunakan format: 08123456789');
+                            phone.focus();
+                            return false;
+                        }
+                    }
+                });
+            }
+            
+            // Auto-format nomor telepon
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.startsWith('0')) {
+                        value = value.substring(1);
+                    }
+                    if (value.startsWith('62')) {
+                        value = value.substring(2);
+                    }
+                    this.value = '08' + value;
+                });
+            }
+        });
+        
+        // Countdown timer untuk session timeout (optional)
+        let sessionTimeout = 30 * 60; // 30 menit
+        function updateTimer() {
+            const minutes = Math.floor(sessionTimeout / 60);
+            const seconds = sessionTimeout % 60;
+            
+            if (sessionTimeout <= 0) {
+                alert('Sesi telah berakhir. Silakan mulai kembali proses checkout.');
                 window.location.href = 'cart.php';
                 return;
             }
             
-            // Ubah warna timer jika waktu tinggal sedikit
-            if (timeLeft <= 300 && timerElement) { // 5 menit terakhir
-                timerElement.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-            }
-            
-            timeLeft--;
+            sessionTimeout--;
+            setTimeout(updateTimer, 1000);
         }
         
-        // Update timer setiap detik
-        setInterval(updateTimer, 1000);
-        updateTimer(); // Panggil sekali untuk inisialisasi
+        // Mulai timer jika di halaman pembayaran
+        <?php if ($page_status === 'payment'): ?>
+        updateTimer();
         <?php endif; ?>
         
-        // Validasi form sebelum submit
+        // Preview gambar yang akan diupload
         document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const requiredFields = form.querySelectorAll('input[required]');
-                    let isValid = true;
-                    
-                    requiredFields.forEach(field => {
-                        if (!field.value.trim()) {
-                            isValid = false;
-                            field.classList.add('border-red-500');
-                        } else {
-                            field.classList.remove('border-red-500');
-                        }
-                    });
-                    
-                    if (!isValid) {
-                        e.preventDefault();
-                        alert('Mohon lengkapi semua field yang wajib diisi.');
-                    }
-                });
-            });
-            
-            // Preview image sebelum upload
             const fileInput = document.getElementById('proof_image');
             if (fileInput) {
                 fileInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
-                        // Validasi ukuran file (2MB)
+                        // Validasi ukuran file
                         if (file.size > 2 * 1024 * 1024) {
                             alert('Ukuran file terlalu besar. Maksimal 2MB.');
                             this.value = '';
@@ -811,27 +986,26 @@ $conn->close();
                             this.value = '';
                             return;
                         }
+                        
+                        // Preview gambar (optional)
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // Bisa ditambahkan preview image di sini
+                            console.log('File loaded successfully');
+                        };
+                        reader.readAsDataURL(file);
                     }
                 });
             }
         });
         
-        // Auto-format nomor telepon
-        const phoneInput = document.getElementById('phone');
-        if (phoneInput) {
-            phoneInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, ''); // Hapus semua non-digit
-                
-                // Format nomor telepon Indonesia
-                if (value.startsWith('62')) {
-                    value = '0' + value.substring(2);
-                } else if (!value.startsWith('0') && value.length > 0) {
-                    value = '0' + value;
-                }
-                
-                e.target.value = value;
-            });
-        }
+        // Konfirmasi sebelum meninggalkan halaman pembayaran
+        <?php if ($page_status === 'payment'): ?>
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault();
+            e.returnValue = 'Anda yakin ingin meninggalkan halaman ini? Proses pembayaran akan dibatalkan.';
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>

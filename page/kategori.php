@@ -4,8 +4,6 @@ $query = "SELECT * FROM tbkelas";
 $result = $conn->query($query);
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
