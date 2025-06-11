@@ -16,6 +16,7 @@ $report_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $laporan = null;
 
 if ($report_id > 0) {
+    // Kita tidak perlu lagi mengambil `catatan_admin` dari database
     $stmt = $conn->prepare("
         SELECT r.id_report, u.username, k.nama_kelas, r.kategori_report, r.keterangan_report, r.tgl_dibuat, r.status_laporan, r.id_kelas
         FROM tb_laporan r
@@ -33,7 +34,6 @@ if ($report_id > 0) {
     $stmt->close();
 
     if (!$laporan) {
-        // Laporan tidak ditemukan
         $_SESSION['message'] = "Laporan tidak ditemukan.";
         $_SESSION['message_type'] = "danger";
         header("Location: admin-kelolaLaporan.php");
@@ -58,46 +58,23 @@ $namaAdmin = $_SESSION['username'];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-        .content-wrapper {
-            padding: 20px;
-            flex: 1;
-            margin-left: 250px; /* Sesuaikan dengan lebar sidebar */
-        }
+        body { display: flex; min-height: 100vh; flex-direction: column; }
+        .content-wrapper { padding: 20px; flex: 1; margin-left: 250px; /* Sesuaikan dengan lebar sidebar */ }
     </style>
 </head>
 <body class="bg-light">
     <?php include "adminSidebar.php"; ?>
-    <div class="content-wrapper">    
+    <div class="content-wrapper">     
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col-12">
-                    <h2 class="text-primary">
-                        <i class="fas fa-file-alt me-2"></i>
-                        Detail Laporan #<?= htmlspecialchars($laporan['id_report']) ?>
-                    </h2>
+                    <h2 class="text-primary"><i class="fas fa-file-alt me-2"></i> Detail Laporan #<?= htmlspecialchars($laporan['id_report']) ?></h2>
                     <p class="text-muted">Kelola detail dan tindakan untuk laporan ini.</p>
-                    <?php if (isset($_SESSION['message'])): ?>
-                        <div class="alert alert-<?= $_SESSION['message_type'] ?> alert-dismissible fade show" role="alert">
-                            <?= $_SESSION['message'] ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        <?php 
-                            unset($_SESSION['message']);
-                            unset($_SESSION['message_type']);
-                        ?>
-                    <?php endif; ?>
                 </div>
             </div>
 
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Laporan</h5>
-                </div>
+                <div class="card-header bg-primary text-white"><h5 class="mb-0">Informasi Laporan</h5></div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -128,9 +105,7 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Tindakan Admin</h5>
-                </div>
+                <div class="card-header bg-secondary text-white"><h5 class="mb-0">Tindakan Admin</h5></div>
                 <div class="card-body">
                     <form action="admin-process-report.php" method="POST">
                         <input type="hidden" name="id_report" value="<?= htmlspecialchars($laporan['id_report']) ?>">
@@ -147,15 +122,9 @@ $namaAdmin = $_SESSION['username'];
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="catatan_admin" class="form-label">Catatan Admin (Opsional):</label>
-                            <textarea class="form-control" id="catatan_admin" name="catatan_admin" rows="3" placeholder="Tambahkan catatan mengenai tindakan yang diambil..."></textarea>
-                        </div>
-
                         <p class="text-muted">
-                            **Tindakan Lainnya (Opsional):**<br>
-                            <small>- Anda dapat membekukan kelas terkait jika diperlukan.</small><br>
-                            <small>- Untuk membekukan atau memblokir pengguna, Anda mungkin perlu navigasi ke halaman manajemen user.</small>
+                            <strong>Tindakan Lainnya (Opsional):</strong><br>
+                            <small>- Anda dapat membekukan kelas terkait jika diperlukan.</small>
                         </p>
 
                         <button type="submit" name="update_report_status" class="btn btn-success me-2"><i class="fas fa-save me-1"></i>Simpan Perubahan Status</button>
@@ -172,6 +141,5 @@ $namaAdmin = $_SESSION['username'];
 </html>
 
 <?php
-// Close connection
 if ($conn) $conn->close();
 ?>
