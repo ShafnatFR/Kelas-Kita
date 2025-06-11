@@ -35,7 +35,7 @@ $stmt = $conn->prepare("
         r.bintang_review,
         r.isi_review,
         r.tgl_review,
-        u.nama_lengkap AS nama_peserta,
+        u.first_name, u.last_name AS nama_peserta,
         u.fotoProfil, -- Pastikan nama kolom di database Anda adalah 'fotoProfil'
         k.nama_kelas
     FROM 
