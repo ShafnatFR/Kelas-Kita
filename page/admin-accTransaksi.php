@@ -26,7 +26,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
     try {
         // 1. Update status transaksi menjadi 'acc'
-        $stmt_transaksi = $conn->prepare("UPDATE tb_transaksi SET status = 'acc' WHERE id_transaksi = ?");
+        $stmt_transaksi = $conn->prepare("UPDATE tb_transaksi SET status = 'Completed' WHERE id_transaksi = ?");
         if (!$stmt_transaksi) {
             throw new Exception("Error preparing transaction update: " . $conn->error);
         }
@@ -59,7 +59,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         $id_kelas = $kelas_data['id_kelas'];
 
         // 3. Update status publikasi kelas menjadi 'aktif'
-        $stmt_kelas_status = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'aktif' WHERE id_kelas = ?");
+        $stmt_kelas_status = $conn->prepare("UPDATE tb_kelas SET status_publikasi = 'approved' WHERE id_kelas = ?");
         if (!$stmt_kelas_status) {
             throw new Exception("Error preparing class status update: " . $conn->error);
         }

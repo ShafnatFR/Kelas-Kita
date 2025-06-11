@@ -22,7 +22,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     $id_transaksi = $_GET['id'];
 
     // Prepare an update statement to change the transaction status to 'ditolak'
-    $stmt = $conn->prepare("UPDATE tb_transaksi SET status = 'ditolak' WHERE id_transaksi = ?");
+    $stmt = $conn->prepare("UPDATE tb_transaksi SET status = 'Cancelled' WHERE id_transaksi = ?");
     if (!$stmt) {
         $_SESSION['message'] = "Error preparing statement: " . $conn->error;
         $_SESSION['message_type'] = "danger";
