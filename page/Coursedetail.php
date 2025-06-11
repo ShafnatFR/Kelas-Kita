@@ -267,8 +267,8 @@ if (isset($_SESSION['id'])) {
 // Pastikan path ke navbarbootstrap.php sudah benar
 include_once(__DIR__ . "/../Views/navbarbootstrap.php"); 
 
-// Tutup koneksi database di akhir skrip setelah navbarbootstrap.php digunakan
-$conn->close();
+// Removed early $conn->close() here to avoid closing connection before queries
+// $conn->close();
 ?>
 
     <div class="course-header">
@@ -387,40 +387,75 @@ $conn->close();
                     <h3 class="mb-4">Materi Pembelajaran</h3>
                     <div class="accordion" id="accordionMaterial">
                         <?php
-                        if ($result_materi->num_rows > 0) {
-                            $counter = 0;
-                            while ($materi = $result_materi->fetch_assoc()) {
-                                $counter++;
-                                ?>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header" id="heading<?php echo $counter; ?>">
-                                        <button class="accordion-button <?php echo ($counter > 1) ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $counter; ?>" aria-expanded="<?php echo ($counter == 1) ? 'true' : 'false'; ?>" aria-controls="collapse<?php echo $counter; ?>">
-                                            <strong>Materi <?php echo $materi['urutan'] ?? $counter; ?>: <?php echo htmlspecialchars($materi['judul_materi'] ?? 'Judul Materi'); ?></strong>
-                                        </button>
-                                    </h2>
-                                    <div id="collapse<?php echo $counter; ?>" class="accordion-collapse collapse <?php echo ($counter == 1) ? 'show' : ''; ?>" aria-labelledby="heading<?php echo $counter; ?>" data-bs-parent="#accordionMaterial">
-                                        <div class="accordion-body">
-                                            <div class="course-material">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <i class="fas fa-file me-2"></i>
-                                                        <?php echo htmlspecialchars($materi['judul_materi'] ?? 'Judul materi tidak tersedia'); ?>
-                                                    </div>
-                                                    <div>
-                                                        <span class="badge bg-secondary">Materi ke-<?php echo $materi['urutan'] ?? $counter; ?></span>
-                                                    </div>
-                                                </div>
-                                                <p class="mt-2 mb-0 text-muted">
-                                                    <?php echo nl2br(htmlspecialchars($materi['deskripsi_materi'] ?? 'Deskripsi materi tidak tersedia.')); ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php
-                            }
+                        // Query sub materi for the course's materi
+                        $sql_sub_materi = "SELECT sm.id_sub_materi, sm.judul_sub_materi, sm.urutan, sm.id_dokumen, sm.id_video,
+                                                  d.file_path_dokumen,
+                                                  v.file_path_video
+                                           FROM tb_sub_materi sm
+                                           LEFT JOIN tb_dokumen d ON sm.id_dokumen = d.id_dokumen
+                                           LEFT JOIN tb_video v ON sm.id_video = v.id_video
+                                           WHERE sm.id_materi IN (SELECT id_materi FROM tb_materi WHERE id_kelas = ?)
+                                           ORDER BY sm.urutan ASC";
+                        $stmt_sub_materi = $conn->prepare($sql_sub_materi);
+                        if ($stmt_sub_materi === false) {
+                            echo "<p>Error preparing statement for sub materi: " . htmlspecialchars($conn->error) . "</p>";
                         } else {
-                            echo "<p>Belum ada materi yang tersedia untuk kursus ini.</p>";
+                            $stmt_sub_materi->bind_param("i", $course['id_kelas']);
+                            $stmt_sub_materi->execute();
+                            $result_sub_materi = $stmt_sub_materi->get_result();
+
+                            if ($result_sub_materi->num_rows > 0) {
+                                $current_sub_materi = null;
+                                $counter = 0;
+                                while ($row = $result_sub_materi->fetch_assoc()) {
+                                    if ($current_sub_materi !== $row['id_sub_materi']) {
+                                        if ($counter > 0) {
+                                            // Close previous accordion body and item
+                                            echo '</div></div></div>';
+                                        }
+                                        $counter++;
+                                        $current_sub_materi = $row['id_sub_materi'];
+                                        ?>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="heading<?php echo $counter; ?>">
+                                                <button class="accordion-button <?php echo ($counter > 1) ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $counter; ?>" aria-expanded="<?php echo ($counter == 1) ? 'true' : 'false'; ?>" aria-controls="collapse<?php echo $counter; ?>">
+                                                    <strong>Materi <?php echo htmlspecialchars($row['urutan']); ?>: <?php echo htmlspecialchars($row['judul_sub_materi']); ?></strong>
+                                                </button>
+                                            </h2>
+                                            <div id="collapse<?php echo $counter; ?>" class="accordion-collapse collapse <?php echo ($counter == 1) ? 'show' : ''; ?>" aria-labelledby="heading<?php echo $counter; ?>" data-bs-parent="#accordionMaterial">
+                                                <div class="accordion-body">
+                                        <?php
+                                    }
+                                    // Display document if exists
+                                    if (!empty($row['file_path_dokumen'])) {
+                                        ?>
+                                        <div class="course-material">
+                                            <i class="fas fa-file-pdf me-2"></i>
+                                            <a href="<?php echo htmlspecialchars($row['file_path_dokumen']); ?>" target="_blank">Dokumen</a>
+                                        </div>
+                                        <?php
+                                    }
+                                    // Display video if exists
+                                    if (!empty($row['file_path_video'])) {
+                                        ?>
+                                        <div class="course-material">
+                                            <i class="fas fa-video me-2"></i>
+                                            <video width="320" height="240" controls>
+                                                <source src="<?php echo htmlspecialchars($row['file_path_video']); ?>" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                                if ($counter > 0) {
+                                    // Close last accordion body and item
+                                    echo '</div></div></div>';
+                                }
+                            } else {
+                                echo "<p>Belum ada materi yang tersedia untuk kursus ini.</p>";
+                            }
+                            $stmt_sub_materi->close();
                         }
                         ?>
                     </div>
@@ -560,6 +595,9 @@ $conn->close();
 <?php 
 // Pastikan path ke footerbootsrap.php sudah benar
 include_once(__DIR__ . "/../Views/footerbootsrap.php"); 
+
+// Close the database connection at the end of the script
+$conn->close();
 ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

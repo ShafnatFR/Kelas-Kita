@@ -1,15 +1,7 @@
 <?php
 session_start();
-
-// --- START: Validasi dan Inisialisasi ---
-
 // Pastikan path ke file db.php benar
 require 'db.php';
-
-// Validasi koneksi database
-if (!isset($conn) || $conn->connect_error) {
-    die("Error: Koneksi database gagal. Pesan: " . $conn->connect_error);
-}
 
 // Validasi session mentor
 if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'mentor' || !isset($_SESSION['id'])) {

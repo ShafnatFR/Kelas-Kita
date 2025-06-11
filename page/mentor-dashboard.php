@@ -60,7 +60,7 @@ $stats = [
 
 try {
     // Total kelas dan total potensi pendapatan (berdasarkan harga kelas)
-    $stmt_kelas = $conn->prepare("SELECT COUNT(*) AS total_kelas FROM tb_kelas WHERE id_mentor = ? AND status != 'diarsipkann'");
+    $stmt_kelas = $conn->prepare("SELECT COUNT(*) AS total_kelas FROM tb_kelas WHERE id_mentor = ?");
     $stmt_kelas->bind_param("i", $id_mentor);
     $stmt_kelas->execute();
     $stats['total_kelas'] = $stmt_kelas->get_result()->fetch_assoc()['total_kelas'];
