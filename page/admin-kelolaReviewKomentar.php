@@ -399,7 +399,15 @@ $namaAdmin = $_SESSION['username'];
                                                         ?>
                                                     </td>
                                                     <td>
-                                                        <a href="admin-deleteReview.php?id=<?= htmlspecialchars($review['id_review']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus review ini?');">Hapus</a>
+                                                        <form action="admin-deleteReview.php" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus review ini secara permanen?');">
+                                                            <input type="hidden" name="id_review" value="<?= htmlspecialchars($review['id_review']) ?>">
+                                                            
+                                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                                            
+                                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                                <i class="fas fa-trash-alt"></i> Hapus
+                                                            </button>
+                                                        </form>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>

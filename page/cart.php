@@ -86,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['message_type'] = "success";
     }
     
-    // Proses checkout
-    if (isset($_POST['checkout'])) {
+    // Proses 
+    if (isset($_POST['transaksi'])) {
         if (!empty($_SESSION['cart'])) {
-            // Jika pengguna sudah login, proses checkout
+            // Jika pengguna sudah login, proses 
             if (isset($_SESSION['id'])) {
-                // Just redirect to checkout page for payment processing
-                header("Location: checkout.php");
+                // Just redirect to page for payment processing
+                header("Location: transaksi.php");
                 exit();
             } else {
                 // Jika belum login, arahkan ke halaman login
@@ -362,7 +362,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                         </div>
                         <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
                         <form method="post">
-                            <button type="submit" name="checkout" class="btn btn-primary w-100">
+                            <button type="submit" name="transaksi" class="btn btn-primary w-100">
                             Lanjutkan ke Pembayaran
                             </button>
                         </form>
