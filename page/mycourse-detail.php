@@ -11,8 +11,8 @@ $database = "KelasKita_baru";
 // Create connection
 $conn = new mysqli($host, $username, $password, $database);
 
-$site_name = "KelasKita_baru"; // Define site name for footer usage
-$site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; // Contoh tagline
+$site_name = "KelasKita_baru"; 
+$site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; 
 
 // Check connection
 if ($conn->connect_error) {
@@ -37,8 +37,8 @@ if (!empty($course_id)) {
         LEFT JOIN tb_user AS user ON mentor.id_user = user.id_user
         WHERE kelas.id_kelas = ?
     ");
-    $stmt->bind_param("i", $course_id);
-    $stmt->execute();
+    $stmt->bind_param("i", $course_id);//mengikat parameter ? di sql dgn variabel $course_id
+    $stmt->execute();//menjalankan query sql 
     $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0) {
@@ -50,14 +50,14 @@ if (!empty($course_id)) {
     $stmt->close();
 }
 
-$materi_list = [];
+$materi_list = []; //untuk menyimpan daftar materi
 
-if (!empty($course_id)) {
+if (!empty($course_id)) { 
     // Ambil semua materi untuk kelas ini
-    $stmt = $conn->prepare("SELECT * FROM tb_materi WHERE id_kelas = ?");
+    $stmt = $conn->prepare("SELECT * FROM tb_materi WHERE id_kelas = ?"); //mengambil semua materi yang memiliki id_kelas sesuai dengan $course_id.
     $stmt->bind_param("i", $course_id);
     $stmt->execute();
-    $result_materi = $stmt->get_result();
+    $result_materi = $stmt->get_result();//Mengambil hasil query dan menyimpannya dalam variabel $result_materi.
 
     while ($materi = $result_materi->fetch_assoc()) {
         // Ambil sub_materi untuk materi ini

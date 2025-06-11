@@ -102,12 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error_message = "Harga harus berupa angka yang valid!";
         } else {
             // Insert data ke tb_kelas, termasuk `profil_kelas`, `badge`, `status_publikasi`, `tanggal_rilis`, `tanggal_update`
-            $stmt = $conn->prepare("INSERT INTO tb_kelas (id_mentor, nama_kelas, kategori, harga, description, profil_kelas, badge, status_publikasi, tgl_dibuat, tanggal_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO tb_kelas (id_mentor, nama_kelas, kategori, harga, description, profil_kelas, status_publikasi, tgl_dibuat, tanggal_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             
             // Tipe parameter:
             // i (id_mentor), s (nama_kelas), s (kategori), d (harga), s (description), 
             // s (profil_kelas_path), s (badge_value), s (default_status), s (current_date), s (current_date)
-            $stmt->bind_param("issdssssss", $id_mentor, $nama_kelas, $kategori, $harga, $description, $profil_kelas_path, $badge_value, $default_status, $current_date, $current_date);
+            $stmt->bind_param("issdsssss", $id_mentor, $nama_kelas, $kategori, $harga, $description, $profil_kelas_path, $default_status, $current_date, $current_date);
 
             if ($stmt->execute()) {
                 $success_message = "Kelas '$nama_kelas' berhasil ditambahkan!";

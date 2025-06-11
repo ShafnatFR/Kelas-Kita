@@ -1,9 +1,21 @@
 <?php
 session_start();
-if (file_exists(__DIR__ . '/config/database.php')) {
-    require_once __DIR__ . '/config/database.php';
-} else {
-    require_once __DIR__ . '/db.php';
+
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "KelasKita_baru";
+
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
+
+$site_name = "KelasKita_baru"; // Define site name for footer usage
+$site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; // Contoh tagline
+
+// Check connection
+if ($conn->connect_error) {
+    die("Koneksi database gagal: " . $conn->connect_error);
 }
 
 // Cek apakah user sudah login
@@ -65,7 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['complete_module'])) {
 }
 
 // Cek apakah user memiliki akses ke kelas ini (pembayaran sudah diverifikasi)
-$query_akses = "SELECT p.*, k.nama_kelas, k.deskripsi, k.gambar_kelas, k.harga, k.instruktur_id, u.nama as nama_instruktur
+// PERBAIKAN: Gunakan kolom yang sesuai dengan struktur tabel users
+$query_akses = "SELECT p.*, k.nama_kelas, k.deskripsi, k.gambar_kelas, k.harga, k.instruktur_id, 
+                COALESCE(u.nama, u.username, u.name, u.full_name, 'Instruktur') as nama_instruktur
                 FROM pembayaran p 
                 JOIN kelas k ON p.kelas_id = k.id 
                 JOIN users u ON k.instruktur_id = u.id
