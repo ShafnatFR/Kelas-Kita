@@ -21,7 +21,8 @@ try {
     // SQL query to fetch all transactions
     // If you want to filter by a specific user, uncomment the WHERE clause below
 $sql = "SELECT tb_transaksi.id_transaksi, tb_transaksi.bukti_transaksi, tb_transaksi.tgl_transaksi, tb_transaksi.status, tb_transaksi.list_transaksi,
-            tb_user.first_name, tb_user.last_name, tb_user.email, tb_user.no_telepon
+            COALESCE(NULLIF(CONCAT(tb_user.first_name, ' ', tb_user.last_name), ' '), tb_user.username) AS full_name,
+            tb_user.email
             FROM tb_transaksi
             JOIN tb_user ON tb_transaksi.id_user = tb_user.id_user
             ORDER BY tb_transaksi.tgl_transaksi DESC, tb_transaksi.id_transaksi DESC"; // Order by latest transaction first
@@ -170,7 +171,6 @@ $conn->close(); // Close the database connection
                                     <th scope="col">Status</th>
                                     <th scope="col">Nama Lengkap</th>
                                     <th scope="col">Email</th>
-                                    <th scope="col">No. WhatsApp</th>
                                     <!-- Uncomment the following if you add these columns to your tb_transaksi table -->
                                     <!-- <th scope="col">Nama Pembeli</th> -->
                                     <!-- <th scope="col">No. HP</th> -->
@@ -206,9 +206,8 @@ $conn->close(); // Close the database connection
                                             <?php echo htmlspecialchars($transaction['status']); ?>
                                         </span>
                                     </td>
-                                    <td><?php echo htmlspecialchars($transaction['first_name'] . ' ' . $transaction['last_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($transaction['full_name']); ?></td>
                                     <td><?php echo htmlspecialchars($transaction['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($transaction['no_telepon']); ?></td>
                                     <!-- Uncomment the following if you add these columns to your tb_transaksi table -->
                                     <!-- <td><?php // echo htmlspecialchars($transaction['nama_pembeli'] ?? '-'); ?></td> -->
                                     <!-- <td><?php // echo htmlspecialchars($transaction['no_hp_pembeli'] ?? '-'); ?></td> -->
