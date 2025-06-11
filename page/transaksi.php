@@ -46,10 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             if (move_uploaded_file($_FILES['bukti_transaksi']['tmp_name'], $upload_path)) {
                 // Insert ke database (sesuaikan dengan kebutuhan tabel Anda)
-                // Untuk sementara menggunakan nilai default untuk foreign key
-                $id_kelas = 1; // Sesuaikan dengan kebutuhan
+                // For now, using default values for foreign keys
+              $id_kelas = 1; // Sesuaikan dengan kebutuhan
                 $id_user = 1;  // Sesuaikan dengan kebutuhan
-                $id_keranjang = 1; // Sesuaikan dengan kebutuhan
+               $id_keranjang = 1; // Sesuaikan dengan kebutuhan
+                // Use actual logged-in user id and cart info
+                $id_user = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+                // You may need to get id_kelas and id_keranjang from session or cart data
+                $id_kelas = 0;
+               $id_keranjang = 0;
+                if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+                    $first_cart_item = $_SESSION['cart'][0];
+                    $id_kelas = $first_cart_item['id'] ?? 0;
+                    // id_keranjang may need to be retrieved from database or session if available
+                }
                 
                 $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status, list_transaksi) VALUES (?, ?, ?, ?, ?, 'Pending', 'pembelian')");
                 $stmt->bind_param("iiiss", $id_kelas, $id_user, $id_keranjang, $new_filename, $tgl_transaksi);
@@ -358,7 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 <?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/images/Gambar WhatsApp 2025-06-12 pukul 01.23.30_429e9e73.jpg"></script>
     <script>
         // Copy to clipboard function
         function copyToClipboard(elementId) {
