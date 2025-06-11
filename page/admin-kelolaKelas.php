@@ -108,7 +108,7 @@ $tbKelasRejectedResult = fetchData($conn, "
 $tbKelasNonAktifResult = fetchData($conn, "
     SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
     FROM tb_kelas
-    WHERE status_publikasi IN ('draft')
+    WHERE status_publikasi IN ('non-aktif')
     ORDER BY tgl_dibuat DESC
     LIMIT 10
 ");
