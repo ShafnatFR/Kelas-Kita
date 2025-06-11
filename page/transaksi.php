@@ -283,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <div class="bank-info">
                                     <div class="row align-items-center">
                                         <div class="col-md-3 text-center">
-                                            <img src="https://via.placeholder.com/100x60/4169E1/FFFFFF?text=BANK" alt="Bank" class="img-fluid rounded">
+                                            <img src="../assets/images/qrbayar1.jpg" alt="Bank" class="img-fluid rounded">
                                         </div>
                                         <div class="col-md-9">
                                             <h5 class="mb-1">Bank Mandiri</h5>
@@ -296,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             </div>
                                             <div class="d-flex align-items-center">
                                                 <strong class="me-2">Atas Nama:</strong>
-                                                <span>ALIQ NUR SHIDDIQ</span>
+                                                <span>KelasKita</span>
                                             </div>
                                         </div>
                                     </div>
