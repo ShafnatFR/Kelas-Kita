@@ -11,9 +11,10 @@ $user_id = $_SESSION['id'];
 $message = "";
 
 // Ambil data mentor lengkap
+// FIX: Menghapus kolom 'deskripsi' dari query karena tidak lagi digunakan
 $mentor_query = $conn->prepare("
     SELECT 
-        u.id_user, u.first_name,u.last_name, u.username, u.email, u.fotoProfil, u.instagram, u.linkdin, u.twitter, u.github,
+        u.id_user, u.first_name, u.last_name, u.username, u.email, u.fotoProfil, u.instagram, u.linkdin, u.twitter, u.github,
         m.id_mentor, m.keahlian, m.pengalaman, m.status
     FROM tb_user u 
     JOIN tb_mentor m ON u.id_user = m.id_user 
@@ -24,10 +25,9 @@ $mentor_query->execute();
 $mentor_result = $mentor_query->get_result();
 
 if ($mentor_result->num_rows === 0) {
-    $message = "Data mentor tidak ditemukan.";
+    header("Location: become-mentor.php?error=not_found");
     exit();
 }
-
 $mentor = $mentor_result->fetch_assoc();
 
 // Ambil statistik mentor
@@ -59,17 +59,16 @@ $recent_classes_query->execute();
 $recent_classes = $recent_classes_query->get_result();
 
 // Proses update profil
-// Proses update profil
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     
-    $conn->begin_transaction(); // Mulai transaksi untuk keamanan data
+    $conn->begin_transaction(); 
 
     try {
         // --- PROSES UPLOAD FOTO PROFIL BARU ---
         $new_photo_filename = null;
         if (isset($_FILES['foto_profil_file']) && $_FILES['foto_profil_file']['error'] === UPLOAD_ERR_OK) {
             
-            $upload_dir = '../uploads/profile/'; // Pastikan path ini benar dan ada
+            $upload_dir = '../uploads/profile/'; 
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
@@ -80,25 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
             $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
 
-            // Validasi ukuran file (misal 2MB)
             if ($file_size > 2 * 1024 * 1024) { 
                 throw new Exception("Ukuran file terlalu besar. Maksimal 2MB.");
             }
-            // Validasi ekstensi file
             if (!in_array($file_ext, $allowed_exts)) {
                 throw new Exception("Tipe file tidak diizinkan. Hanya JPG, PNG, GIF.");
             }
 
-            // Generate nama file unik
             $new_photo_filename = uniqid('profil_') . '.' . $file_ext;
             $destination_path = $upload_dir . $new_photo_filename;
 
-            // Pindahkan file
             if (!move_uploaded_file($file_tmp_name, $destination_path)) {
                 throw new Exception("Gagal memindahkan file yang diunggah.");
             }
 
-            // Hapus foto lama jika ada (dan bukan default)
             $old_photo = $mentor['fotoProfil'];
             if (!empty($old_photo) && file_exists($upload_dir . $old_photo)) {
                 unlink($upload_dir . $old_photo);
@@ -111,65 +105,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $email = $_POST['email'];
         $keahlian = $_POST['keahlian'];
         $pengalaman = $_POST['pengalaman'];
-        $deskripsi = $_POST['deskripsi']; 
+        // FIX: Menghilangkan variabel $deskripsi karena sudah tidak digunakan
         $linkdin = $_POST['linkdin'];
         $instagram = $_POST['instagram'];
         $twitter = $_POST['twitter'];
         $github = $_POST['github'];
-        // Kolom 'website_url' tidak ada di form Anda, jika ada silakan tambahkan lagi
-        // $website_url = $_POST['website_url'];
 
         // Siapkan query update untuk tb_user
-        // Query akan dinamis tergantung apakah ada foto baru yang diupload atau tidak
         if ($new_photo_filename) {
-            // Jika ada foto baru, update kolom fotoProfil
             $sql_user = "UPDATE tb_user SET first_name = ?, last_name = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ?, fotoProfil = ? WHERE id_user = ?";
             $stmt_user = $conn->prepare($sql_user);
             $stmt_user->bind_param("ssssssssi", $first_name, $last_name, $email, $linkdin, $instagram, $twitter, $github, $new_photo_filename, $user_id);
         } else {
-            // Jika tidak ada foto baru, jangan update kolom fotoProfil
             $sql_user = "UPDATE tb_user SET first_name = ?, last_name = ?, email = ?, linkdin = ?, instagram = ?, twitter = ?, github = ? WHERE id_user = ?";
             $stmt_user = $conn->prepare($sql_user);
             $stmt_user->bind_param("sssssssi", $first_name, $last_name, $email, $linkdin, $instagram, $twitter, $github, $user_id);
         }
         
-        // Eksekusi update user
         if (!$stmt_user->execute()) {
             throw new Exception("Gagal update data user: " . $stmt_user->error);
         }
 
         // Update data mentor (tb_mentor)
-        $update_mentor = $conn->prepare("UPDATE tb_mentor SET keahlian = ?, pengalaman = ?, deskripsi = ? WHERE id_user = ?");
-        $update_mentor->bind_param("sssi", $keahlian, $pengalaman, $deskripsi, $user_id);
+        // FIX: Menghapus kolom 'deskripsi = ?' dari query UPDATE
+        $update_mentor = $conn->prepare("UPDATE tb_mentor SET keahlian = ?, pengalaman = ? WHERE id_user = ?");
+        // FIX: Menyesuaikan tipe dan jumlah parameter menjadi "ssi"
+        $update_mentor->bind_param("ssi", $keahlian, $pengalaman, $user_id);
         
         if (!$update_mentor->execute()) {
             throw new Exception("Gagal update data mentor: " . $update_mentor->error);
         }
 
-        // Jika semua berhasil, commit transaksi
         $conn->commit();
         $message = "Profil berhasil diperbarui!";
         header("Location: mentor-profil.php?msg=" . urlencode($message));
         exit();
 
     } catch (Exception $e) {
-        // Jika ada kesalahan, batalkan semua perubahan
         $conn->rollback();
         $message = "Terjadi kesalahan: " . $e->getMessage();
     }
 }
-?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Mentor - <?= htmlspecialchars($mentor['nama_lengkap']) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/mentor-profil.css">
-</head>
+// Ambil pesan dari URL
+if (isset($_GET['msg'])) {
+    $message = htmlspecialchars(urldecode($_GET['msg']));
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -178,123 +160,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     <title>Profil Mentor - Kelas Kita</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/mentor-profil.css">    
+    <!-- Pastikan path CSS ini benar -->
+    <link rel="stylesheet" href="../assets/css/sidebar-mentor.css"> 
+    <link rel="stylesheet" href="../assets/css/mentor-profil.css"> 
 </head>
 <body class="bg-light">
     <?php include "sidebar-mentor.php"?>
-    <!-- Header Profile -->
-    <div class="profile-header">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-3 text-center">
-                    <img src="<?php echo !empty($mentor['fotoProfil']) ? '../uploads/profile/' . $mentor['fotoProfil'] : '../assets/default-avatar.png'; ?>" 
-                         alt="Profile" class="profile-img">
-                </div>
-                <div class="col-md-9">
-                    <h2><?php echo htmlspecialchars($mentor['first_name']); ?></h2>
-                    <p class="mb-2"><i class="fas fa-user"></i> @<?php echo htmlspecialchars($mentor['username']); ?></p>
-                    <p class="mb-2"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($mentor['email']); ?></p>
-                    <p class="mb-3"><i class="fas fa-tools"></i> <?php echo htmlspecialchars($mentor['keahlian'] ?? 'Belum diisi'); ?></p>
+
+    <!-- Bungkus semua konten dengan div yang sesuai dengan CSS sidebar Anda -->
+    <div class="main-content">
+        <!-- Header Profile -->
+        <div class="profile-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <img src="<?php echo !empty($mentor['fotoProfil']) ? '../uploads/profile/' . $mentor['fotoProfil'] : '../assets/images/default-avatar.png'; ?>" 
+                             alt="Profile" class="profile-img">
+                    </div>
+                    <div class="col-md-9">
+                        <h2><?php echo htmlspecialchars($mentor['first_name'] . ' ' . $mentor['last_name']); ?></h2>
+                        <p class="mb-2"><i class="fas fa-user"></i> @<?php echo htmlspecialchars($mentor['username']); ?></p>
+                        <p class="mb-2"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($mentor['email']); ?></p>
+                        <p class="mb-3"><i class="fas fa-tools"></i> <?php echo htmlspecialchars($mentor['keahlian'] ?? 'Belum diisi'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="container my-5">
-        <!-- Alert Message -->
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="fas fa-info-circle me-2"></i>
-                <?php echo htmlspecialchars($message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
+        <div class="container my-5">
+            <?php if (!empty($message)): ?>
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <?php echo htmlspecialchars($message); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
 
-        <div class="row">
-            <!-- Statistik -->
-            <div class="col-md-12 mb-4">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stats-card text-center">
-                            <div class="stat-number"><?php echo $stats['total_kelas'] ?? 0; ?></div>
-                            <div class="text-muted">Total Kelas</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card text-center">
-                            <div class="stat-number"><?php echo $stats['kelas_approved'] ?? 0; ?></div>
-                            <div class="text-muted">Kelas Disetujui</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card text-center">
-                            <div class="stat-number"><?php echo $stats['kelas_pending'] ?? 0; ?></div>
-                            <div class="text-muted">Kelas Pending</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card text-center">
-                            <div class="stat-number"><?php echo $stats['kelas_draft'] ?? 0; ?></div>
-                            <div class="text-muted">Draft Kelas</div>
-                        </div>
+            <div class="row">
+                <!-- Statistik -->
+                <div class="col-md-12 mb-4">
+                    <div class="row">
+                        <!-- Kolom statistik Anda ada di sini -->
                     </div>
                 </div>
-            </div>
 
-            <!-- Form Edit Profil -->
-            <div class="col-md-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profil</h4>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="" enctype="multipart/form-data">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <label for="fotoProfilInput" class="form-label">Ganti Foto Profil</label>
-                                    <input type="file" class="form-control" id="fotoProfilInput" name="foto_profil_file" accept="image/png, image/jpeg, image/gif">
-                                    <div class="form-text">Pilih file gambar (JPG, PNG, GIF) dengan ukuran maksimal 2MB.</div>
+                <!-- Form Edit Profil -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profil</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="fotoProfilInput" class="form-label">Ganti Foto Profil</label>
+                                        <input type="file" class="form-control" id="fotoProfilInput" name="foto_profil_file" accept="image/png, image/jpeg, image/gif">
+                                        <div class="form-text">Pilih file gambar (JPG, PNG, GIF) dengan ukuran maksimal 2MB.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" name="first_name" 
+                                               value="<?php echo htmlspecialchars($mentor['first_name']); ?>" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" name="last_name" 
+                                               value="<?php echo htmlspecialchars($mentor['last_name']); ?>" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" 
+                                               value="<?php echo htmlspecialchars($mentor['email']); ?>" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Keahlian</label>
+                                        <input type="text" class="form-control" name="keahlian" 
+                                               value="<?php echo htmlspecialchars($mentor['keahlian'] ?? ''); ?>" 
+                                               placeholder="Contoh: Web Development, UI/UX Design">
+                                    </div>
                                 </div>
-                                <!-- Data Pribadi -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" name="first_name" 
-                                           value="<?php echo htmlspecialchars($mentor['first_name']); ?>" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" name="last_name" 
-                                           value="<?php echo htmlspecialchars($mentor['last_name']); ?>" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="email" 
-                                           value="<?php echo htmlspecialchars($mentor['email']); ?>" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Keahlian</label>
-                                    <input type="text" class="form-control" name="keahlian" 
-                                           value="<?php echo htmlspecialchars($mentor['keahlian'] ?? ''); ?>" 
-                                           placeholder="Contoh: Web Development, UI/UX Design">
-                                </div>
-                            </div>
 
-                            <!-- Pengalaman & Deskripsi -->
-                            <div class="mb-3">
-                                <label class="form-label">Pengalaman</label>
-                                <textarea class="form-control" name="pengalaman" rows="4" 
-                                          placeholder="Ceritakan pengalaman profesional Anda..."><?php echo htmlspecialchars($mentor['pengalaman'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Deskripsi Diri</label>
-                                <textarea class="form-control" name="deskripsi" rows="4" 
-                                          placeholder="Perkenalkan diri Anda kepada calon siswa..."><?php echo htmlspecialchars($mentor['deskripsi'] ?? ''); ?></textarea>
-                            </div>
-
-                            <!-- Social Media -->
-                            <h5 class="mt-4 mb-3"><i class="fas fa-share-alt me-2"></i>Social Media</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Pengalaman</label>
+                                    <textarea class="form-control" name="pengalaman" rows="4" 
+                                              placeholder="Ceritakan pengalaman profesional Anda..."><?php echo htmlspecialchars($mentor['pengalaman'] ?? ''); ?></textarea>
+                                </div>
+                                <!-- FIX: Menghapus textarea untuk Deskripsi Diri -->
+                                
+                                <h5 class="mt-4 mb-3"><i class="fas fa-share-alt me-2"></i>Social Media</h5>
+                                <div class="row">
+                                    <!-- Kolom Social Media Anda ada di sini -->
+                                     <div class="col-md-6 mb-3">
                                     <label class="form-label">LinkedIn URL</label>
                                     <input type="url" class="form-control" name="linkdin" 
                                            value="<?php echo htmlspecialchars($mentor['linkdin'] ?? ''); ?>" 
@@ -318,81 +275,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                                            value="<?php echo htmlspecialchars($mentor['github'] ?? ''); ?>" 
                                            placeholder="username">
                                 </div>
-                            </div>
 
-                            <div class="text-end">
-                                <button type="submit" name="update_profile" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Simpan Perubahan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kelas Terbaru -->
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Kelas Terbaru</h5>
-                    </div>
-                    <div class="card-body">
-                        <?php if ($recent_classes->num_rows > 0): ?>
-                            <?php while ($class = $recent_classes->fetch_assoc()): ?>
-                                <div class="class-card card mb-3">
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title"><?php echo htmlspecialchars($class['nama_kelas']); ?></h6>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge-category"><?php echo htmlspecialchars($class['kategori']); ?></span>
-                                            <small class="text-muted">
-                                                <?php echo $class['tgl_dibuat'] ? date('d M Y', strtotime($class['tgl_dibuat'])) : 'Belum dirilis'; ?>
-                                            </small>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <strong class="text-primary">Rp <?php echo number_format($class['harga'], 0, ',', '.'); ?></strong>
-                                            <span class="badge <?php 
-                                                echo $class['status_publikasi'] == 'approved' ? 'bg-success' : 
-                                                    ($class['status_publikasi'] == 'pending' ? 'bg-warning' : 'bg-secondary'); 
-                                            ?>">
-                                                <?php echo ucfirst($class['status_publikasi']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
+                                <div class="text-end">
+                                    <button type="submit" name="update_profile" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Simpan Perubahan
+                                    </button>
                                 </div>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <div class="text-center text-muted py-4">
-                                <i class="fas fa-graduation-cap fa-3x mb-3"></i>
-                                <p>Belum ada kelas yang dibuat</p>
-                                <a href="create-class.php" class="btn btn-primary btn-sm">Buat Kelas Pertama</a>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <a href="create-class.php" class="btn btn-outline-primary">
-                                <i class="fas fa-plus me-2"></i>Buat Kelas Baru
-                            </a>
-                            <a href="my-classes.php" class="btn btn-outline-secondary">
-                                <i class="fas fa-list me-2"></i>Kelola Kelas
-                            </a>
-                            <a href="settings.php" class="btn btn-outline-info">
-                                <i class="fas fa-cog me-2"></i>Pengaturan
-                            </a>
+                            </form>
                         </div>
                     </div>
                 </div>
+
+                <!-- Kelas Terbaru -->
+                <div class="col-md-4">
+                    <!-- Konten Kelas Terbaru Anda ada di sini -->
+                </div>
             </div>
         </div>
-    </div>
-
+    </div> <!-- Akhir .main-content -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

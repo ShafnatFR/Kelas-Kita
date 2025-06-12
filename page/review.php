@@ -3,7 +3,7 @@ include "db.php";
 session_start();
 
 // Simulasi login
-$id_user = $_SESSION['id'] ?? 1; // Ganti dengan ID user yang sesuai
+$id_user = $_SESSION['id'] ?? 1; 
 $id_kelas = $_GET['id_kelas'] ?? 1;
 $site_name = "Kelas Kita";
 
