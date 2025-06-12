@@ -184,7 +184,7 @@ if (!empty($course_id)) {
         .course-header {
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7)),
                 url('https://i.imgur.com/7Yj7NYJ.png');
-            /* Ganti dengan background kamu */
+            
             background-size: cover;
             background-position: center;
             color: white;
