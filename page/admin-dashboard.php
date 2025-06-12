@@ -154,6 +154,7 @@ $namaAdmin = $_SESSION['username'];
                         Dashboard Admin
                     </h2>
                     <p class="text-muted">Selamat datang, <?= htmlspecialchars($namaAdmin) ?>!</p>
+                    <!-- Pengecekan penggunaan simbolik NPSP contoh, agar yang ditampilkan sesuai yang terdetect db itu, untuk menghindari SQL Injection, agar terbaca hanya karaker -->
                 </div>
             </div>
             
