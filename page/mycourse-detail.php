@@ -1,16 +1,7 @@
 <?php
 session_start();
 $site_name = "Kelas Kita";
-
-// Database connection
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "KelasKita_baru";
-
-// Create connection
-$conn = new mysqli($host, $username, $password, $database);
-
+include "db.php";
 $site_name = "KelasKita_baru"; 
 $site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; 
 
