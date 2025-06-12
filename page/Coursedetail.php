@@ -73,15 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     }
 
     $found_in_cart = false;
-    foreach ($_SESSION['cart'] as &$item) {
+    foreach ($_SESSION['cart'] as $item) {
         if ($item['id'] == $course_id) {
-            $item['quantity'] += 1;
             $found_in_cart = true;
             break;
         }
     }
 
-    if (!$found_in_cart) {
+    if ($found_in_cart) {
+        $_SESSION['message'] = "Item ini sudah ada di keranjang";
+        $_SESSION['message_type'] = "warning";
+    } else {
         // Tambahkan item baru ke keranjang
         $new_item = [
             'id'       => $course['id_kelas'],

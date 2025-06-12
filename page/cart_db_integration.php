@@ -116,6 +116,21 @@ function addToCart($id_kelas, $id_user, $conn) {
 function removeFromCart($id_kelas, $id_user, $conn) {
     // Remove from database
     if ($id_user) {
+        // Check if cart item is referenced by any transaction
+        $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM tb_transaksi t JOIN tb_keranjang k ON t.id_keranjang = k.id_keranjang WHERE k.id_user = ? AND k.id_kelas = ?");
+        if ($check_stmt) {
+            $check_stmt->bind_param("ii", $id_user, $id_kelas);
+            $check_stmt->execute();
+            $result = $check_stmt->get_result();
+            $row = $result->fetch_assoc();
+            $check_stmt->close();
+            
+            if ($row['count'] > 0) {
+                // Cart item is referenced by transaction, do not delete
+                return false; // Indicate failure to delete
+            }
+        }
+        
         $stmt = $conn->prepare("DELETE FROM tb_keranjang WHERE id_user = ? AND id_kelas = ?");
         if ($stmt) {
             $stmt->bind_param("ii", $id_user, $id_kelas);
@@ -134,6 +149,7 @@ function removeFromCart($id_kelas, $id_user, $conn) {
             }
         }
     }
+    return true; // Indicate successful deletion
 }
 
 function clearCart($id_user, $conn) {
