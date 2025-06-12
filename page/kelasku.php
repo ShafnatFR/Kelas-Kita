@@ -32,7 +32,6 @@ if ($user_id > 0) {
         SELECT 
             k.*, 
             m.id_mentor, 
-            u.nama_lengkap AS nama_mentor, 
             u.username AS username_mentor
         FROM tb_transaksi t
         JOIN tb_kelas k ON t.id_kelas = k.id_kelas

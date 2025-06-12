@@ -21,7 +21,6 @@ if (!empty($course_id)) {
         SELECT 
             kelas.*, 
             mentor.id_mentor, 
-            user.nama_lengkap AS nama_mentor,
             user.username AS username_mentor
         FROM tb_kelas AS kelas
         LEFT JOIN tb_mentor AS mentor ON kelas.id_mentor = mentor.id_mentor
