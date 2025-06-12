@@ -40,7 +40,7 @@ if (isset($user['role'])) {
                 <li class="nav-item">
                     <a class="nav-link active fw-medium" href="index.php">Beranda</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link text-secondary" href="kursus.php">Kursus</a>
                 </li>
                 <li class="nav-item">
@@ -50,7 +50,7 @@ if (isset($user['role'])) {
                     <a class="nav-link text-secondary" href="blog.php">Blog</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-secondary" href="contackUs.php">Kontak</a>
+                    <a class="nav-link text-secondary" href="contackUs.php">Kontak</a> -->
                 </li>
                 <li class="nav-item">
                     <a href="cart.php" class="nav-link text-secondary position-relative">
@@ -89,7 +89,7 @@ if (isset($user['role'])) {
                 <small class="text-muted text-truncate d-block" style="max-width: 160px;"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></small>
             </div>
         </li>
-        <li><a class="dropdown-item" href="kelasku.php">KelasKu</a></li>
+        <li><a class="dropdown-item" href="mycourse-detail.php">KelasKu</a></li>
         <?php if ($_SESSION['role'] !== 'mentor'): ?>
             <!-- Menampilkan opsi "Instruktur" hanya jika role pengguna adalah peserta -->
             <li><a class="dropdown-item" href="become-mentor.php">Instruktur</a></li>

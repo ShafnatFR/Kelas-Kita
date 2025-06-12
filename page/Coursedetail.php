@@ -356,7 +356,7 @@ include_once(__DIR__ . "/../Views/navbarbootstrap.php");
                     <div class="course-price fw-bold text-success" style="font-size: 1.1rem;">
                         Sudah Dibeli
                     </div>
-                    <a href="my-courses.php" class="course-button">Lihat Kursus Saya</a>
+                    <a href="mycourse-detail.php" class="course-button">Lihat Kursus Saya</a>
                 </div>
                 <?php else: ?>
                 <div class="col-md-4 text-center text-md-end mt-4 mt-md-0">

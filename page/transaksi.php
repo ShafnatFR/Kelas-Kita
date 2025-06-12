@@ -35,6 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $tgl_transaksi = date('Y-m-d');
     
+    // Synchronize session cart with database cart for current user
+    $id_user = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+    if ($id_user > 0) {
+        syncCartToDatabase($id_user, $conn);
+        syncCartToSession($id_user, $conn);
+    }
+    
     // Handle file upload
     if (isset($_FILES['bukti_transaksi']) && $_FILES['bukti_transaksi']['error'] == 0) {
         $upload_dir = '../uploads/bukti_transaksi/';
@@ -61,13 +68,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $id_user = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
                 // You may need to get id_kelas and id_keranjang from session or cart data
                 $id_kelas = 0;
-               $id_keranjang = 0;
+                $id_keranjang = 0;
                 if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
                     $first_cart_item = $_SESSION['cart'][0];
                     $id_kelas = $first_cart_item['id'] ?? 0;
-                    // id_keranjang may need to be retrieved from database or session if available
+                    // Retrieve id_keranjang from database for this user and id_kelas
+                    $stmt_keranjang = $conn->prepare("SELECT id_keranjang FROM tb_keranjang WHERE id_user = ? AND id_kelas = ? LIMIT 1");
+                    if ($stmt_keranjang) {
+                        $stmt_keranjang->bind_param("ii", $id_user, $id_kelas);
+                        $stmt_keranjang->execute();
+                        $result_keranjang = $stmt_keranjang->get_result();
+                    if ($row_keranjang = $result_keranjang->fetch_assoc()) {
+                        $id_keranjang = $row_keranjang['id_keranjang'];
+                    }
+                    $stmt_keranjang->close();
                 }
-                
+            }
+            
+            if ($id_keranjang == 0) {
+                $message = 'Gagal mendapatkan data keranjang yang valid. Silakan coba lagi.';
+                $message_type = 'danger';
+            } else {
                 $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status, list_transaksi) VALUES (?, ?, ?, ?, ?, 'Pending', 'pembelian')");
                 $stmt->bind_param("iiiss", $id_kelas, $id_user, $id_keranjang, $new_filename, $tgl_transaksi);
                 
@@ -82,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $message_type = 'danger';
                 }
                 $stmt->close();
+            }
             } else {
                 $message = 'Gagal mengunggah file bukti transfer.';
                 $message_type = 'danger';

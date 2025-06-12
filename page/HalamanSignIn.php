@@ -10,10 +10,7 @@ if (isset($_SESSION['username']) && isset($_SESSION['role'])) {
     } elseif ($_SESSION['role'] === 'mentor') {
         header("Location: mentor-dashboard.php"); // Jika mentor, redirect ke dashboard mentor
         exit();
-    } elseif ($_SESSION['role'] === 'peserta') {
-        header("Location: index.php"); // Jika peserta, redirect ke index (sama seperti murid)
-        exit(); 
-    }
+    } 
 }
 
 $message = "";
