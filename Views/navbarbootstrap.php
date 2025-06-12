@@ -65,7 +65,7 @@ if (isset($user['role'])) {
             </ul>
 
             <!-- Dropdown Profil -->
-            <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
                 <?php if (isset($_SESSION['username'])): ?>
                     <div class="dropdown">
     <a href="#" role="button" id="dropdownProfile" data-bs-toggle="dropdown" aria-expanded="false">
@@ -95,6 +95,7 @@ if (isset($user['role'])) {
             <li><a class="dropdown-item" href="become-mentor.php">Instruktur</a></li>
         <?php endif; ?>
         <li><a class="dropdown-item" href="keranjang.php">Keranjang</a></li>
+        <li><a class="dropdown-item" href="list-transaksi.php">Riwayat Transaksi</a></li>
         <li><a class="dropdown-item" href="setting-profil.php">Pengaturan Profil</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>

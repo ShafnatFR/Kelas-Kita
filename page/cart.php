@@ -58,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Mengupdate kuantitas item
     if (isset($_POST['update_quantity']) && isset($_POST['item_id']) && isset($_POST['quantity'])) {
         $item_id = intval($_POST['item_id']);
-        $quantity = intval($_POST['quantity']);
+        // Force quantity to 1 regardless of input
+        $quantity = 1;
         
         if ($quantity > 0) {
             foreach ($_SESSION['cart'] as $index => $item) {
@@ -164,7 +165,8 @@ $total = 0;
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
         $price = isset($cart_items_data[$item['id']]) ? $cart_items_data[$item['id']]['price'] : ($item['price'] ?? 0);
-        $total += $price * $item['quantity'];
+        $quantity = isset($item['quantity']) ? $item['quantity'] : 1;
+        $total += $price * $quantity;
     }
     $_SESSION['cart_total_amount'] = $total; // Store total in session for use in transaksi.php
 }
@@ -247,7 +249,7 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     <!-- Display message if any -->
     <?php if (isset($_SESSION['message'])): ?>
         <div class="container mt-3">
-            <div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show">
+            <div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show" role="alert">
                 <?php echo $_SESSION['message']; ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -304,11 +306,11 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
                                         <td>
                                             <form method="post" class="d-inline">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
-                                                <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1" class="form-control form-control-sm quantity-input" onchange="this.form.submit()">
+                                                <input type="number" name="quantity" value="1" min="1" class="form-control form-control-sm quantity-input" readonly>
                                                 <input type="hidden" name="update_quantity" value="1">
                                             </form>
                                         </td>
-                                        <td><?php echo 'Rp ' . number_format(intval($price * $item['quantity']), 0, ',', '.'); ?></td>
+                                        <td><?php echo 'Rp ' . number_format(intval($price * (isset($item['quantity']) ? $item['quantity'] : 1)), 0, ',', '.'); ?></td>
                                         <td>
                                             <form method="post">
                                                 <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
