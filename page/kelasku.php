@@ -1,14 +1,6 @@
 <?php
 session_start();
-
-// Database connection
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "KelasKita_baru";
-
-// Create connection
-$conn = new mysqli($host, $username, $password, $database);
+include "db.php";
 
 // Define site-wide values
 $site_name = "KelasKita_baru";
