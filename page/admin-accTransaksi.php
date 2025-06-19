@@ -84,7 +84,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         }
     }
 
-    header("Location: kelolaTransaksi.php");
+    header("Location: admin-kelolaTransaksi.php");
     exit();
 
 } else {
