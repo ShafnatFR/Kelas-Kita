@@ -314,44 +314,7 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 ---
 
-<section class="section-padding bg-light">
-    <div class="container">
-        <div class="section-title">
-            <h2>Testimoni dari Alumni Kami</h2>
-            <p>Apa kata mereka yang telah menyelesaikan program pembelajaran kami</p>
-        </div>
-        
-        <div class="row">
-            <?php
-            // Query untuk mengambil testimoni dari database
-            $sql_testimonials = "SELECT quote, avatar, nama, posisi FROM tb_testimoni ORDER BY id ASC LIMIT 3";
-            $result_testimonials = $conn->query($sql_testimonials);
-            
-            if ($result_testimonials && $result_testimonials->num_rows > 0) {
-                while($testimonial = $result_testimonials->fetch_assoc()) {
-                    echo '<div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card testimonial-card h-100">
-                            <div class="mb-3">
-                                <i class="fas fa-quote-left fa-2x text-primary opacity-50"></i>
-                            </div>
-                            <p class="mb-4">' . htmlspecialchars($testimonial['quote']) . '</p>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <img src="' . htmlspecialchars($testimonial['avatar']) . '" alt="Avatar" class="rounded-circle" width="60">
-                                <div class="ms-3 text-start">
-                                    <h6 class="mb-0">' . htmlspecialchars($testimonial['nama']) . '</h6>
-                                    <small class="text-muted">' . htmlspecialchars($testimonial['posisi']) . '</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '<div class="col-12 text-center">Tidak ada testimoni ditemukan</div>';
-            }
-            ?>
-        </div>
-    </div>
-</section>
+
 
 ---
 
@@ -394,10 +357,8 @@ $course_id = isset($_GET['id']) ? $_GET['id'] : '';
 include_once("../Views/footerbootsrap.php"); 
 $conn->close(); // Tutup koneksi database setelah semua query selesai
 ?>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
 <script>
     // Script untuk animasi scroll
     document.addEventListener('DOMContentLoaded', function() {
@@ -461,6 +422,7 @@ $conn->close(); // Tutup koneksi database setelah semua query selesai
         })
     })()
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 </body>
 </html>

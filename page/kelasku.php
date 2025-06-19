@@ -1,14 +1,6 @@
 <?php
 session_start();
-
-// Database connection
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "KelasKita_baru";
-
-// Create connection
-$conn = new mysqli($host, $username, $password, $database);
+include "db.php";
 
 // Define site-wide values
 $site_name = "KelasKita_baru";
@@ -32,7 +24,6 @@ if ($user_id > 0) {
         SELECT 
             k.*, 
             m.id_mentor, 
-            u.nama_lengkap AS nama_mentor, 
             u.username AS username_mentor
         FROM tb_transaksi t
         JOIN tb_kelas k ON t.id_kelas = k.id_kelas

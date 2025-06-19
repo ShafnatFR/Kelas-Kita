@@ -1,16 +1,7 @@
 <?php
 session_start();
 $site_name = "Kelas Kita";
-
-// Database connection
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "KelasKita_baru";
-
-// Create connection
-$conn = new mysqli($host, $username, $password, $database);
-
+include "db.php";
 $site_name = "KelasKita_baru"; 
 $site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; 
 
@@ -30,7 +21,6 @@ if (!empty($course_id)) {
         SELECT 
             kelas.*, 
             mentor.id_mentor, 
-            user.nama_lengkap AS nama_mentor,
             user.username AS username_mentor
         FROM tb_kelas AS kelas
         LEFT JOIN tb_mentor AS mentor ON kelas.id_mentor = mentor.id_mentor
@@ -183,7 +173,7 @@ if (!empty($course_id)) {
         .course-header {
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7)),
                 url('https://i.imgur.com/7Yj7NYJ.png');
-            /* Ganti dengan background kamu */
+            
             background-size: cover;
             background-position: center;
             color: white;
