@@ -20,10 +20,13 @@
             <a class="nav-link active" href="kelola-kelas.php">Kelola Kelas</a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" href="kelola-materi.php">Kelola Materi</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="kelola-transaksi.php">Lihat Transaksi</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="kelola-materi.php">Kelola Materi</a>
+            <a class="nav-link" href="pendapatan-mentor.php">Tarik Pendapatan</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="reviews-comments.php">Review & Komentar</a>

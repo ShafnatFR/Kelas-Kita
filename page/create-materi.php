@@ -29,29 +29,40 @@ if ($id_mentor === 0) {
 }
 
 // Ambil daftar kelas yang dimiliki mentor untuk dropdown
-$classes = [];
-if ($id_mentor > 0) {
-    $stmt_classes = $conn->prepare("SELECT id_kelas, nama_kelas FROM tb_kelas WHERE id_mentor = ? ORDER BY nama_kelas ASC");
-    $stmt_classes->bind_param("i", $id_mentor);
-    $stmt_classes->execute();
-    $classes_result = $stmt_classes->get_result();
-    while ($row = $classes_result->fetch_assoc()) {
-        $classes[] = $row;
+// Ambil NAMA KELAS SPESIFIK berdasarkan ID dari URL
+$nama_kelas_terpilih = "";
+if ($id_kelas_preselected > 0 && $id_mentor > 0) {
+    // Query untuk mengambil nama kelas sekaligus memvalidasi kepemilikan
+    $stmt_nama_kelas = $conn->prepare("SELECT nama_kelas FROM tb_kelas WHERE id_kelas = ? AND id_mentor = ?");
+    $stmt_nama_kelas->bind_param("ii", $id_kelas_preselected, $id_mentor);
+    $stmt_nama_kelas->execute();
+    $result_nama_kelas = $stmt_nama_kelas->get_result();
+
+    if ($result_nama_kelas->num_rows > 0) {
+        $row = $result_nama_kelas->fetch_assoc();
+        $nama_kelas_terpilih = $row['nama_kelas'];
+    } else {
+        // Jika kelas tidak ditemukan atau bukan milik mentor, tampilkan error
+        die("Error: Kelas tidak valid atau Anda tidak memiliki akses ke kelas ini.");
     }
-    $stmt_classes->close();
+    $stmt_nama_kelas->close();
+} elseif ($id_kelas_preselected === 0) {
+    // Jika tidak ada ID kelas di URL, proses tidak bisa dilanjutkan
+    die("Error: Tidak ada kelas yang dipilih. Silakan kembali dan pilih kelas terlebih dahulu.");
 }
 
+
+// Proses form jika di-submit
 // Proses form jika di-submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ambil semua data dari form
     $id_kelas = trim($_POST['id_kelas']);
     $judul_materi = trim($_POST['judul_materi']);
-    $urutan = trim($_POST['urutan']);
+    $deskripsi_m = trim($_POST['deskripsi_m']); // <-- TAMBAHKAN INI, sebelumnya hilang
 
     // Validasi input dasar
-    if (empty($id_kelas) || empty($judul_materi)) {
-        $message = "Kelas dan Judul Materi wajib diisi!";
-    } elseif (!is_numeric($urutan) || $urutan < 1) {
-        $message = "Urutan harus berupa angka positif.";
+    if (empty($id_kelas) || empty($judul_materi) || empty($deskripsi_m)) { // <-- Tambahkan validasi deskripsi
+        $message = "Kelas, Judul Materi, dan Deskripsi wajib diisi!";
     } else {
         // Validasi tambahan: Pastikan id_kelas benar-benar milik mentor yang login
         $check_class_owner_stmt = $conn->prepare("SELECT id_kelas FROM tb_kelas WHERE id_kelas = ? AND id_mentor = ?");
@@ -62,9 +73,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($class_owner_result->num_rows === 0) {
             $message = "Kelas yang dipilih tidak valid atau bukan milik Anda.";
         } else {
-            // Masukkan data materi ke database (tanpa deskripsi_m)
-            $insert_stmt = $conn->prepare("INSERT INTO tb_materi (id_kelas, judul_materi, urutan) VALUES (?, ?, ?)");
-            $insert_stmt->bind_param("isi", $id_kelas, $judul_materi, $urutan); // Sesuaikan parameter: i untuk id_kelas, s untuk judul_materi, i untuk urutan
+            // --- LOGIKA BARU UNTUK URUTAN OTOMATIS ---
+            // 1. Cari urutan tertinggi (MAX) untuk kelas yang dipilih.
+            $stmt_urutan = $conn->prepare("SELECT MAX(urutan) AS max_urutan FROM tb_materi WHERE id_kelas = ?");
+            $stmt_urutan->bind_param("i", $id_kelas);
+            $stmt_urutan->execute();
+            $urutan_result = $stmt_urutan->get_result()->fetch_assoc();
+            $stmt_urutan->close();
+
+            // 2. Tentukan urutan baru. Jika belum ada materi (hasilnya NULL), mulai dari 1.
+            $urutan_baru = ($urutan_result && $urutan_result['max_urutan'] !== null) ? $urutan_result['max_urutan'] + 1 : 1;
+
+            // 3. Masukkan data materi ke database dengan urutan baru dan deskripsi
+            $insert_stmt = $conn->prepare("INSERT INTO tb_materi (id_kelas, judul_materi, deskripsi_m, urutan) VALUES (?, ?, ?, ?)");
+            // Perhatikan tipe parameter di bind_param berubah menjadi "issi"
+            $insert_stmt->bind_param("issi", $id_kelas, $judul_materi, $deskripsi_m, $urutan_baru);
 
             if ($insert_stmt->execute()) {
                 header("Location: kelola-materi.php?id_kelas=" . $id_kelas . "&msg=" . urlencode("Materi '{$judul_materi}' berhasil ditambahkan!"));
@@ -104,19 +127,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         <?php endif; ?>
 
-                        <form method="POST">
-                            <div class="mb-3">
-                                <label for="id_kelas" class="form-label">Pilih Kelas</label>
-                                <select class="form-select" id="id_kelas" name="id_kelas" required>
-                                    <option value="">-- Pilih Kelas --</option>
-                                    <?php foreach ($classes as $class): ?>
-                                        <option value="<?= $class['id_kelas'] ?>"
-                                            <?= ($class['id_kelas'] == $id_kelas_preselected) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($class['nama_kelas']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                        <div class="mb-3">
+                            <label for="nama_kelas" class="form-label">Kelas</label>
+                            
+                            <input type="text" class="form-control" id="nama_kelas" 
+                                value="<?= htmlspecialchars($nama_kelas_terpilih) ?>" readonly>
+                                
+                            <input type="hidden" name="id_kelas" value="<?= $id_kelas_preselected ?>">
+                        </div>
 
                             <div class="mb-3">
                                 <label for="judul_materi" class="form-label">Judul Materi</label>
@@ -129,8 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="mb-3">
-                                <label for="urutan" class="form-label">Urutan</label>
-                                <input type="number" class="form-control" id="urutan" name="urutan" value="1" min="1" required>
+                                <label for="urutan_display" class="form-label">Urutan Materi Berikutnya</label>
+                                <input type="number" class="form-control" id="urutan_display" name="urutan_display" value="1" readonly>
+                                <div class="form-text">Nomor urutan ini akan terisi otomatis saat Anda memilih kelas.</div>
                             </div>
                             
                             <div class="d-flex justify-content-between">

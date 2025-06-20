@@ -82,16 +82,20 @@ function processVideoUrl($url) {
     return null;
 }
 
+
+// ... (kode Anda di bagian atas tetap sama, dari session_start() sampai function processVideoUrl) ...
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_materi = trim($_POST['id_materi']);
     $judul_sub_materi = trim($_POST['judul_sub_materi']);
-    $urutan = trim($_POST['urutan']);
+    // $urutan = trim($_POST['urutan']); // <-- DIHAPUS, tidak lagi mengambil urutan dari form
     $video_url = trim($_POST['video_url']);
 
     $id_dokumen = null; // Default NULL
     $id_video = null; // Default NULL
 
     // --- Proses Video URL ---
+    // (Kode proses video Anda tetap di sini, tidak ada perubahan)
     if (!empty($video_url)) {
         $video_embed_url = processVideoUrl($video_url);
         if ($video_embed_url === null) {
@@ -110,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // --- Proses Upload Dokumen ---
+    // (Kode proses dokumen Anda tetap di sini, tidak ada perubahan)
     if (empty($message) && isset($_FILES['dokumen_file']) && $_FILES['dokumen_file']['error'] === UPLOAD_ERR_OK) {
         $file_tmp_name_d = $_FILES['dokumen_file']['tmp_name'];
         $file_name_d = basename($_FILES['dokumen_file']['name']);
@@ -149,8 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validasi input dasar
         if (empty($id_materi) || empty($judul_sub_materi)) {
             $message = "Materi induk dan Judul Sub-Materi wajib diisi!";
-        } elseif (!is_numeric($urutan) || $urutan < 1) {
-            $message = "Urutan harus berupa angka positif.";
+        // } elseif (!is_numeric($urutan) || $urutan < 1) { // <-- DIHAPUS, validasi tidak diperlukan lagi
+        //     $message = "Urutan harus berupa angka positif.";
         } else {
             // Validasi tambahan: Pastikan id_materi benar-benar milik mentor yang login
             $check_materi_owner_stmt = $conn->prepare("
@@ -168,57 +173,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $materi_info_for_redirect = $materi_owner_result->fetch_assoc();
                 $id_kelas_for_redirect = $materi_info_for_redirect['id_kelas'];
+                
+                // =================================================================
+                // <-- LOGIKA BARU UNTUK URUTAN OTOMATIS DIMULAI DI SINI -->
+                // =================================================================
+                // 1. Cari urutan tertinggi (MAX) untuk materi induk yang dipilih.
+                $stmt_urutan = $conn->prepare("SELECT MAX(urutan) AS max_urutan FROM tb_sub_materi WHERE id_materi = ?");
+                $stmt_urutan->bind_param("i", $id_materi);
+                $stmt_urutan->execute();
+                $urutan_result = $stmt_urutan->get_result()->fetch_assoc();
+                $stmt_urutan->close();
 
-                if (empty($message)) {
-                    // Masukkan data sub-materi ke database
-                    $insert_stmt = $conn->prepare("INSERT INTO tb_sub_materi (id_materi, judul_sub_materi, id_dokumen, id_video, urutan) VALUES (?, ?, ?, ?, ?)");
-                    
-                    // Parameter: i (id_materi), s (judul_sub_materi), i (id_dokumen), i (id_video), i (urutan)
-                    $insert_stmt->bind_param("isiii", $id_materi, $judul_sub_materi, $id_dokumen, $id_video, $urutan);
+                // 2. Tentukan urutan baru. Jika belum ada, mulai dari 1.
+                $urutan_baru = ($urutan_result && $urutan_result['max_urutan'] !== null) ? $urutan_result['max_urutan'] + 1 : 1;
+                // =================================================================
+                // <-- LOGIKA BARU SELESAI -->
+                // =================================================================
 
-                    if ($insert_stmt->execute()) {
-                        header("Location: kelola-materi.php?id_kelas=" . $id_kelas_for_redirect . "&id_materi=" . $id_materi . "&msg=" . urlencode("Sub-materi '{$judul_sub_materi}' berhasil ditambahkan!"));
-                        exit();
-                    } else {
-                        $message = "Gagal menambahkan sub-materi: " . $insert_stmt->error;
-                        // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen/tb_video jika sudah terupload
-                    }
-                    $insert_stmt->close();
-                }
+                // Masukkan data sub-materi ke database
+                $insert_stmt = $conn->prepare("INSERT INTO tb_sub_materi (id_materi, judul_sub_materi, id_dokumen, id_video, urutan) VALUES (?, ?, ?, ?, ?)");
+                
+                // Parameter: i (id_materi), s (judul_sub_materi), i (id_dokumen), i (id_video), i (urutan_baru)
+                $insert_stmt->bind_param("isiii", $id_materi, $judul_sub_materi, $id_dokumen, $id_video, $urutan_baru);
 
                 if ($insert_stmt->execute()) {
                     header("Location: kelola-materi.php?id_kelas=" . $id_kelas_for_redirect . "&id_materi=" . $id_materi . "&msg=" . urlencode("Sub-materi '{$judul_sub_materi}' berhasil ditambahkan!"));
                     exit();
                 } else {
                     $message = "Gagal menambahkan sub-materi: " . $insert_stmt->error;
-                    // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen jika sudah terupload
+                    // TODO: Jika gagal insert sub-materi, hapus file dan info dari tb_dokumen/tb_video jika sudah terupload
                 }
                 $insert_stmt->close();
+
+                // BUG: BLOK KODE YANG TERDUPLIKASI DI SINI TELAH DIHAPUS.
             }
             $check_materi_owner_stmt->close();
         }
     }
 }
 
-// Ambil daftar materi yang dimiliki mentor untuk dropdown (jika id_materi_preselected belum ada)
-$materis = [];
-if ($id_materi_preselected === 0 && $id_mentor > 0) {
-    $stmt_materis = $conn->prepare("
-        SELECT tm.id_materi, tm.judul_materi, tk.nama_kelas
-        FROM tb_materi tm
-        JOIN tb_kelas tk ON tm.id_kelas = tk.id_kelas
-        WHERE tk.id_mentor = ?
-        ORDER BY tk.nama_kelas ASC, tm.urutan ASC
-    ");
-    $stmt_materis->bind_param("i", $id_mentor);
-    $stmt_materis->execute();
-    $materis_result = $stmt_materis->get_result();
-    while ($row = $materis_result->fetch_assoc()) {
-        $materis[] = $row;
-    }
-    $stmt_materis->close();
-}
+// ... (sisa kode Anda di bagian bawah tetap sama) ...
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
