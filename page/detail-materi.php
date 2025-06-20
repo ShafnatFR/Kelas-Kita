@@ -220,7 +220,7 @@ if (!empty($sub_materi_id)) {
     <div class="container py-5">
         <!-- Judul Submateri -->
         <div class="mb-4">
-            <h3 class="fw-bold">Submateri 1: Pengantar Teknologi Web</h3>
+            <h3 class="fw-bold">Submateri 1: Web Programming</h3>
         </div>
 
         <!-- Video YouTube -->

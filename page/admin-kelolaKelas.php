@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'db.php';
+require 'db.php'; // Pastikan path ini benar, misal: '../db.php' jika di subfolder admin
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     header("Location: adminLogin.php");
@@ -103,14 +103,22 @@ $tbKelasRejectedResult = fetchData($conn, "
     LIMIT 10
 ");
 
-// Kueri untuk 10 kelas NON-AKTIF (termasuk draft) terbaru
+// MODIFIKASI Kueri untuk 10 kelas NON-AKTIF (termasuk draft) terbaru
+// Mengambil catatan terbaru untuk setiap kelas yang dinonaktifkan
 $tbKelasNonAktifResult = fetchData($conn, "
-    SELECT id_kelas, nama_kelas, status_publikasi, harga, tgl_dibuat
-    FROM tb_kelas
-    WHERE status_publikasi IN ('non-aktif')
-    ORDER BY tgl_dibuat DESC
+    SELECT
+        k.id_kelas,
+        k.nama_kelas,
+        k.status_publikasi,
+        k.harga,
+        k.tgl_dibuat,
+        (SELECT c.isi_catatan FROM tb_catatan c WHERE c.id_kelas = k.id_kelas ORDER BY c.id_catatan DESC LIMIT 1) AS catatan_admin
+    FROM tb_kelas k
+    WHERE k.status_publikasi IN ('non-aktif')
+    ORDER BY k.tgl_dibuat DESC
     LIMIT 10
 ");
+
 
 // Kueri untuk 10 kelas AKTIF terbaru
 $tbKelasAktifResult = fetchData($conn, "
@@ -308,7 +316,7 @@ $namaAdmin = $_SESSION['username'];
             </div>
 
             <div class="row mb-5 gy-4">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-warning text-white">
                             <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Kelas Ditolak Terbaru</h5>
@@ -359,7 +367,7 @@ $namaAdmin = $_SESSION['username'];
                     </div>
                 </div>
 
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-danger text-white">
                             <h5 class="mb-0"><i class="fas fa-ban me-2"></i>Kelas Dinonaktifkan Terbaru</h5>
@@ -371,7 +379,7 @@ $namaAdmin = $_SESSION['username'];
                                         <tr>
                                             <th>#</th>
                                             <th>Nama Kelas</th>
-                                            <th>Status Publikasi</th>
+                                            <th>Catatan Admin</th> <th>Status Publikasi</th>
                                             <th>Tanggal Dibuat</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -383,6 +391,9 @@ $namaAdmin = $_SESSION['username'];
                                                 <tr>
                                                     <th><?= $counter++ ?></th>
                                                     <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
+                                                    <td>
+                                                        <?= !empty($kelas['catatan_admin']) ? nl2br(htmlspecialchars($kelas['catatan_admin'])) : '<span class="text-muted">Tidak ada catatan</span>' ?>
+                                                    </td>
                                                     <td>
                                                         <?php
                                                             $status_badge_class = ($kelas['status_publikasi'] === 'non-aktif' || $kelas['status_publikasi'] === 'draft') ? 'badge-status-nonaktif' : 'badge-status-default';
@@ -401,7 +412,7 @@ $namaAdmin = $_SESSION['username'];
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="5" class="text-center text-muted p-3">Tidak ada data kelas non-aktif (atau draft).</td></tr>
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Tidak ada data kelas non-aktif (atau draft).</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -439,16 +450,16 @@ $namaAdmin = $_SESSION['username'];
                                                     <td><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
                                                     <td>
                                                         <?php
-                                                            $status_badge_class = ($kelas['status_publikasi'] === 'aktif') ? 'badge-status-aktif' : 'badge-status-default';
+                                                            $status_badge_class = ($kelas['status_publikasi'] === 'approved') ? 'badge-status-aktif' : 'badge-status-default';
                                                             echo '<span class="badge ' . $status_badge_class . '">' . htmlspecialchars(ucfirst($kelas['status_publikasi'])) . '</span>';
                                                         ?>
                                                     </td>
                                                     <td><?= htmlspecialchars($kelas['mentor_username']) ?></td>
                                                     <td><?= (new DateTime($kelas['tgl_dibuat']))->format('d M Y') ?></td>
                                                     <td>
-                                                        <a href="admin-nonAktifkanKelas.php?id=<?= $kelas['id_kelas'] ?>" class="btn btn-sm btn-danger" title="Non-Aktifkan Kelas" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan kelas ini?');">
+                                                        <button type="button" class="btn btn-sm btn-danger non-aktif-btn" data-bs-toggle="modal" data-bs-target="#nonAktifkanKelasModal" data-id_kelas="<?= $kelas['id_kelas'] ?>" title="Non-Aktifkan Kelas">
                                                             <i class="fas fa-times-circle"></i> Non-Aktifkan
-                                                        </a>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -465,7 +476,45 @@ $namaAdmin = $_SESSION['username'];
         </div>
     </div>
 
+    <div class="modal fade" id="nonAktifkanKelasModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="nonAktifkanKelasModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Non-Aktifkan Kelas dan Beri Catatan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="admin-nonAktifkanKelas.php" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="id_kelas" id="modal_id_kelas">
+                        <div class="mb-3">
+                            <label for="catatan" class="form-label">Catatan untuk Mentor:</label>
+                            <textarea class="form-control" id="catatan" name="catatan" rows="4" placeholder="Berikan alasan mengapa kelas ini dinonaktifkan (akan dikirim ke mentor)." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Non-Aktifkan dan Kirim Catatan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var nonAktifkanKelasModal = document.getElementById('nonAktifkanKelasModal');
+            nonAktifkanKelasModal.addEventListener('show.bs.modal', function(event) {
+                
+                var button = event.relatedTarget;
+                
+                var id_kelas = button.getAttribute('data-id_kelas');
+
+                var modalIdKelasInput = nonAktifkanKelasModal.querySelector('#modal_id_kelas');
+                modalIdKelasInput.value = id_kelas;
+            });
+        });
+    </script>
 </body>
 </html>
 

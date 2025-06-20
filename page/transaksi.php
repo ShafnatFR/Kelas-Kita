@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $new_filename = 'bukti_' . time() . '_' . uniqid() . '.' . $file_extension;
             $upload_path = $upload_dir . $new_filename;
             
+<<<<<<< HEAD
             if (move_uploaded_file($_FILES['bukti_transaksi']['tmp_name'], $upload_path)) {
                 // Insert ke database (sesuaikan dengan kebutuhan tabel Anda)
                 // For now, using default values for foreign keys
@@ -100,14 +101,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_POST = array();
                 } else {
                     $message = 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.';
-                    $message_type = 'danger';
+=======
+                if (move_uploaded_file($_FILES['bukti_transaksi']['tmp_name'], $upload_path)) {
+                    // Insert ke database (sesuaikan dengan kebutuhan tabel Anda)
+                    // For now, using default values for foreign keys
+                  $id_kelas = 1; // Sesuaikan dengan kebutuhan
+                    $id_user = 1;  // Sesuaikan dengan kebutuhan
+                   $id_keranjang = 1; // Sesuaikan dengan kebutuhan
+                    // Use actual logged-in user id and cart info
+                    $id_user = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+                    // You may need to get id_kelas and id_keranjang from session or cart data
+                    $id_kelas = 0;
+                    $id_keranjang = 0;
+                    if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+                        $first_cart_item = $_SESSION['cart'][0];
+                        $id_kelas = $first_cart_item['id'] ?? 0;
+                        // Retrieve id_keranjang from database for this user and id_kelas
+                        $stmt_keranjang = $conn->prepare("SELECT id_keranjang FROM tb_keranjang WHERE id_user = ? AND id_kelas = ? LIMIT 1");
+                        if ($stmt_keranjang) {
+                            $stmt_keranjang->bind_param("ii", $id_user, $id_kelas);
+                            $stmt_keranjang->execute();
+                            $result_keranjang = $stmt_keranjang->get_result();
+                        if ($row_keranjang = $result_keranjang->fetch_assoc()) {
+                            $id_keranjang = $row_keranjang['id_keranjang'];
+                        }
+                        $stmt_keranjang->close();
+                    }
                 }
+                
+                if ($id_keranjang == 0) {
+                    $message = 'Gagal mendapatkan data keranjang yang valid. Silakan coba lagi.';
+>>>>>>> 53f421aeba027acfa2b9e55a7461509b962a8054
+                    $message_type = 'danger';
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO tb_transaksi (id_kelas, id_user, id_keranjang, bukti_transaksi, tgl_transaksi, status, list_transaksi) VALUES (?, ?, ?, ?, ?, 'Pending', 'pembelian')");
+                    $stmt->bind_param("iiiss", $id_kelas, $id_user, $id_keranjang, $new_filename, $tgl_transaksi);
+                    
+                    if ($stmt->execute()) {
+                        $message = 'Transaksi berhasil dikirim! Tim kami akan memverifikasi pembayaran Anda dalam 1x24 jam.';
+                        $message_type = 'success';
+                        error_log("Upload success: filename = " . $new_filename);
+                        
+                        // Reset form setelah berhasil
+                        $_POST = array();
+                    } else {
+                        $message = 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.';
+                        $message_type = 'danger';
+                        error_log("Database insert error: " . $stmt->error);
+                    }
+                    $stmt->close();
+                }
+                } else {
+                    $message = 'Gagal mengunggah file bukti transfer.';
+                    $message_type = 'danger';
+                    error_log("File upload failed: " . $_FILES['bukti_transaksi']['error']);
+                }
+<<<<<<< HEAD
                 $stmt->close();
             }
             } else {
                 $message = 'Gagal mengunggah file bukti transfer.';
                 $message_type = 'danger';
             }
+=======
+>>>>>>> 53f421aeba027acfa2b9e55a7461509b962a8054
         } else {
             $message = 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau GIF.';
             $message_type = 'danger';

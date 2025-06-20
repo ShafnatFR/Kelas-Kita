@@ -2,6 +2,7 @@
 <?php
 session_start();
 $site_name = "Kelas Kita";
+<<<<<<< HEAD
 
 // Database connection
 $host = "localhost";
@@ -14,6 +15,11 @@ $conn = new mysqli($host, $username, $password, $database);
 
 $site_name = "KelasKita_baru"; // Define site name for footer usage
 $site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; // Contoh tagline
+=======
+include "db.php";
+$site_name = "KelasKita_baru"; 
+$site_tagline = "Tingkatkan Keterampilan Anda, Raih Masa Depan Cemerlang"; 
+>>>>>>> 53f421aeba027acfa2b9e55a7461509b962a8054
 
 // Check connection
 if ($conn->connect_error) {
@@ -31,7 +37,6 @@ if (!empty($course_id)) {
         SELECT 
             kelas.*, 
             mentor.id_mentor, 
-            user.nama_lengkap AS nama_mentor,
             user.username AS username_mentor
         FROM tb_kelas AS kelas
         LEFT JOIN tb_mentor AS mentor ON kelas.id_mentor = mentor.id_mentor
